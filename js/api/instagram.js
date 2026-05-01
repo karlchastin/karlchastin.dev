@@ -1,0 +1,83 @@
+import { profiles } from '../config.js'; 
+import { $, $$ } from '../utils/dom.js';
+
+export async function loadInstagramData() {
+    const workerUrl = `https://steam-proxy.karlchastin-personal.workers.dev/?route=instagram&_cb=${Date.now()}`;
+
+    try {
+        const response = await fetch(workerUrl);
+        if (!response.ok) throw new Error('Failed to fetch IG data from Worker');
+        
+        const data = await response.json();
+        if (data && data.length > 0) updateInstagramUI(data[0]);
+    } catch (error) {
+        console.error("Instagram API Error:", error);
+    }
+}
+
+function updateInstagramUI(profile) {
+    const igProfile = profiles.instagram;
+    
+    if (profile.profilePicUrlHD) {
+        igProfile.avatar = `https://steam-proxy.karlchastin-personal.workers.dev/?route=image-proxy&url=${encodeURIComponent(profile.profilePicUrlHD)}`;
+        new Image().src = igProfile.avatar;
+    }
+    
+    if (profile.biography) igProfile.bio = profile.biography;
+    
+    igProfile.name = (profile.fullName && profile.fullName.trim() !== '') ? profile.fullName : profile.username.replace(/^@/, '');
+
+    const activeTab = document.querySelector('.tab.active')?.getAttribute('data-tab');
+    if (activeTab === 'instagram') {
+        const avatarImg = $('avatar-img');
+        const profileName = $('profile-name');
+        const profileBio = $('profile-bio');
+        
+        if (avatarImg) avatarImg.src = igProfile.avatar;
+        if (profileName) profileName.textContent = igProfile.name;
+        if (profileBio) profileBio.textContent = igProfile.bio;
+    }
+
+    const statsMap = {
+        'ig-posts': profile.postsCount,
+        'ig-followers': profile.followersCount,
+        'ig-following': profile.followsCount
+    };
+
+    for (const [id, value] of Object.entries(statsMap)) {
+        const el = $(id);
+        if (el) el.textContent = value ?? '--';
+    }
+
+    const postsGrid = document.querySelector('.ig-posts-grid');
+    if (postsGrid && profile.latestPosts) {
+        postsGrid.innerHTML = profile.latestPosts.slice(0, 6).map(post => {
+            const proxyImageUrl = `https://steam-proxy.karlchastin-personal.workers.dev/?route=image-proxy&url=${encodeURIComponent(post.displayUrl)}`;
+            const dateStr = post.timestamp ? new Date(post.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "";
+            
+            let snippet = post.caption ? post.caption.trim() : '';
+            if (snippet.length > 40) snippet = snippet.substring(0, 40).trim() + '...';
+            if (!snippet) snippet = 'Instagram Post';
+
+            return `
+                <a href="${post.url}" target="_blank" class="ig-post-item" style="display: block; position: relative; overflow: hidden; border-radius: 8px; aspect-ratio: 1/1; text-decoration: none; background: #111;">
+                    <img src="${proxyImageUrl}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; display: block; border: none; padding: 0; margin: 0;" alt="Instagram Post">
+                    
+                    <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 30px 12px 10px; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); color: white; font-size: 11px; display: flex; flex-direction: column; gap: 3px; box-sizing: border-box; pointer-events: none;">
+                        ${dateStr ? `<span style="opacity: 0.7; font-weight: 600; font-size: 10px; letter-spacing: 0.5px;">${dateStr.toUpperCase()}</span>` : ''}
+                        <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0px 1px 2px rgba(0,0,0,0.8);">${snippet}</span>
+                    </div>
+
+                    <div class="ig-post-overlay" style="opacity: 0; transition: opacity 0.2s ease-in-out; background: rgba(0,0,0,0.65); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: flex; align-items: center; justify-content: center; gap: 15px; color: white; font-weight: bold; font-size: 14px;">
+                        <span>🤍 ${post.likesCount || 0}</span>
+                        <span>💬 ${post.commentsCount || 0}</span>
+                    </div>
+                </a>`;
+        }).join('');
+
+        $$('.ig-post-item').forEach(item => {
+            item.addEventListener('mouseenter', e => e.currentTarget.querySelector('.ig-post-overlay').style.opacity = '1');
+            item.addEventListener('mouseleave', e => e.currentTarget.querySelector('.ig-post-overlay').style.opacity = '0');
+        });
+    }
+}
