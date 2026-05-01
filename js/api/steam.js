@@ -272,10 +272,16 @@ export async function updateSteamData() {
 
     fetchHtmlWithWorker(`https://steamcommunity.com/profiles/76561198810914938/`).then(htmlText => {
         const doc = new DOMParser().parseFromString(htmlText, "text/html");
+        const dlcEl = Array.from(doc.querySelectorAll('.showcase_stat')).find(el => 
+            el.querySelector('.label')?.textContent.trim().includes('DLC Owned')
+        );
+
         let safeOverrides = {
             level: doc.querySelector('.friendPlayerLevelNum')?.textContent || "--",
             bio: doc.querySelector('.profile_summary')?.textContent?.trim(),
-            hours: doc.querySelector('.recentgame_recentplaytime h2')?.textContent?.trim()
+            hours: doc.querySelector('.recentgame_recentplaytime h2')?.textContent?.trim(),
+            dlcCount: dlcEl ? dlcEl.querySelector('.value')?.textContent.trim().replace(/,/g, '') : "0",
+            reviewsCount: doc.querySelector('a[href*="/recommended/"] .profile_count_link_total')?.textContent?.trim().replace(/,/g, '') || "0"
         };
         
         const badgeEl = doc.querySelector('.favorite_badge');
