@@ -295,6 +295,34 @@ function setupPreferencesTabs() {
     });
 }
 
+function handleResponsiveScaling() {
+    const scaler = document.getElementById('app-scaler');
+    const content = document.getElementById('content');
+    
+    if (!scaler || !content) return;
+
+    const updateScale = () => {
+        const screenWidth = window.innerWidth * 0.9;
+        const desktopWidth = 800;
+
+        if (window.innerWidth < 850) {
+            const scaleFactor = screenWidth / desktopWidth;
+            scaler.style.transform = `scale(${scaleFactor})`;
+            
+            content.style.height = (scaler.offsetHeight * scaleFactor) + "px";
+        } else {
+            scaler.style.transform = 'none';
+            content.style.height = 'auto';
+        }
+    };
+
+    window.addEventListener('resize', updateScale);
+    const observer = new MutationObserver(updateScale);
+    observer.observe(scaler, { subtree: true, childList: true, attributes: true });
+    
+    updateScale();
+}
+
 try {
     injectIcons(); 
     preloadAssets();
@@ -304,6 +332,7 @@ try {
     setupPreferencesTabs();
     attachGlobalHeightObservers();
     loadFacebookData();
+    handleResponsiveScaling();
 } catch (e) {
     console.error("UI Initialization Error:", e);
 }
