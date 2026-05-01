@@ -91,7 +91,7 @@ function updateDiscordUI(data) {
 
     let tooltipText = "";
     if (baseStatus === 'dnd') {
-        tooltipText = `Casual conversations will not be entertained<span class='tt-desc'>Work, academic, and emergency related matters will be prioritized.</span>`;
+        tooltipText = `Casual conversations will not be entertained.<span class='tt-desc'>Work, academic, and emergency related matters will be prioritized.</span>`;
     } else if (baseStatus === 'idle') {
         tooltipText = `Notifications and updates are received.<span class='tt-desc'>Will be entertained as soon as possible.</span>`;
     } else if (baseStatus === 'online' && isMobile) {
