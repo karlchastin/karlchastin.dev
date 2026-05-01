@@ -69,6 +69,9 @@ body {
     width: 800px;
     transform-origin: top center;
     transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
 .tab-system-row {

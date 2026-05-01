@@ -309,7 +309,7 @@ function handleResponsiveScaling() {
             const scaleFactor = screenWidth / desktopWidth;
             scaler.style.transform = `scale(${scaleFactor})`;
             
-            content.style.height = (scaler.offsetHeight * scaleFactor) + "px";
+            content.style.height = (scaler.scrollHeight * scaleFactor) + "px";
         } else {
             scaler.style.transform = 'none';
             content.style.height = 'auto';
