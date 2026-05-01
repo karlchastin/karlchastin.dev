@@ -31,10 +31,11 @@ export const scrollObserver = new ResizeObserver(entries => {
 
 export const createScrollText = (text, isTitle, titleColor) => {
     if (!text) return '';
+    
     const wrapperStyle = isTitle === 1 ? `font-size:11px; font-weight:800; color:${titleColor}; text-transform:uppercase; line-height: 1; margin-bottom: 6px;`
         : (isTitle === 2 ? `font-weight:800; font-size:15px; color:#fff; line-height: 1.1; margin-bottom: 5px;` : `font-size:13px; color:#aaa; line-height: 1.15; margin-bottom: 0px;`);
     
-    return `<div class="scroll-wrapper" style="${wrapperStyle} width: 100%; min-width: 0; overflow: hidden; white-space: nowrap; position: relative;">
+    return `<div class="scroll-wrapper" style="${wrapperStyle} width: 100%; min-width: 0; overflow: visible; white-space: nowrap; position: relative;">
         <div class="scroll-inner" style="display: inline-block; white-space: nowrap;">
             <span class="main-text" style="display: inline-block; padding-right: 40px;">${text}</span><span class="dup-text" style="display: none; padding-right: 40px;">${text}</span>
         </div></div>`;
