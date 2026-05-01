@@ -172,43 +172,125 @@ function attachGlobalHeightObservers() {
 
 function setupPreferencesTabs() {
     const prefTabs = document.querySelectorAll('.pref-tab');
-    const prefContents = document.querySelectorAll('.pref-content');
+    let isPrefAnimating = false;
+    const delay = ms => new Promise(res => setTimeout(res, ms));
 
     prefTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            prefTabs.forEach(t => t.classList.remove('active'));
-            prefContents.forEach(c => c.classList.remove('active'));
+        tab.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (isPrefAnimating || tab.classList.contains('active') || window.isAppAnimating()) return;
+            isPrefAnimating = true;
+
+            const originalIsAppAnimating = window.isAppAnimating;
+            window.isAppAnimating = () => true; 
+
+            const targetId = 'pref-' + tab.dataset.pref;
+            const newContent = document.getElementById(targetId);
+            const oldContent = document.querySelector('.pref-content.active');
+            const oldTab = document.querySelector('.pref-tab.active');
+            const card = document.getElementById('card-2-container');
+
+            const currentHeight = card.offsetHeight;
+            card.style.transition = 'none';
+            card.style.height = currentHeight + 'px';
+            card.style.overflow = 'clip';
+            card.style.overflowClipMargin = '150px';
+            void card.offsetHeight;
+
+            if (oldContent) {
+                oldContent.style.transition = 'opacity 0.15s ease';
+                oldContent.style.opacity = '0';
+            }
+            await delay(150);
+
+            if (oldTab) oldTab.classList.remove('active');
+            await delay(500);
+
+            if (oldContent) {
+                oldContent.classList.remove('active');
+                oldContent.style.transition = '';
+                oldContent.style.opacity = '';
+            }
+            
+            newContent.style.opacity = '0';
+            newContent.classList.add('active');
+
+            card.style.height = 'auto';
+            card.style.overflow = 'visible';
+            const targetHeight = card.offsetHeight;
+            
+            card.style.height = currentHeight + 'px';
+            card.style.overflow = 'clip';
+            card.style.overflowClipMargin = '150px';
+            void card.offsetHeight;
 
             tab.classList.add('active');
-            const target = document.getElementById('pref-' + tab.dataset.pref);
-            if (target) {
-                target.classList.add('active');
-                const card = target.closest('.card');
-                if (card && !isTabsAnimating) {
-                    card.style.height = 'auto';
-                }
-            }
+            card.style.transition = 'height 0.65s cubic-bezier(0.25, 1, 0.5, 1), margin 0.65s cubic-bezier(0.25, 1, 0.5, 1), padding 0.65s cubic-bezier(0.25, 1, 0.5, 1)';
+            card.style.height = targetHeight + 'px';
+
+            await delay(600);
+
+            newContent.style.transition = 'opacity 0.3s ease';
+            newContent.style.opacity = '1';
+            await delay(300);
+
+            card.style.transition = '';
+            card.style.height = 'auto';
+            card.style.overflow = 'visible';
+            card.style.overflowClipMargin = '';
+            newContent.style.transition = '';
+            newContent.style.opacity = '';
+            
+            window.isAppAnimating = originalIsAppAnimating;
+            isPrefAnimating = false;
         });
     });
 
     const subPrefTabs = document.querySelectorAll('.sub-pref-tab');
-    const subPrefContents = document.querySelectorAll('.sub-pref-content');
+    let isSubPrefAnimating = false;
 
     subPrefTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const parent = tab.closest('.pref-content');
-            parent.querySelectorAll('.sub-pref-tab').forEach(t => t.classList.remove('active'));
-            parent.querySelectorAll('.sub-pref-content').forEach(c => c.classList.remove('active'));
+        tab.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (isSubPrefAnimating || tab.classList.contains('active')) return;
+            isSubPrefAnimating = true;
 
-            tab.classList.add('active');
-            const target = document.getElementById('subpref-' + tab.dataset.subpref);
-            if (target) {
-                target.classList.add('active');
-                const card = target.closest('.card');
-                if (card && !isTabsAnimating) {
-                    card.style.height = 'auto';
-                }
+            const parent = tab.closest('.pref-content');
+            const targetId = 'subpref-' + tab.dataset.subpref;
+            const newContent = document.getElementById(targetId);
+            const oldContent = parent.querySelector('.sub-pref-content.active');
+            const oldTab = parent.querySelector('.sub-pref-tab.active');
+
+            if (oldContent) {
+                oldContent.style.transition = 'opacity 0.15s ease';
+                oldContent.style.opacity = '0';
             }
+            
+            await delay(150);
+
+            if (oldTab) oldTab.classList.remove('active');
+            tab.classList.add('active');
+
+            if (oldContent) {
+                oldContent.classList.remove('active');
+                oldContent.style.transition = '';
+                oldContent.style.opacity = '';
+            }
+
+            newContent.style.opacity = '0';
+            newContent.classList.add('active');
+
+            void newContent.offsetWidth;
+
+            newContent.style.transition = 'opacity 0.25s ease';
+            newContent.style.opacity = '1';
+
+            await delay(250);
+
+            newContent.style.transition = '';
+            newContent.style.opacity = '';
+
+            isSubPrefAnimating = false;
         });
     });
 }

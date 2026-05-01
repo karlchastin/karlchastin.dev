@@ -136,7 +136,7 @@ body {
 .pref-tab:hover, .sub-pref-tab:hover { color: #fff; background: rgba(255,255,255,0.1); }
 .pref-tab.active, .sub-pref-tab.active { background: rgba(255,0,0,0.2); border-color: rgba(255,0,0,0.5); color: #fff; box-shadow: 0 0 10px rgba(255,0,0,0.2); }
 
-.pref-content, .sub-pref-content { display: none; animation: blurIn 0.3s ease forwards; }
+.pref-content, .sub-pref-content { display: none; }
 .pref-content.active, .sub-pref-content.active { display: block; }
 .pref-content.game-layout.active { display: flex; }
 

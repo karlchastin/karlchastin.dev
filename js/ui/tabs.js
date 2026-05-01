@@ -269,7 +269,7 @@ export function setupTabs() {
                 }
             });
 
-            await safeDelay(200); 
+            await safeDelay(300); 
 
             allCards.forEach(card => {
                 const finalShow = cardVisibility.get(card);

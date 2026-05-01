@@ -10,6 +10,7 @@ export function setupUIEvents() {
         img.src = src;
     });
 
+    
     const warningEl = $('email-night-warning');
     if (warningEl) {
         const now = new Date();
