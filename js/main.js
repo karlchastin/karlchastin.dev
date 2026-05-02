@@ -11,6 +11,13 @@ import { loadInstagramData } from './api/instagram.js';
 import { loadFacebookData } from './api/facebook.js';
 import { updateDBDData, updateValorantData, updateApexData, fetchOverwatchLiveStats } from './api/games.js';
 
+if (window.screen.width < 850) {
+    const viewport = document.querySelector('meta[name="viewport"]');
+    if (viewport) {
+        viewport.setAttribute('content', 'width=800');
+    }
+}
+
 function preloadAssets() {
     Object.values(profiles).forEach(p => {
         if (p.avatar) {
@@ -295,48 +302,6 @@ function setupPreferencesTabs() {
     });
 }
 
-function handleResponsiveScaling() {
-    const scaler = document.getElementById('app-scaler');
-    const content = document.getElementById('content');
-    
-    if (!scaler || !content) return;
-
-    let isScaling = false;
-
-    const updateScale = () => {
-        const screenWidth = window.innerWidth * 0.9;
-        const desktopWidth = 800;
-
-        if (window.innerWidth < 850) {
-            const scaleFactor = screenWidth / desktopWidth;
-            scaler.style.transform = `scale(${scaleFactor})`;
-            
-            content.style.height = (scaler.scrollHeight * scaleFactor) + "px";
-        } else {
-            scaler.style.transform = 'none';
-            content.style.height = 'auto';
-        }
-        
-        isScaling = false;
-    };
-
-    const requestScale = () => {
-        if (!isScaling) {
-            isScaling = true;
-            requestAnimationFrame(updateScale);
-        }
-    };
-
-    window.addEventListener('resize', requestScale);
-    
-    const observer = new ResizeObserver(requestScale);
-    document.querySelectorAll('.card').forEach(card => {
-        observer.observe(card);
-    });
-    
-    updateScale();
-}
-
 try {
     injectIcons(); 
     preloadAssets();
@@ -346,7 +311,6 @@ try {
     setupPreferencesTabs();
     attachGlobalHeightObservers();
     loadFacebookData();
-    handleResponsiveScaling();
 } catch (e) {
     console.error("UI Initialization Error:", e);
 }
