@@ -272,18 +272,25 @@ export async function updateSteamData() {
 
     fetchHtmlWithWorker(`https://steamcommunity.com/profiles/76561198810914938/`).then(htmlText => {
         const doc = new DOMParser().parseFromString(htmlText, "text/html");
-        const dlcEl = Array.from(doc.querySelectorAll('.showcase_stat')).find(el => 
-            el.querySelector('.label')?.textContent.trim().includes('DLC Owned')
-        );
+        
+        const getShowcaseStat = (labelText) => {
+            const el = Array.from(doc.querySelectorAll('.showcase_stat')).find(node => 
+                node.querySelector('.label')?.textContent.trim().toLowerCase().includes(labelText.toLowerCase())
+            );
+            return el ? el.querySelector('.value')?.textContent.trim().replace(/,/g, '') : undefined;
+        };
 
         let safeOverrides = {
             level: doc.querySelector('.friendPlayerLevelNum')?.textContent || "--",
             bio: doc.querySelector('.profile_summary')?.textContent?.trim(),
             hours: doc.querySelector('.recentgame_recentplaytime h2')?.textContent?.trim(),
-            dlcCount: dlcEl ? dlcEl.querySelector('.value')?.textContent.trim().replace(/,/g, '') : "0",
+            
+            gamesCount: getShowcaseStat('games owned'),
+            dlcCount: getShowcaseStat('dlc owned') || "0",
+            
             reviewsCount: doc.querySelector('a[href*="/recommended/"] .profile_count_link_total')?.textContent?.trim().replace(/,/g, '') || "0"
         };
-        
+
         const badgeEl = doc.querySelector('.favorite_badge');
         if (badgeEl) {
             safeOverrides.badgeSrc = badgeEl.querySelector('.favorite_badge_icon img')?.getAttribute('src');
