@@ -301,6 +301,8 @@ function handleResponsiveScaling() {
     
     if (!scaler || !content) return;
 
+    let isScaling = false;
+
     const updateScale = () => {
         const screenWidth = window.innerWidth * 0.9;
         const desktopWidth = 800;
@@ -314,11 +316,23 @@ function handleResponsiveScaling() {
             scaler.style.transform = 'none';
             content.style.height = 'auto';
         }
+        
+        isScaling = false;
     };
 
-    window.addEventListener('resize', updateScale);
-    const observer = new MutationObserver(updateScale);
-    observer.observe(scaler, { subtree: true, childList: true, attributes: true });
+    const requestScale = () => {
+        if (!isScaling) {
+            isScaling = true;
+            requestAnimationFrame(updateScale);
+        }
+    };
+
+    window.addEventListener('resize', requestScale);
+    
+    const observer = new ResizeObserver(requestScale);
+    document.querySelectorAll('.card').forEach(card => {
+        observer.observe(card);
+    });
     
     updateScale();
 }
