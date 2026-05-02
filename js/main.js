@@ -11,13 +11,6 @@ import { loadInstagramData } from './api/instagram.js';
 import { loadFacebookData } from './api/facebook.js';
 import { updateDBDData, updateValorantData, updateApexData, fetchOverwatchLiveStats } from './api/games.js';
 
-if (window.screen.width < 850) {
-    const viewport = document.querySelector('meta[name="viewport"]');
-    if (viewport) {
-        viewport.setAttribute('content', 'width=800');
-    }
-}
-
 function preloadAssets() {
     Object.values(profiles).forEach(p => {
         if (p.avatar) {

@@ -57,12 +57,16 @@ body {
 .tab.show-text .tab-text { max-width: 150px; opacity: 1; margin-left: 8px; }
 
 #content {
-    width: 90vw;
-    max-width: 800px;
-    margin: 80px auto;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    gap: 15px;
+    width: 90vw;
+    max-width: 800px;
+    z-index: 10;
+    margin: 80px auto;
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 1s ease, transform 1s ease;
 }
 
 #content.hidden { display: none; }
