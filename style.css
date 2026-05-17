@@ -252,13 +252,16 @@ a.stat-box:hover { transform: scale(1.05); }
 .steam-status.online::before { background: #57cbde; box-shadow: 0 0 8px #57cbde; }
 .steam-status.in-game { color: #90ba3c; border-color: rgba(144, 186, 60, 0.3); background: rgba(144, 186, 60, 0.1); }
 .steam-status.in-game::before { background: #90ba3c; box-shadow: 0 0 8px #90ba3c; }
-.steam-status.discord-online { color: #23a559; border-color: rgba(35, 165, 89, 0.3); background: rgba(35, 165, 89, 0.1); }
-.steam-status.discord-online::before { background: #23a559; box-shadow: 0 0 8px #23a559; }
-.steam-status.discord-idle { color: #f0b232; border-color: rgba(240, 178, 50, 0.3); background: rgba(240, 178, 50, 0.1); }
-.steam-status.discord-idle::before { background: #f0b232; box-shadow: 0 0 8px #f0b232; }
-.steam-status.discord-dnd { color: #f23f43; border-color: rgba(242, 63, 67, 0.3); background: rgba(242, 63, 67, 0.1); }
-.steam-status.discord-dnd::before { background: #f23f43; box-shadow: 0 0 8px #f23f43; }
-.steam-status.mobile-status::before { display: none !important; }
+.discord-status-row { margin-bottom: 15px; }
+.discord-status { font-size: 13px; font-weight: 800; display: inline-flex; align-items: center; gap: 8px; color: #aaa; padding: 6px 14px; border-radius: 20px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); text-transform: uppercase; letter-spacing: 0.5px; }
+.discord-status::before { content: ''; display: block; width: 10px; height: 10px; border-radius: 50%; background: #898989; box-shadow: 0 0 8px #898989; }
+.discord-status.online { color: #23a559; border-color: rgba(35, 165, 89, 0.3); background: rgba(35, 165, 89, 0.1); }
+.discord-status.online::before { background: #23a559; box-shadow: 0 0 8px #23a559; }
+.discord-status.idle { color: #f0b232; border-color: rgba(240, 178, 50, 0.3); background: rgba(240, 178, 50, 0.1); }
+.discord-status.idle::before { background: #f0b232; box-shadow: 0 0 8px #f0b232; }
+.discord-status.dnd { color: #f23f43; border-color: rgba(242, 63, 67, 0.3); background: rgba(242, 63, 67, 0.1); }
+.discord-status.dnd::before { background: #f23f43; box-shadow: 0 0 8px #f23f43; }
+.discord-status.mobile-status::before { display: none !important; }
 
 .lvl-circle { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; font-weight: 800; font-size: 16px; border: 2px solid #9b9b9b; color: #9b9b9b; background: rgba(0,0,0,0.4); box-shadow: 0 0 10px rgba(155, 155, 155, 0.2); }
 .lvl-0 { border-color: #9b9b9b; color: #9b9b9b; box-shadow: 0 0 10px rgba(155, 155, 155, 0.3); }

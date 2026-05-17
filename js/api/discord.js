@@ -125,7 +125,7 @@ function updateDiscordUI(data) {
         rowEl.style.alignItems = 'center'; rowEl.style.gap = '8px'; 
         
         statusEl.innerHTML = overrideCircle ? `${iconHTML}<span>${statusText}</span>` : `<span>${statusText}</span>`;
-        statusEl.className = `steam-status discord-${baseStatus} ${overrideCircle ? 'mobile-status' : ''}`;
+        statusEl.className = `discord-status ${baseStatus} ${overrideCircle ? 'mobile-status' : ''}`;
 
         const oldQm = rowEl.querySelector('.status-tooltip-icon');
         if (questionMarkHTML) {
