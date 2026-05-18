@@ -23,7 +23,7 @@
 html { 
     -ms-overflow-style: none; 
     scrollbar-width: none; 
-    scroll-behavior: smooth; /* Adds buttery smooth scrolling for anchor links */
+    scroll-behavior: smooth;
 }
 
 body { 
@@ -52,9 +52,9 @@ body::after {
     background-image: url('./assets/Animated%20Background.gif'); 
     background-size: cover;
     background-position: center;
-    z-index: -2; /* Keeps it at the absolute back, behind your Deafen dimmer! */
+    z-index: -2;
     pointer-events: none;
-    will-change: transform; /* Forces GPU acceleration */
+    will-change: transform;
 }
 
 /* =========================================

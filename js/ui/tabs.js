@@ -115,6 +115,7 @@ export function setupTabs() {
             e.preventDefault();
             if(isAnimating || link.classList.contains('active')) return;
             isAnimating = true;
+            window.isTabsAnimating = true;
 
             const oldTab = document.querySelector('.tab.active');
             if (oldTab) oldTab.classList.remove('show-text');
@@ -221,6 +222,8 @@ export function setupTabs() {
                     card.style.margin = '';
                     card.style.padding = '';
                     card.style.borderWidth = '';
+                    card.style.opacity = '';
+                    card.style.transform = '';
                     
                     card.style.height = 'auto';
                     card.style.overflow = 'visible'; 
@@ -313,6 +316,7 @@ export function setupTabs() {
             stopSyncing();
             syncBackgrounds(currentIndex); 
             isAnimating = false;
+            window.isTabsAnimating = false;
         });
     });
 
