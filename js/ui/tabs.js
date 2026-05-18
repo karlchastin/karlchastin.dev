@@ -168,6 +168,7 @@ export function setupTabs() {
             if (glassRight) glassRight.classList.remove('sliding');
             
             const tabName = link.getAttribute('data-tab');
+            window.history.pushState(null, null, `#${tabName}`);
             const newLayout = profiles[tabName]?.layout || profiles.home.layout;
             const targetCards = newLayout.showCards || [];
 
@@ -314,4 +315,20 @@ export function setupTabs() {
             isAnimating = false;
         });
     });
+
+    window.addEventListener('popstate', () => {
+        const hash = window.location.hash.substring(1) || 'home'; 
+        const targetTab = document.querySelector(`.tab[data-tab="${hash}"]`);
+        if (targetTab && !targetTab.classList.contains('active')) {
+            targetTab.click(); 
+        }
+    });
+
+    setTimeout(() => {
+        const initialHash = window.location.hash.substring(1);
+        if (initialHash && initialHash !== 'home') {
+            const targetTab = document.querySelector(`.tab[data-tab="${initialHash}"]`);
+            if (targetTab) targetTab.click();
+        }
+    }, 500);
 }

@@ -579,3 +579,11 @@ setInterval(() => {
     if (activeLayout.showGithubStats) updateGitHubData();
     if (activeLayout.showSteamExtra) updateSteamData();
 }, 60000);
+
+const initialHash = window.location.hash.substring(1);
+if (initialHash) {
+    const targetTab = document.querySelector(`.tab[data-tab="${initialHash}"]`);
+    if (targetTab) {
+        targetTab.click();
+    }
+}
