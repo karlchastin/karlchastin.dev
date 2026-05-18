@@ -66,14 +66,14 @@ export function setupUIEvents() {
 
     const tooltipEl = $('custom-tooltip');
     if(tooltipEl) {
+        tooltipEl.style.left = '0px';
+        tooltipEl.style.top = '0px';
+
         document.addEventListener('mousemove', (e) => {
             const target = e.target.closest('[data-tooltip]');
             if (target) {
                 tooltipEl.innerHTML = target.getAttribute('data-tooltip'); 
                 tooltipEl.classList.add('show');
-                
-                tooltipEl.style.left = '0px';
-                tooltipEl.style.top = '0px';
                 
                 let x = e.clientX + 15;
                 let y = e.clientY + 15;
@@ -83,8 +83,7 @@ export function setupUIEvents() {
                 if (x + tooltipRect.width > window.innerWidth - 10) x = e.clientX - tooltipRect.width - 15;
                 if (y + tooltipRect.height > window.innerHeight - 10) y = e.clientY - tooltipRect.height - 15;
                 
-                tooltipEl.style.left = `${x}px`;
-                tooltipEl.style.top = `${y}px`;
+                tooltipEl.style.transform = `translate(${x}px, ${y}px)`;
             } else {
                 tooltipEl.classList.remove('show');
             }
@@ -140,13 +139,11 @@ export function setupUIEvents() {
             if(durationEl && !isNaN(bgAudio.duration)) durationEl.textContent = formatTime(bgAudio.duration); 
         };
         
-        if (bgAudio.readyState >= 1) {
-            updateDuration();
-        }
-        
+        if (bgAudio.readyState >= 1) updateDuration();
         bgAudio.addEventListener('loadedmetadata', updateDuration);
         
         let audioFrame;
+        let currentLyricIndex = 0;
 
         bgAudio.addEventListener('timeupdate', () => {
             cancelAnimationFrame(audioFrame);
@@ -156,7 +153,17 @@ export function setupUIEvents() {
 
                 const activeTab = document.querySelector('.tab.active')?.getAttribute('data-tab');
                 if (activeTab === 'home') {
-                    const currentLyric = GREEDY_LYRICS.filter(l => l.time <= bgAudio.currentTime).pop();
+                    
+                    while (currentLyricIndex < GREEDY_LYRICS.length - 1 && bgAudio.currentTime >= GREEDY_LYRICS[currentLyricIndex + 1].time) {
+                        currentLyricIndex++;
+                    }
+
+                    while (currentLyricIndex > 0 && bgAudio.currentTime < GREEDY_LYRICS[currentLyricIndex].time) {
+                        currentLyricIndex--;
+                    }
+
+                    const currentLyric = GREEDY_LYRICS[currentLyricIndex];
+                    
                     if (currentLyric) {
                         const bioEl = $('profile-bio');
                         if (bioEl && bioEl.dataset.targetTime !== currentLyric.time.toString()) {

@@ -400,6 +400,10 @@ if (enterBtn) {
         enterBtn.style.pointerEvents = 'none';
         enterBtn.disabled = true;
 
+        if (bgAudio) bgAudio.load();
+        const sfxAudio = document.getElementById('sfx-audio');
+        if (sfxAudio) sfxAudio.load();
+
         if (bgAudio && !window.audioCtx) {
             try {
                 window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
