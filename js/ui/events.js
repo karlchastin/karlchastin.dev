@@ -181,4 +181,55 @@ export function setupUIEvents() {
             });
         });
     }
+
+    const deafenBtn = $('deafen-btn');
+    let isDeafened = false;
+    let volumeTween;
+
+    if (deafenBtn) {
+        deafenBtn.addEventListener('click', () => {
+            if (!bgAudio || !window.audioCtx || !window.lowpassFilter) return;
+
+            isDeafened = !isDeafened;
+            deafenBtn.classList.toggle('is-deafened', isDeafened);
+            document.body.classList.toggle('is-deafened', isDeafened); 
+            
+            const newTooltipText = isDeafened ? "Undeafen" : "Deafen";
+            deafenBtn.setAttribute('data-tooltip', newTooltipText);
+            
+            if (tooltipEl && tooltipEl.classList.contains('show')) {
+                tooltipEl.innerHTML = newTooltipText;
+            }
+
+            const targetFreq = isDeafened ? 150 : 24000;
+            window.lowpassFilter.frequency.cancelScheduledValues(window.audioCtx.currentTime);
+            window.lowpassFilter.frequency.setValueAtTime(window.lowpassFilter.frequency.value, window.audioCtx.currentTime);
+            window.lowpassFilter.frequency.exponentialRampToValueAtTime(targetFreq, window.audioCtx.currentTime + 0.8);
+            
+            const startVol = bgAudio.volume;
+            const targetVol = isDeafened ? 1.5 : 0.45; 
+            
+            const duration = 800;
+            const startTime = performance.now();
+
+            cancelAnimationFrame(volumeTween);
+
+            function animateVolume(time) {
+                const elapsed = time - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const ease = progress < 0.5 
+                    ? 2 * progress * progress 
+                    : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+                
+                bgAudio.volume = startVol + (targetVol - startVol) * ease;
+                
+                if (progress < 1) {
+                    volumeTween = requestAnimationFrame(animateVolume);
+                }
+            }
+            
+            volumeTween = requestAnimationFrame(animateVolume);
+        });
+    }
 }

@@ -1592,3 +1592,54 @@ a.stat-box:hover {
                 transform 0.65s cubic-bezier(0.25, 1, 0.5, 1), 
                 height 0.65s cubic-bezier(0.25, 1, 0.5, 1) !important;
 }
+
+/* =========================================
+   23. DEAFEN BUTTON
+   ========================================= */
+.deafen-btn {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #fff;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    flex-shrink: 0;
+}
+
+.deafen-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 0, 0, 0.5);
+    color: var(--primary);
+    transform: scale(1.08);
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.2);
+}
+
+.deafen-btn .icon-deafened { display: none; }
+.deafen-btn.is-deafened .icon-normal { display: none; }
+.deafen-btn.is-deafened .icon-deafened { display: block; color: var(--primary); }
+
+/* =========================================
+   24. DEAFEN BACKGROUND DIMMER
+   ========================================= */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.60);
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+}
+
+body.is-deafened::before {
+    opacity: 1;
+}
