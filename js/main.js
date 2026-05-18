@@ -134,7 +134,26 @@ function refreshDynamicCard(cardId, targetTab, isActiveGetter) {
     const isVisible = window.getComputedStyle(card).display !== 'none' && !card.classList.contains('hide-card');
     if (show === isVisible) return; 
 
-    if ((typeof isGlobalEntrance !== 'undefined' && isGlobalEntrance) || (typeof window.isTabsAnimating !== 'undefined' && window.isTabsAnimating)) {
+    if (typeof isGlobalEntrance !== 'undefined' && isGlobalEntrance) {
+        if (show) {
+            card.style.opacity = '';
+            card.style.margin = '';
+            card.style.padding = '';
+            card.style.borderWidth = '';
+            card.style.transform = '';
+            
+            card.style.display = 'block';
+            card.classList.remove('hide-card');
+            card.classList.add('staged-for-drop');
+            card.style.height = 'auto';
+        } else {
+            card.style.display = 'none';
+            card.classList.add('hide-card');
+        }
+        return;
+    }
+
+    if (typeof window.isTabsAnimating !== 'undefined' && window.isTabsAnimating) {
         setTimeout(() => refreshDynamicCard(cardId, targetTab, isActiveGetter), 100);
         return;
     }
