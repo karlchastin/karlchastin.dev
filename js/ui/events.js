@@ -1,6 +1,6 @@
 import { $, $$ } from '../utils/dom.js';
 import { formatTime } from '../utils/core.js';
-import { profiles, emailAvatars, emailBios, FATAL_LYRICS } from '../config.js';
+import { profiles, emailAvatars, emailBios, GREEDY_LYRICS } from '../config.js';
 import { startSyncing, stopSyncing, syncBackgrounds } from './animations.js';
 import { isAnimating, currentIndex } from './tabs.js';
 
@@ -156,12 +156,11 @@ export function setupUIEvents() {
 
                 const activeTab = document.querySelector('.tab.active')?.getAttribute('data-tab');
                 if (activeTab === 'home') {
-                    const currentLyric = FATAL_LYRICS.filter(l => l.time <= bgAudio.currentTime).pop();
+                    const currentLyric = GREEDY_LYRICS.filter(l => l.time <= bgAudio.currentTime).pop();
                     if (currentLyric) {
                         const bioEl = $('profile-bio');
-                        
-                        if (bioEl && bioEl.dataset.targetLyric !== currentLyric.text) {
-                            bioEl.dataset.targetLyric = currentLyric.text; 
+                        if (bioEl && bioEl.dataset.targetTime !== currentLyric.time.toString()) {
+                            bioEl.dataset.targetTime = currentLyric.time.toString(); 
                             
                             bioEl.style.opacity = '0';
                             

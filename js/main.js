@@ -313,37 +313,17 @@ const enterOverlay = document.getElementById('enter-overlay');
 const mainContent = document.getElementById('content');
 const bgAudio = document.getElementById('bg-audio');
 
-let audioCtx, sourceNode, biquadFilter;
-
 if (enterBtn) {
     enterBtn.addEventListener('click', () => {
-        
-        if (bgAudio && !audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            sourceNode = audioCtx.createMediaElementSource(bgAudio);
-            biquadFilter = audioCtx.createBiquadFilter();
-
-            biquadFilter.type = "lowpass";
-            biquadFilter.frequency.value = 300; 
-
-            sourceNode.connect(biquadFilter);
-            biquadFilter.connect(audioCtx.destination);
-        }
-        
-        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
         enterBtn.style.opacity = '0';
 
         setTimeout(() => {
             if (bgAudio) { 
                 bgAudio.volume = 0.45; 
-                bgAudio.currentTime = 13.035;
+                bgAudio.currentTime = 0;
                 bgAudio.play().catch(() => {}); 
-                
-                if (audioCtx && biquadFilter) {
-                    biquadFilter.frequency.setValueAtTime(300, audioCtx.currentTime);
-                    biquadFilter.frequency.exponentialRampToValueAtTime(1800, audioCtx.currentTime + 6.35);
-                }
             }
+
             const sfxAudio = document.getElementById('sfx-audio');
             if (sfxAudio) { 
                 sfxAudio.volume = 0.6; 
@@ -368,19 +348,13 @@ if (enterBtn) {
 
             if (enterOverlay) {
                 enterOverlay.style.pointerEvents = 'none'; 
-                enterOverlay.style.transition = 'opacity 6s ease-in-out'; 
+                enterOverlay.style.transition = 'opacity 5s ease-in-out'; 
                 void enterOverlay.offsetWidth;
                 enterOverlay.style.opacity = '0';
             }
         }, 150);
         
         setTimeout(() => { 
-            if (audioCtx && biquadFilter) {
-                biquadFilter.frequency.cancelScheduledValues(audioCtx.currentTime);
-                biquadFilter.frequency.setValueAtTime(1800, audioCtx.currentTime);
-                biquadFilter.frequency.exponentialRampToValueAtTime(22050, audioCtx.currentTime + 0.5);
-            }
-
             if (enterOverlay) enterOverlay.style.display = 'none';
             
             if (mainContent) {
@@ -427,7 +401,7 @@ if (enterBtn) {
                 isGlobalEntrance = false;
             }
             syncBackgrounds(0); 
-        }, 6500); 
+        }, 4500);
     });
 } else {
     isGlobalEntrance = false;
