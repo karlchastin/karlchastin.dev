@@ -35,42 +35,95 @@ export function syncBackgrounds(currentIndex = 0) {
     const activeTab = tabs[currentIndex];
     if (!activeTab) return;
     
-    const P_ACT = 18, P_UNSEL_OUTER = 18, P_UNSEL_INNER = 18; 
+    const P_ACT = 18, P_UNSEL = 18, GAP = 10; 
+    const firstTab = tabs[0];
+    const lastTab = tabs[tabs.length - 1];
+    
     const activeLeft = activeTab.offsetLeft;
     const activeWidth = activeTab.offsetWidth;
-    const firstTab = tabs[0];
-    const firstLeft = firstTab.offsetLeft;
+    const activeRight = activeLeft + activeWidth;
     
-    const newActiveLeft = `${activeLeft - P_ACT}px`;
-    const newActiveWidth = `${activeWidth + (P_ACT * 2)}px`;
+    let gLeft = activeLeft - P_ACT;
+    let gRight = activeRight + P_ACT;
 
-    if (glassActive && glassActive.style.left !== newActiveLeft) glassActive.style.left = newActiveLeft;
-    if (glassActive && glassActive.style.width !== newActiveWidth) glassActive.style.width = newActiveWidth;
+    const shifts = new Array(tabs.length).fill(0);
+    let activeShift = 0;
+
+    if (currentIndex === 1) {
+        const requiredLRight = firstTab.offsetLeft + firstTab.offsetWidth + P_UNSEL;
+        const idealLRight = gLeft - GAP;
+        if (idealLRight < requiredLRight) {
+            activeShift = requiredLRight - idealLRight;
+        }
+    }
+
+    if (currentIndex === tabs.length - 2) {
+        const requiredRLeft = lastTab.offsetLeft - P_UNSEL;
+        const idealRLeft = gRight + activeShift + GAP; 
+        if (idealRLeft > requiredRLeft) {
+            activeShift = requiredRLeft - (gRight + GAP);
+        }
+    }
+
+    gLeft += activeShift;
+    gRight += activeShift;
+    shifts[currentIndex] = activeShift;
 
     if (glassLeft) {
         if (currentIndex === 0) {
-            if (glassLeft.style.opacity !== '0') glassLeft.style.opacity = '0';
+            glassLeft.style.opacity = '0';
         } else {
+            const idealLPanelRight = gLeft - GAP;
             const lastLeftTab = tabs[currentIndex - 1];
-            const newLeftWidth = `${(lastLeftTab.offsetLeft + lastLeftTab.offsetWidth + P_UNSEL_INNER) - (firstLeft - P_UNSEL_OUTER)}px`;
-            const newLeftLeft = `${firstLeft - P_UNSEL_OUTER}px`;
-            if (glassLeft.style.opacity !== '1') glassLeft.style.opacity = '1';
-            if (glassLeft.style.left !== newLeftLeft) glassLeft.style.left = newLeftLeft;
-            if (glassLeft.style.width !== newLeftWidth) glassLeft.style.width = newLeftWidth;
+            const requiredMinRightEdge = lastLeftTab.offsetLeft + lastLeftTab.offsetWidth + P_UNSEL;
+
+            if (idealLPanelRight < requiredMinRightEdge && currentIndex > 1) {
+                const requiredSquish = requiredMinRightEdge - idealLPanelRight;
+                for (let i = 1; i < currentIndex; i++) {
+                    const ratio = i / (currentIndex - 1);
+                    shifts[i] = -requiredSquish * ratio;
+                }
+            }
+
+            const lPanelLeft = firstTab.offsetLeft - P_UNSEL; 
+            glassLeft.style.opacity = '1';
+            glassLeft.style.left = `${lPanelLeft}px`;
+            glassLeft.style.width = `${idealLPanelRight - lPanelLeft}px`;
         }
     }
 
     if (glassRight) {
         if (currentIndex === 0 && tabs.length === 1 || currentIndex === tabs.length - 1) {
-            if (glassRight.style.opacity !== '0') glassRight.style.opacity = '0';
+            glassRight.style.opacity = '0';
         } else {
+            const idealRPanelLeft = gRight + GAP;
             const firstRightTab = tabs[currentIndex + 1];
-            const lastTab = tabs[tabs.length - 1];
-            const newRightWidth = `${(lastTab.offsetLeft + lastTab.offsetWidth + P_UNSEL_OUTER) - (firstRightTab.offsetLeft - P_UNSEL_INNER)}px`;
-            const newRightLeft = `${firstRightTab.offsetLeft - P_UNSEL_INNER}px`;
-            if (glassRight.style.opacity !== '1') glassRight.style.opacity = '1';
-            if (glassRight.style.left !== newRightLeft) glassRight.style.left = newRightLeft;
-            if (glassRight.style.width !== newRightWidth) glassRight.style.width = newRightWidth;
+            const requiredMaxLeftEdge = firstRightTab.offsetLeft - P_UNSEL;
+
+            if (idealRPanelLeft > requiredMaxLeftEdge && currentIndex < tabs.length - 2) {
+                const requiredSquish = idealRPanelLeft - requiredMaxLeftEdge;
+                const numRightTabs = (tabs.length - 1) - currentIndex;
+                for (let i = currentIndex + 1; i < tabs.length - 1; i++) {
+                    const rightIndex = i - (currentIndex + 1); 
+                    const ratio = 1 - (rightIndex / (numRightTabs - 1));
+                    shifts[i] = requiredSquish * ratio;
+                }
+            }
+
+            const rPanelRight = lastTab.offsetLeft + lastTab.offsetWidth + P_UNSEL; 
+            glassRight.style.opacity = '1';
+            glassRight.style.left = `${idealRPanelLeft}px`;
+            glassRight.style.width = `${rPanelRight - idealRPanelLeft}px`;
         }
     }
+
+    if (glassActive) {
+        glassActive.style.left = `${gLeft}px`;
+        glassActive.style.width = `${gRight - gLeft}px`;
+    }
+
+    tabs.forEach((t, i) => {
+        t.style.transition = 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)'; 
+        t.style.translate = `${shifts[i]}px 0px`;
+    });
 }

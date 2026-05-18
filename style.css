@@ -44,9 +44,33 @@ body {
 .tabs-scroll-window { width: 100%; height: 100%; overflow: visible; }
 .tabs-track { position: relative; display: flex; align-items: center; justify-content: space-between; height: 64px; width: 100%; padding: 0 18px 0 30px; }
 
-.glass-panel { position: absolute; top: 0; height: 64px; background: var(--panel-bg); border: 5px solid var(--panel-border); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-radius: 25px; z-index: 1; pointer-events: none; opacity: 0; transition: opacity 0.15s ease; will-change: transform, opacity, height, width, left; }
-.glass-panel.sliding { transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1), width 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s ease; }
-.active-panel { background: rgba(17, 17, 17, 0.6); border: 2px solid var(--primary-glow); box-shadow: 0 0 15px rgba(255, 0, 0, 0.2); z-index: 2; opacity: 1;}
+.glass-panel { 
+    position: absolute; 
+    top: 0; 
+    height: 64px; 
+    background: var(--panel-bg); 
+    border: 5px solid var(--panel-border); 
+    backdrop-filter: blur(25px); 
+    -webkit-backdrop-filter: blur(25px); 
+    border-radius: 25px; 
+    z-index: 1; 
+    pointer-events: none; 
+    opacity: 0; 
+    transition: opacity 0.15s ease; 
+    will-change: transform, opacity, height, width, left; 
+}
+
+.glass-panel.sliding { 
+    transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1), width 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s ease; 
+}
+
+.active-panel { 
+    background: rgba(17, 17, 17, 0.6); 
+    border: 2px solid var(--primary-glow); 
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.2); 
+    z-index: 2; 
+    opacity: 1;
+}
 
 .tab { position: relative; z-index: 3; height: 64px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
 .tab svg { width: 26px; height: 26px; flex-shrink: 0; display: block; color: var(--primary); filter: drop-shadow(0 0 8px rgba(255, 0, 0, 0.8)); transition: all 0.2s ease; }

@@ -88,10 +88,28 @@ export function setupTabs() {
     let resizeTimer;
     window.addEventListener('resize', () => {
         clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => requestAnimationFrame(() => syncBackgrounds(currentIndex)), 50); 
+        resizeTimer = setTimeout(() => requestAnimationFrame(() => syncBackgrounds(currentIndex, false)), 50); 
     });
 
     const tabs = document.querySelectorAll('.tab');
+
+    if (window.ResizeObserver) {
+        let roTimer = null;
+        const track = document.querySelector('.tabs-track');
+        const observer = new ResizeObserver(() => {
+            if (!isAnimating) {
+                requestAnimationFrame(() => syncBackgrounds(currentIndex, true));
+                
+                clearTimeout(roTimer);
+                roTimer = setTimeout(() => {
+                    if (!isAnimating) requestAnimationFrame(() => syncBackgrounds(currentIndex, false));
+                }, 50);
+            }
+        });
+        
+        if (track) observer.observe(track);
+        tabs.forEach(t => observer.observe(t));
+    }
     tabs.forEach((link, idx) => {
         link.addEventListener('click', async (e) => {
             e.preventDefault();
@@ -118,7 +136,10 @@ export function setupTabs() {
             
             const avatarImg = document.getElementById('avatar-img');
             const locContainer = document.getElementById('location-container');
-            if (avatarImg) avatarImg.style.opacity = '0';
+            if (avatarImg) {
+                avatarImg.parentElement.style.transition = 'opacity 0.25s ease';
+                avatarImg.parentElement.style.opacity = '0';
+            }
             if (locContainer) locContainer.style.opacity = '0';
             
             document.querySelectorAll('.transition-container').forEach(c => c.classList.add('fade-out'));
@@ -256,7 +277,7 @@ export function setupTabs() {
             await safeDelay(600); 
 
             link.classList.add('show-text');
-            if (avatarImg) avatarImg.style.opacity = '1';
+            if (avatarImg) avatarImg.parentElement.style.opacity = '1';
             if (locContainer) locContainer.style.opacity = '1';
             
             const dynamicInfo = document.getElementById('dynamic-info');
