@@ -20,22 +20,14 @@
     box-sizing: border-box; 
 }
 
-html, 
-body { 
+html { 
     -ms-overflow-style: none; 
     scrollbar-width: none; 
-}
-
-::-webkit-scrollbar { 
-    display: none; 
+    scroll-behavior: smooth; /* Adds buttery smooth scrolling for anchor links */
 }
 
 body { 
     background-color: #000; 
-    background-image: url('./assets/Animated%20Background.gif'); 
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
     color: #fff; 
     font-family: 'Satoshi', sans-serif; 
     overflow-y: auto; 
@@ -44,6 +36,25 @@ body {
     display: flex; 
     justify-content: center; 
     align-items: flex-start; 
+}
+
+::-webkit-scrollbar { 
+    display: none; 
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-image: url('./assets/Animated%20Background.gif'); 
+    background-size: cover;
+    background-position: center;
+    z-index: -2; /* Keeps it at the absolute back, behind your Deafen dimmer! */
+    pointer-events: none;
+    will-change: transform; /* Forces GPU acceleration */
 }
 
 /* =========================================
