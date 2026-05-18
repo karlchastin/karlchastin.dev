@@ -125,22 +125,27 @@ window.isAppAnimating = () => isTabsAnimating;
 function refreshDynamicCard(cardId, targetTab, isActiveGetter) {
     const card = document.getElementById(cardId);
     if (!card) return;
-    
-    const activeTabNode = document.querySelector('.tab.active');
-    const activeTab = activeTabNode ? activeTabNode.getAttribute('data-tab') : 'home';
-    
+    const activeTab = document.querySelector('.tab.active')?.getAttribute('data-tab');
     if (activeTab !== targetTab) return;
 
     const show = !!isActiveGetter();
     const isVisible = window.getComputedStyle(card).display !== 'none' && !card.classList.contains('hide-card');
     if (show === isVisible) return; 
 
-    if ((typeof isGlobalEntrance !== 'undefined' && isGlobalEntrance) || (typeof isTabsAnimating !== 'undefined' && isTabsAnimating)) {
-        setTimeout(() => refreshDynamicCard(cardId, targetTab, isActiveGetter), 100);
+    if (isGlobalEntrance || window.isAppAnimating()) {
+        if (show) {
+            card.style.transition = 'none';
+            card.style.display = 'block';
+            card.classList.remove('hide-card');
+            card.style.height = 'auto';
+        } else {
+            card.style.transition = 'none';
+            card.style.display = 'none';
+            card.classList.add('hide-card');
+            card.style.height = '0px';
+        }
         return;
     }
-
-    const smoothTransition = 'height 0.65s cubic-bezier(0.25, 1, 0.5, 1), margin 0.65s cubic-bezier(0.25, 1, 0.5, 1), padding 0.65s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease';
 
     if (show) {
         card.style.transition = 'none';
@@ -157,9 +162,9 @@ function refreshDynamicCard(cardId, targetTab, isActiveGetter) {
         card.style.height = '0px';
         card.style.overflow = 'clip';
         card.style.overflowClipMargin = '150px';
-        void card.offsetHeight;
+        void card.offsetHeight; 
         
-        card.style.transition = smoothTransition; 
+        card.style.transition = ''; 
         card.classList.remove('hide-card');
         card.style.height = targetHeight + 'px';
         
@@ -169,7 +174,7 @@ function refreshDynamicCard(cardId, targetTab, isActiveGetter) {
                 card.style.overflow = 'visible';
                 card.style.overflowClipMargin = '';
             }
-        }, 650);
+        }, 450);
     } else {
         const currentHeight = card.offsetHeight;
         card.style.height = currentHeight + 'px';
@@ -177,9 +182,9 @@ function refreshDynamicCard(cardId, targetTab, isActiveGetter) {
         card.style.overflowClipMargin = '150px';
         card.style.transition = 'none';
         
-        void card.offsetHeight;
+        void card.offsetHeight; 
         
-        card.style.transition = smoothTransition;
+        card.style.transition = '';
         card.classList.add('hide-card');
         card.style.height = '0px';
         
@@ -188,7 +193,7 @@ function refreshDynamicCard(cardId, targetTab, isActiveGetter) {
                 card.style.display = 'none';
                 card.classList.remove('hide-card');
             }
-        }, 650);
+        }, 450);
     }
 }
 
