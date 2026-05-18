@@ -12,14 +12,90 @@ import { loadFacebookData } from './api/facebook.js';
 import { updateDBDData, updateValorantData, updateApexData, fetchOverwatchLiveStats } from './api/games.js';
 
 function preloadAssets() {
-    Object.values(profiles).forEach(p => {
-        if (p.avatar) {
-            const img = new Image();
-            img.src = p.avatar;
+    const loadingScreen = document.getElementById('loading-screen');
+    const loadingPct = document.getElementById('loading-percentage');
+    const loadingBarFill = document.getElementById('loading-bar-fill'); 
+    const enterOverlay = document.getElementById('enter-overlay');
+    
+    if (!loadingScreen || !loadingPct) return;
+
+    let currentVal = 0;
+    let targetVal = 0;
+    let lastRenderedVal = -1;
+    let isLoaded = false;
+
+    const assetsToLoad = [];
+    Object.values(profiles).forEach(p => { if (p.avatar) assetsToLoad.push(p.avatar); });
+    assetsToLoad.push("https://ghchart.rshah.org/ff0000/karlchastin");
+    document.querySelectorAll('img').forEach(img => { if (img.src) assetsToLoad.push(img.src); });
+
+    const uniqueAssets = [...new Set(assetsToLoad)];
+    let loadedAssets = 0;
+
+    const updateTarget = () => {
+        if (uniqueAssets.length > 0) {
+            targetVal = Math.floor((loadedAssets / uniqueAssets.length) * 90);
         }
+    };
+
+    uniqueAssets.forEach(src => {
+        const img = new Image();
+        img.onload = img.onerror = () => {
+            loadedAssets++;
+            updateTarget();
+        };
+        img.src = src;
     });
-    const ghChart = new Image();
-    ghChart.src = "https://ghchart.rshah.org/ff0000/karlchastin";
+
+    const finishLoading = () => {
+        isLoaded = true;
+        targetVal = 100;
+    };
+
+    if (document.readyState === 'complete') {
+        finishLoading();
+    } else {
+        window.addEventListener('load', finishLoading);
+        setTimeout(finishLoading, 8000); 
+    }
+
+    const animateLoading = () => {
+        const diff = targetVal - currentVal;
+        
+        if (diff > 0) {
+            currentVal += Math.ceil(diff * 0.15); 
+        }
+
+        if (currentVal > 100) currentVal = 100;
+        
+        if (currentVal !== lastRenderedVal) {
+            loadingPct.textContent = `${currentVal}%`;
+            if (loadingBarFill) loadingBarFill.style.width = `${currentVal}%`;
+            lastRenderedVal = currentVal;
+        }
+
+        if (currentVal === 100 && isLoaded) {
+            setTimeout(() => {
+                
+                loadingScreen.style.opacity = '0';
+                loadingScreen.style.filter = 'blur(15px)';
+                
+                setTimeout(() => {
+                    loadingScreen.remove(); 
+                    
+                    if (enterOverlay) {
+                        enterOverlay.style.opacity = '1';
+                        enterOverlay.style.filter = 'blur(0px)';
+                    }
+                }, 800);
+
+            }, 400); 
+        } else {
+            requestAnimationFrame(animateLoading);
+        }
+    };
+
+    requestAnimationFrame(animateLoading);
 }
 
 let isGlobalEntrance = true; 
@@ -313,9 +389,60 @@ const enterOverlay = document.getElementById('enter-overlay');
 const mainContent = document.getElementById('content');
 const bgAudio = document.getElementById('bg-audio');
 
+if (!document.getElementById('entrance-styles')) {
+    const style = document.createElement('style');
+    style.id = 'entrance-styles';
+    style.textContent = `
+        .staged-for-drop {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        .staged-for-drop.card {
+            transform: scale(0.96) translateY(20px) !important;
+        }
+        .staged-for-drop.glass-panel,
+        .staged-for-drop.tab {
+            transform: translateY(20px) !important;
+        }
+        .is-dropping {
+            transition: opacity 0.4s ease, transform 0.65s cubic-bezier(0.25, 1, 0.5, 1), height 0.65s cubic-bezier(0.25, 1, 0.5, 1) !important;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+let hasEntered = false; 
+
 if (enterBtn) {
     enterBtn.addEventListener('click', () => {
+        if (hasEntered) return; 
+        hasEntered = true;
+
         enterBtn.style.opacity = '0';
+        enterBtn.style.pointerEvents = 'none';
+        enterBtn.disabled = true;
+
+        if (bgAudio && !window.audioCtx) {
+            try {
+                window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                window.audioSource = window.audioCtx.createMediaElementSource(bgAudio);
+                window.lowpassFilter = window.audioCtx.createBiquadFilter();
+                
+                window.lowpassFilter.type = 'lowpass';
+                window.lowpassFilter.frequency.value = 350; 
+                
+                window.audioSource.connect(window.lowpassFilter);
+                window.lowpassFilter.connect(window.audioCtx.destination);
+            } catch (e) {
+                console.warn("Audio routing error:", e);
+            }
+        } else if (window.lowpassFilter) {
+            window.lowpassFilter.frequency.value = 350; 
+        }
+
+        if (window.audioCtx && window.audioCtx.state === 'suspended') {
+            window.audioCtx.resume();
+        }
 
         setTimeout(() => {
             if (bgAudio) { 
@@ -348,63 +475,59 @@ if (enterBtn) {
 
             if (enterOverlay) {
                 enterOverlay.style.pointerEvents = 'none'; 
-                enterOverlay.style.transition = 'opacity 5s ease-in-out'; 
+                enterOverlay.style.transition = 'opacity 1.5s ease-out'; 
                 void enterOverlay.offsetWidth;
                 enterOverlay.style.opacity = '0';
+            }
+
+            if (mainContent) {
+                mainContent.classList.remove('hidden'); 
+                void mainContent.offsetWidth;
+                
+                const animTargets = [
+                    ...document.querySelectorAll('.glass-panel'),
+                    ...document.querySelectorAll('.tab'),
+                    ...document.querySelectorAll('.card')
+                ];
+                
+                animTargets.forEach(el => el.classList.add('staged-for-drop'));
+                
+                if (typeof syncBackgrounds === 'function') syncBackgrounds(0); 
             }
         }, 150);
         
         setTimeout(() => { 
+            
+            if (window.lowpassFilter && window.audioCtx) {
+                window.lowpassFilter.frequency.setTargetAtTime(24000, window.audioCtx.currentTime, 0.05);
+            }
+
             if (enterOverlay) enterOverlay.style.display = 'none';
             
             if (mainContent) {
-                mainContent.classList.remove('hidden');
-                
                 const animTargets = [
-                    ...document.querySelectorAll('.glass-panel'), 
-                    ...document.querySelectorAll('.tab'), 
+                    ...document.querySelectorAll('.glass-panel'),
+                    ...document.querySelectorAll('.tab'),
                     ...document.querySelectorAll('.card')
                 ];
                 
-                animTargets.forEach(el => {
-                    if(el) {
-                        el.style.opacity = '0';
-                        el.style.transform = 'scale(0.96) translateY(20px)'; 
-                        el.style.transition = 'none';
-                    }
-                });
+                animTargets.forEach(el => el.classList.add('is-dropping'));
                 
-                void mainContent.offsetWidth; 
+                void mainContent.offsetWidth;
                 
-                animTargets.forEach(el => {
-                    if(el) {
-                        el.style.transition = `opacity 0.4s ease, transform 0.65s cubic-bezier(0.25, 1, 0.5, 1), height 0.65s cubic-bezier(0.25, 1, 0.5, 1)`;
-                        el.style.opacity = '1';
-                        el.style.transform = 'scale(1) translateY(0)';
-                    }
-                });
+                animTargets.forEach(el => el.classList.remove('staged-for-drop'));
 
                 setTimeout(() => {
-                    animTargets.forEach(el => {
-                        if (el) {
-                            el.style.transition = ''; 
-                            el.style.transform = '';
-                            
-                            if (!el.classList.contains('glass-panel') || el.id === 'glass-active') {
-                                el.style.opacity = ''; 
-                            }
-                        }
-                    });
-                    isGlobalEntrance = false; 
+                    animTargets.forEach(el => el.classList.remove('is-dropping'));
+                    if (typeof isGlobalEntrance !== 'undefined') isGlobalEntrance = false; 
                 }, 800);
             } else {
-                isGlobalEntrance = false;
+                if (typeof isGlobalEntrance !== 'undefined') isGlobalEntrance = false; 
             }
-            syncBackgrounds(0); 
-        }, 4500);
+        }, 4500); 
     });
 } else {
-    isGlobalEntrance = false;
+    if (typeof isGlobalEntrance !== 'undefined') isGlobalEntrance = false; 
 }
 
 try {

@@ -60,7 +60,7 @@ export const profiles = {
     facebook: {
         avatar: "./assets/Home%20Tab%20Avatar.webp", 
         name: "Loading...", 
-        username: "Facebook",
+        username: "@karlchastin",
         bio: "Loading live Facebook profile...",
         layout: { ...defaultLayout, showLocFacebook: true, showFacebookStats: true, showCards: ['card-3-container'] }
     },

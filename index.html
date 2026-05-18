@@ -11,6 +11,15 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="loading-screen" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 999999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.8s ease-in-out, filter 0.8s ease-in-out; will-change: opacity, filter; transform: translateZ(0);">
+        
+        <div style="width: 200px; height: 2px; background: rgba(255, 255, 255, 0.15); border-radius: 2px; overflow: hidden; margin-bottom: 12px;">
+            <div id="loading-bar-fill" style="width: 0%; height: 100%; background: #ff0000; transition: width 0.1s ease-out;"></div>
+        </div>
+        
+        <div id="loading-percentage" style="font-family: 'Satoshi', sans-serif; font-size: 11px; font-weight: 600; color: #888; letter-spacing: 2px;">0%</div>
+        
+    </div>
 
     <audio id="bg-audio" loop><source src="./assets/Greedy-Brandon%20Dougherty.m4a" type="audio/mp4"></audio>
     <audio id="sfx-audio"><source src="./assets/Enter%20His%20Domain%20Sound%20Effect.mp3" type="audio/mpeg"></audio>
