@@ -111,6 +111,21 @@ function refreshDynamicCard(cardId, targetTab, isActiveGetter) {
     const isVisible = window.getComputedStyle(card).display !== 'none' && !card.classList.contains('hide-card');
     if (show === isVisible) return; 
 
+    if (isGlobalEntrance || window.isAppAnimating()) {
+        if (show) {
+            card.style.transition = 'none';
+            card.style.display = 'block';
+            card.classList.remove('hide-card');
+            card.style.height = 'auto';
+        } else {
+            card.style.transition = 'none';
+            card.style.display = 'none';
+            card.classList.add('hide-card');
+            card.style.height = '0px';
+        }
+        return;
+    }
+
     if (show) {
         card.style.transition = 'none';
         card.style.display = 'block';
@@ -485,6 +500,10 @@ if (enterBtn) {
             }
 
             if (enterOverlay) enterOverlay.style.display = 'none';
+
+            if (!window.location.hash) {
+                window.history.replaceState(null, null, '#home');
+            }
             
             if (mainContent) {
                 const animTargets = [
