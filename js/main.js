@@ -389,28 +389,6 @@ const enterOverlay = document.getElementById('enter-overlay');
 const mainContent = document.getElementById('content');
 const bgAudio = document.getElementById('bg-audio');
 
-if (!document.getElementById('entrance-styles')) {
-    const style = document.createElement('style');
-    style.id = 'entrance-styles';
-    style.textContent = `
-        .staged-for-drop {
-            opacity: 0 !important;
-            pointer-events: none !important;
-        }
-        .staged-for-drop.card {
-            transform: scale(0.96) translateY(20px) !important;
-        }
-        .staged-for-drop.glass-panel,
-        .staged-for-drop.tab {
-            transform: translateY(20px) !important;
-        }
-        .is-dropping {
-            transition: opacity 0.4s ease, transform 0.65s cubic-bezier(0.25, 1, 0.5, 1), height 0.65s cubic-bezier(0.25, 1, 0.5, 1) !important;
-        }
-    `;
-    document.head.appendChild(style);
-}
-
 let hasEntered = false; 
 
 if (enterBtn) {
