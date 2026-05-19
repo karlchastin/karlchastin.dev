@@ -474,13 +474,13 @@ if (enterBtn) {
                 window.trebleFilter.gain.value = 0;
 
                 window.masterGain = window.audioCtx.createGain();
-                window.masterGain.gain.value = 1.0;
+                window.masterGain.gain.value = 1.0; 
 
                 window.audioSource.connect(window.bassFilter);
                 window.bassFilter.connect(window.trebleFilter);
                 window.trebleFilter.connect(window.lowpassFilter);
-                window.lowpassFilter.connect(window.masterGain);
-                window.masterGain.connect(window.audioCtx.destination);
+                window.lowpassFilter.connect(window.masterGain); 
+                window.masterGain.connect(window.audioCtx.destination); 
             } catch (e) {
                 console.warn("Audio routing error:", e);
             }
@@ -565,27 +565,12 @@ if (enterBtn) {
                 if (window.masterGain) {
                     window.masterGain.gain.cancelScheduledValues(window.audioCtx.currentTime);
                     window.masterGain.gain.setValueAtTime(window.masterGain.gain.value, window.audioCtx.currentTime);
-                    window.masterGain.gain.linearRampToValueAtTime(1, window.audioCtx.currentTime + 0.15);
+                    window.masterGain.gain.linearRampToValueAtTime(0.35, window.audioCtx.currentTime + 0.15);
                 }
             }
 
             if (bgAudio) {
-                const startVol = bgAudio.volume;
-                const targetVol = 0.35;
-                const duration = 150;
-                const startTime = performance.now();
-
-                function animateIntroVolume(time) {
-                    const elapsed = time - startTime;
-                    const progress = Math.min(elapsed / duration, 1);
-                    
-                    bgAudio.volume = startVol + (targetVol - startVol) * progress;
-                    
-                    if (progress < 1) {
-                        requestAnimationFrame(animateIntroVolume);
-                    }
-                }
-                requestAnimationFrame(animateIntroVolume);
+                bgAudio.volume = 1.0; 
             }
 
             if (enterOverlay) enterOverlay.style.display = 'none';
