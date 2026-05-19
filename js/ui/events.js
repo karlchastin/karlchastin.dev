@@ -184,7 +184,6 @@ export function setupUIEvents() {
 
     const deafenBtn = $('deafen-btn');
     let isDeafened = false;
-    let volumeTween; 
 
     if (deafenBtn) {
         deafenBtn.addEventListener('click', () => {
@@ -220,31 +219,13 @@ export function setupUIEvents() {
                 window.trebleFilter.gain.linearRampToValueAtTime(targetTreble, window.audioCtx.currentTime + 0.8);
             }
 
-            const startVol = bgAudio.volume;
-            
-            const targetVol = isDeafened ? 1 : 0.35; 
-            
-            const duration = 800; 
-            const startTime = performance.now();
-
-            cancelAnimationFrame(volumeTween);
-
-            function animateVolume(time) {
-                const elapsed = time - startTime;
-                const progress = Math.min(elapsed / duration, 1);
+            if (window.masterGain) {
+                const targetVol = isDeafened ? 1.0 : 1; 
                 
-                const ease = progress < 0.5 
-                    ? 2 * progress * progress 
-                    : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-                
-                bgAudio.volume = startVol + (targetVol - startVol) * ease;
-                
-                if (progress < 1) {
-                    volumeTween = requestAnimationFrame(animateVolume);
-                }
+                window.masterGain.gain.cancelScheduledValues(window.audioCtx.currentTime);
+                window.masterGain.gain.setValueAtTime(window.masterGain.gain.value, window.audioCtx.currentTime);
+                window.masterGain.gain.linearRampToValueAtTime(targetVol, window.audioCtx.currentTime + 0.8);
             }
-            
-            volumeTween = requestAnimationFrame(animateVolume);
         });
     }
 }
