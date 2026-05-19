@@ -211,7 +211,7 @@ function refreshDynamicCard(cardId, targetTab, isActiveGetter) {
     }
 }
 
-window.refreshMusicCard = () => refreshDynamicCard('card-3-container', 'music', () => window.currentMusicActivities);
+window.refreshMusicCard = () => refreshDynamicCard('card-3-container', 'apple_music', () => window.currentMusicActivities);
 window.refreshDiscordCard = () => refreshDynamicCard('card-2-container', 'home', () => window.currentDiscordActivities);
 
 let _musicActive = window.currentMusicActivities || false;

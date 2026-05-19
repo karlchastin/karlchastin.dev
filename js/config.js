@@ -44,7 +44,7 @@ export const profiles = {
         bio: "i refuse.",
         layout: { ...defaultLayout, showLocDiscord: true, showDiscordStatus: true, showDiscordBadges: true, showDiscordServers: true, showCards: ['card-4-container'] }
     },
-    music: {
+    apple_music: {
         avatar: "./assets/Apple%20Music%20Avatar.webp",
         name: "Karl Chastin Delfin", username: "@karlchastin",
         bio: "i am not responsible for these playlist names, they're just funny.",
