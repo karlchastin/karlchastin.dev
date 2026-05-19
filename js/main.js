@@ -19,15 +19,10 @@ function preloadAssets() {
     
     if (typeof Lenis !== 'undefined') {
         const lenis = new Lenis({
-            duration: 1.2,
-            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-            direction: 'vertical',
-            gestureDirection: 'vertical',
-            smooth: true,
-            mouseMultiplier: 1,
+            lerp: 0.15,
+            wheelMultiplier: 0.9,
+            smoothWheel: true,
             smoothTouch: false,
-            touchMultiplier: 2,
-            infinite: false,
         });
 
         function raf(time) {
@@ -463,18 +458,32 @@ if (enterBtn) {
             try {
                 window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 window.audioSource = window.audioCtx.createMediaElementSource(bgAudio);
+                
                 window.lowpassFilter = window.audioCtx.createBiquadFilter();
-                
                 window.lowpassFilter.type = 'lowpass';
-                window.lowpassFilter.frequency.value = 350; 
+                window.lowpassFilter.frequency.value = 200; 
                 
-                window.audioSource.connect(window.lowpassFilter);
+                window.bassFilter = window.audioCtx.createBiquadFilter();
+                window.bassFilter.type = 'lowshelf';
+                window.bassFilter.frequency.value = 150; 
+                window.bassFilter.gain.value = 0; 
+
+                window.trebleFilter = window.audioCtx.createBiquadFilter();
+                window.trebleFilter.type = 'highshelf';
+                window.trebleFilter.frequency.value = 4000;
+                window.trebleFilter.gain.value = 0;
+
+                window.audioSource.connect(window.bassFilter);
+                window.bassFilter.connect(window.trebleFilter);
+                window.trebleFilter.connect(window.lowpassFilter);
                 window.lowpassFilter.connect(window.audioCtx.destination);
             } catch (e) {
                 console.warn("Audio routing error:", e);
             }
         } else if (window.lowpassFilter) {
-            window.lowpassFilter.frequency.value = 350; 
+            window.lowpassFilter.frequency.value = 200; 
+            if (window.bassFilter) window.bassFilter.gain.value = 0;
+            if (window.trebleFilter) window.trebleFilter.gain.value = 0;
         }
 
         if (window.audioCtx && window.audioCtx.state === 'suspended') {
@@ -483,7 +492,7 @@ if (enterBtn) {
 
         setTimeout(() => {
             if (bgAudio) { 
-                bgAudio.volume = 0.45; 
+                bgAudio.volume = 1.0;
                 bgAudio.currentTime = 0;
                 bgAudio.play().catch(() => {}); 
             }
@@ -535,8 +544,35 @@ if (enterBtn) {
         
         setTimeout(() => { 
             
-            if (window.lowpassFilter && window.audioCtx) {
-                window.lowpassFilter.frequency.setTargetAtTime(24000, window.audioCtx.currentTime, 0.05);
+            if (window.audioCtx) {
+                if (window.lowpassFilter) {
+                    window.lowpassFilter.frequency.setTargetAtTime(24000, window.audioCtx.currentTime, 0.05);
+                }
+                if (window.bassFilter) {
+                    window.bassFilter.gain.setTargetAtTime(8, window.audioCtx.currentTime, 0.05);
+                }
+                if (window.trebleFilter) {
+                    window.trebleFilter.gain.setTargetAtTime(8, window.audioCtx.currentTime, 0.05);
+                }
+            }
+
+            if (bgAudio) {
+                const startVol = bgAudio.volume;
+                const targetVol = 0.35;
+                const duration = 150;
+                const startTime = performance.now();
+
+                function animateIntroVolume(time) {
+                    const elapsed = time - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    bgAudio.volume = startVol + (targetVol - startVol) * progress;
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(animateIntroVolume);
+                    }
+                }
+                requestAnimationFrame(animateIntroVolume);
             }
 
             if (enterOverlay) enterOverlay.style.display = 'none';

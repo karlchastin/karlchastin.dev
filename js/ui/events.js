@@ -184,7 +184,7 @@ export function setupUIEvents() {
 
     const deafenBtn = $('deafen-btn');
     let isDeafened = false;
-    let volumeTween;
+    let volumeTween; 
 
     if (deafenBtn) {
         deafenBtn.addEventListener('click', () => {
@@ -193,7 +193,7 @@ export function setupUIEvents() {
             isDeafened = !isDeafened;
             deafenBtn.classList.toggle('is-deafened', isDeafened);
             document.body.classList.toggle('is-deafened', isDeafened); 
-            
+
             const newTooltipText = isDeafened ? "Undeafen" : "Deafen";
             deafenBtn.setAttribute('data-tooltip', newTooltipText);
             
@@ -201,15 +201,30 @@ export function setupUIEvents() {
                 tooltipEl.innerHTML = newTooltipText;
             }
 
-            const targetFreq = isDeafened ? 150 : 24000;
+            const targetFreq = isDeafened ? 200 : 24000;
             window.lowpassFilter.frequency.cancelScheduledValues(window.audioCtx.currentTime);
             window.lowpassFilter.frequency.setValueAtTime(window.lowpassFilter.frequency.value, window.audioCtx.currentTime);
             window.lowpassFilter.frequency.exponentialRampToValueAtTime(targetFreq, window.audioCtx.currentTime + 0.8);
             
+            if (window.bassFilter) {
+                const targetBass = isDeafened ? 0 : 8; 
+                window.bassFilter.gain.cancelScheduledValues(window.audioCtx.currentTime);
+                window.bassFilter.gain.setValueAtTime(window.bassFilter.gain.value, window.audioCtx.currentTime);
+                window.bassFilter.gain.linearRampToValueAtTime(targetBass, window.audioCtx.currentTime + 0.8);
+            }
+
+            if (window.trebleFilter) {
+                const targetTreble = isDeafened ? 0 : 8; 
+                window.trebleFilter.gain.cancelScheduledValues(window.audioCtx.currentTime);
+                window.trebleFilter.gain.setValueAtTime(window.trebleFilter.gain.value, window.audioCtx.currentTime);
+                window.trebleFilter.gain.linearRampToValueAtTime(targetTreble, window.audioCtx.currentTime + 0.8);
+            }
+
             const startVol = bgAudio.volume;
-            const targetVol = isDeafened ? 1.5 : 0.45; 
             
-            const duration = 800;
+            const targetVol = isDeafened ? 1 : 0.35; 
+            
+            const duration = 800; 
             const startTime = performance.now();
 
             cancelAnimationFrame(volumeTween);
