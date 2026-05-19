@@ -69,25 +69,42 @@ export function setupUIEvents() {
         tooltipEl.style.left = '0px';
         tooltipEl.style.top = '0px';
 
+        let tooltipRAF;
+        let isTooltipVisible = false;
+
         document.addEventListener('mousemove', (e) => {
             const target = e.target.closest('[data-tooltip]');
+            
             if (target) {
-                tooltipEl.innerHTML = target.getAttribute('data-tooltip'); 
-                tooltipEl.classList.add('show');
+                if (!isTooltipVisible || tooltipEl.innerHTML !== target.getAttribute('data-tooltip')) {
+                    tooltipEl.innerHTML = target.getAttribute('data-tooltip');
+                    tooltipEl.classList.add('show');
+                    isTooltipVisible = true;
+                }
                 
                 let x = e.clientX + 15;
                 let y = e.clientY + 15;
                 
-                const tooltipRect = tooltipEl.getBoundingClientRect();
-                
-                if (x + tooltipRect.width > window.innerWidth - 10) x = e.clientX - tooltipRect.width - 15;
-                if (y + tooltipRect.height > window.innerHeight - 10) y = e.clientY - tooltipRect.height - 15;
-                
-                tooltipEl.style.transform = `translate(${x}px, ${y}px)`;
-            } else {
+                if (!tooltipRAF) {
+                    tooltipRAF = requestAnimationFrame(() => {
+                        const tooltipRect = tooltipEl.getBoundingClientRect();
+                        
+                        if (x + tooltipRect.width > window.innerWidth - 10) x = e.clientX - tooltipRect.width - 15;
+                        if (y + tooltipRect.height > window.innerHeight - 10) y = e.clientY - tooltipRect.height - 15;
+                        
+                        tooltipEl.style.transform = `translate(${x}px, ${y}px)`;
+                        tooltipRAF = null;
+                    });
+                }
+            } else if (isTooltipVisible) {
                 tooltipEl.classList.remove('show');
+                isTooltipVisible = false;
+                if (tooltipRAF) {
+                    cancelAnimationFrame(tooltipRAF);
+                    tooltipRAF = null;
+                }
             }
-        });
+        }, { passive: true });
     }
 
     let hoverAnimTimeout;
@@ -220,7 +237,7 @@ export function setupUIEvents() {
             }
 
             if (window.masterGain) {
-                const targetVol = isDeafened ? 1.0 : 1; 
+                const targetVol = isDeafened ? 1.0 : 0.35; 
                 
                 window.masterGain.gain.cancelScheduledValues(window.audioCtx.currentTime);
                 window.masterGain.gain.setValueAtTime(window.masterGain.gain.value, window.audioCtx.currentTime);

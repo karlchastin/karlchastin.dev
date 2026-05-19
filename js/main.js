@@ -517,6 +517,7 @@ if (enterBtn) {
             flash.style.backgroundColor = '#fff';
             flash.style.zIndex = '99999';
             flash.style.pointerEvents = 'none';
+            flash.style.willChange = 'opacity';
             document.body.appendChild(flash);
             
             flash.animate([
