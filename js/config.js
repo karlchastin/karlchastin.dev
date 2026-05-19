@@ -135,11 +135,11 @@ export const GREEDY_LYRICS = [
     { time: 104.55, text: "That shit won't end well" },
     { time: 107.15, text: "End well" },
     { time: 108.50, text: "(Instrumental)" },
-    { time: 110.23, text: "I would want myself" },
-    { time: 114.53, text: "I would want myself" },
-    { time: 117.83, text: "I would want myself" },
-    { time: 118.82, text: "I would want myself" },
-    { time: 123.11, text: "I would want myself" }
+    { time: 110.00, text: "I would want myself" },
+    { time: 114.30, text: "I would want myself" },
+    { time: 118.70, text: "I would want myself" },
+    { time: 122.90, text: "I would want myself" },
+    { time: 127.10, text: "(Instrumental)" }
 ];
 
 export const featuredRepos = [
