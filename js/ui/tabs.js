@@ -26,6 +26,9 @@ const safeDelay = (ms) => new Promise(resolve => {
 export async function swapData(tabName) {
     const profileData = profiles[tabName] || profiles.home; 
     const newLayout = { ...defaultLayout, ...(profileData.layout || {}) };
+
+    const isIgDeact = document.body.classList.contains('ig-deactivated');
+    const isFbDeact = document.body.classList.contains('fb-deactivated');
     
     const avatarImg = document.getElementById('avatar-img');
     const profileName = document.getElementById('profile-name');
@@ -71,6 +74,18 @@ export async function swapData(tabName) {
         'facebook-stats-wrapper': { show: newLayout.showFacebookStats, type: 'block' },
         'preferences-wrapper': { show: newLayout.showPreferences, type: 'block' }
     };
+
+    for (const [id, config] of Object.entries(displayMap)) {
+        const el = document.getElementById(id);
+        if (el) {
+            let shouldShow = config.show;
+            
+            if (tabName === 'instagram' && isIgDeact && id.includes('instagram')) shouldShow = false;
+            if (tabName === 'facebook' && isFbDeact && id.includes('facebook')) shouldShow = false;
+            
+            el.style.display = shouldShow ? config.type : 'none';
+        }
+    }
 
     for (const [id, config] of Object.entries(displayMap)) {
         const el = document.getElementById(id);
@@ -174,10 +189,17 @@ export function setupTabs() {
             const targetCards = newLayout.showCards || [];
 
             const cardVisibility = new Map();
+            const isIgDeact = document.body.classList.contains('ig-deactivated');
+            const isFbDeact = document.body.classList.contains('fb-deactivated');
+
             allCards.forEach(card => {
                 const shouldShow = card.id === 'main-profile-card' || targetCards.includes(card.id);
                 
                 let finalShow = shouldShow;
+
+                if (tabName === 'instagram' && isIgDeact && card.id !== 'main-profile-card') finalShow = false;
+                if (tabName === 'facebook' && isFbDeact && card.id !== 'main-profile-card') finalShow = false;
+
                 if (tabName === 'music' && card.id === 'card-3-container' && !window.currentMusicActivities) finalShow = false;
                 if (tabName === 'home' && card.id === 'card-2-container' && !window.currentDiscordActivities) finalShow = false;
                 

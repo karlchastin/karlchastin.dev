@@ -592,7 +592,7 @@ if (enterBtn) {
             
             if (window.audioCtx) {
                 if (window.lowpassFilter) {
-                    window.lowpassFilter.frequency.setTargetAtTime(24000, window.audioCtx.currentTime, 0.05);
+                    window.lowpassFilter.frequency.setTargetAtTime(22050, window.audioCtx.currentTime, 0.05);
                 }
                 if (window.bassFilter) {
                     window.bassFilter.gain.setTargetAtTime(8, window.audioCtx.currentTime, 0.05);

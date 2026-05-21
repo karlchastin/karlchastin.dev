@@ -1,22 +1,69 @@
 import { profiles } from '../config.js'; 
 import { $, $$ } from '../utils/dom.js';
 
+export let cachedIgData = null;
+
 export async function loadInstagramData() {
-    const workerUrl = `https://steam-proxy.karlchastin-personal.workers.dev/?route=instagram&_cb=${Date.now()}`;
+    const workerUrl = `https://steam-proxy.karlchastin-personal.workers.dev/?route=instagram`;
 
     try {
         const response = await fetch(workerUrl);
         if (!response.ok) throw new Error('Failed to fetch IG data from Worker');
         
         const data = await response.json();
-        if (data && data.length > 0) updateInstagramUI(data[0]);
+        if (data && data.length > 0) {
+            cachedIgData = data[0];
+            updateInstagramUI(cachedIgData);
+        }
     } catch (error) {
         console.error("Instagram API Error:", error);
     }
 }
 
-function updateInstagramUI(profile) {
+document.addEventListener('toggle-ig-deactivation', (e) => {
+    if (e.detail.deactivated) {
+        updateInstagramUI({ error: "not_found", isDeactivatedMock: true });
+    } else if (cachedIgData) {
+        updateInstagramUI(cachedIgData);
+    }
+});
+
+export function updateInstagramUI(profile) {
     const igProfile = profiles.instagram;
+    const activeTab = document.querySelector('.tab.active')?.getAttribute('data-tab');
+
+    if (profile.error === "not_found" || profile.error || profile.isDeactivatedMock) {
+        igProfile.name = "Account Deactivated";
+        igProfile.bio = "This Instagram account is currently deactivated or unavailable.";
+        
+        document.body.classList.add('ig-deactivated');
+        document.dispatchEvent(new CustomEvent('deactivation-state-changed'));
+        
+        if (activeTab === 'instagram') {
+            const profileName = $('profile-name');
+            const profileBio = $('profile-bio');
+            if (profileName) profileName.textContent = igProfile.name;
+            if (profileBio) profileBio.textContent = igProfile.bio;
+        }
+
+        const statsMap = { 'ig-posts': '--', 'ig-followers': '--', 'ig-following': '--' };
+        for (const [id, value] of Object.entries(statsMap)) {
+            const el = $(id);
+            if (el) el.textContent = value;
+        }
+
+        const postsGrid = document.querySelector('.ig-posts-grid');
+        if (postsGrid) {
+            postsGrid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: #888; font-weight: 600; background: rgba(0,0,0,0.2); border-radius: 8px; font-size: 14px;">
+                    No posts to show. Account is currently deactivated.
+                </div>`;
+        }
+        return; 
+    }
+
+    document.body.classList.remove('ig-deactivated');
+    document.dispatchEvent(new CustomEvent('deactivation-state-changed'));
     
     if (profile.profilePicUrlHD) {
         igProfile.avatar = `https://steam-proxy.karlchastin-personal.workers.dev/?route=image-proxy&url=${encodeURIComponent(profile.profilePicUrlHD)}`;
@@ -27,7 +74,6 @@ function updateInstagramUI(profile) {
     
     igProfile.name = (profile.fullName && profile.fullName.trim() !== '') ? profile.fullName : profile.username.replace(/^@/, '');
 
-    const activeTab = document.querySelector('.tab.active')?.getAttribute('data-tab');
     if (activeTab === 'instagram') {
         const avatarImg = $('avatar-img');
         const profileName = $('profile-name');
