@@ -166,7 +166,7 @@ body::after {
     justify-content: space-between; 
     height: 64px; 
     width: 100%; 
-    padding: 0 18px 0 30px; 
+    padding: 0 0 0 5px;
 }
 
 .glass-panel { 
@@ -1594,13 +1594,10 @@ a.stat-box:hover {
     pointer-events: none !important;
 }
 
-.staged-for-drop.card {
-    transform: scale(0.96) translateY(20px) !important;
-}
-
+.staged-for-drop.card,
 .staged-for-drop.glass-panel,
 .staged-for-drop.tab {
-    transform: translateY(20px) !important;
+    transform: scale(0.96) translateY(20px) !important;
 }
 
 .is-dropping {
