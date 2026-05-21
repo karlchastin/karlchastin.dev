@@ -139,7 +139,11 @@ function refreshDynamicCard(cardId, targetTab, isActiveGetter) {
             
             card.style.display = 'block';
             card.classList.remove('hide-card');
-            card.classList.add('staged-for-drop');
+            
+            if (typeof hasEntered !== 'undefined' && !hasEntered) {
+                card.classList.add('staged-for-drop');
+            }
+            
             card.style.height = 'auto';
         } else {
             card.style.display = 'none';
@@ -148,7 +152,7 @@ function refreshDynamicCard(cardId, targetTab, isActiveGetter) {
         return;
     }
 
-    if (typeof window.isTabsAnimating !== 'undefined' && window.isTabsAnimating) {
+    if (typeof window.isAppAnimating !== 'undefined' && window.isAppAnimating()) {
         setTimeout(() => refreshDynamicCard(cardId, targetTab, isActiveGetter), 100);
         return;
     }
@@ -215,11 +219,25 @@ window.refreshMusicCard = () => refreshDynamicCard('card-3-container', 'apple_mu
 window.refreshDiscordCard = () => refreshDynamicCard('card-2-container', 'home', () => window.currentDiscordActivities);
 
 let _musicActive = window.currentMusicActivities || false;
+if (!_musicActive && profiles.apple_music && profiles.apple_music.layout) {
+    profiles.apple_music.layout.showCards = profiles.apple_music.layout.showCards.filter(id => id !== 'card-3-container');
+}
+
 Object.defineProperty(window, 'currentMusicActivities', {
     get: () => _musicActive,
     set: (val) => {
         if (_musicActive !== val) {
             _musicActive = val;
+            
+            if (profiles && profiles.apple_music && profiles.apple_music.layout) {
+                let showCards = profiles.apple_music.layout.showCards;
+                if (val && !showCards.includes('card-3-container')) {
+                    showCards.push('card-3-container');
+                } else if (!val) {
+                    profiles.apple_music.layout.showCards = showCards.filter(id => id !== 'card-3-container');
+                }
+            }
+            
             setTimeout(window.refreshMusicCard, 10); 
         }
     }
@@ -231,6 +249,16 @@ Object.defineProperty(window, 'currentDiscordActivities', {
     set: (val) => {
         if (_discordActive !== val) {
             _discordActive = val;
+            
+            if (profiles && profiles.home && profiles.home.layout) {
+                let showCards = profiles.home.layout.showCards;
+                if (val && !showCards.includes('card-2-container')) {
+                    showCards.push('card-2-container');
+                } else if (!val) {
+                    profiles.home.layout.showCards = showCards.filter(id => id !== 'card-2-container');
+                }
+            }
+            
             setTimeout(window.refreshDiscordCard, 10); 
         }
     }
@@ -426,6 +454,16 @@ try {
     preloadAssets();
     renderAllComponents(); 
     setupTabs();
+    
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            setTimeout(() => {
+                if (window.refreshMusicCard) window.refreshMusicCard();
+                if (window.refreshDiscordCard) window.refreshDiscordCard();
+            }, 50);
+        });
+    });
+
     setupUIEvents();
     setupPreferencesTabs();
     attachGlobalHeightObservers();

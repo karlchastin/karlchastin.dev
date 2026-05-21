@@ -327,12 +327,16 @@ function updateDiscordUI(data) {
     window.currentDiscordActivities = (baseStatus !== 'offline');
     
     const musicEl = document.getElementById('apple-music-dynamic-content');
-    if (musicEl && musicActs.length > 0) {
-        let flexGrid = musicEl.querySelector('.discord-activities-flex');
-        if (!flexGrid) {
-            musicEl.innerHTML = `<div class="discord-activities-flex" style="display: flex; gap: 15px; width: 100%;"><div id="apple-music-slot" style="flex: 1; min-width: 0; max-width: 100%;"></div></div>`;
+    if (musicEl) {
+        if (musicActs.length > 0) {
+            let flexGrid = musicEl.querySelector('.discord-activities-flex');
+            if (!flexGrid) {
+                musicEl.innerHTML = `<div class="discord-activities-flex" style="display: flex; gap: 15px; width: 100%;"><div id="apple-music-slot" style="flex: 1; min-width: 0; max-width: 100%;"></div></div>`;
+            }
+            renderSingleBox(musicEl.querySelector('#apple-music-slot'), musicActs[0]);
+        } else {
+            musicEl.innerHTML = `<div style="text-align:center; padding: 25px 20px; color: #888; font-weight: 700; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); border-radius: 16px;"><span>No activity on Apple Music.</span></div>`;
         }
-        renderSingleBox(musicEl.querySelector('#apple-music-slot'), musicActs[0]);
     }
 
     scrollObserver.disconnect();
