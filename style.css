@@ -1664,12 +1664,12 @@ body.is-deafened::before {
    ========================================= */
 @keyframes debugShake {
     0% { transform: translate(0, 0); }
-    20% { transform: translate(-8px, 6px) rotate(-1deg); }
-    40% { transform: translate(6px, -8px) rotate(1deg); }
-    60% { transform: translate(-6px, -6px) rotate(-1deg); }
-    80% { transform: translate(8px, 6px) rotate(1deg); }
-    100% { transform: translate(0, 0); }
+    25% { transform: translate(6px, 0); }
+    50% { transform: translate(0, 6px); }
+    75% { transform: translate(-6px, 0); }
+    100% { transform: translate(0, -6px); }
 }
+
 .debug-shake {
-    animation: debugShake 0.2s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    animation: debugShake 0.05s linear 3;
 }
