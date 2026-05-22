@@ -14,26 +14,6 @@ export function setupUIEvents() {
         const style = document.createElement('style');
         style.id = 'dynamic-injected-css';
         style.textContent = `
-            /* Smoothly hide cards by mimicking the native .hide-card class for zero-flicker animations */
-            body.ig-deactivated[data-active-tab="instagram"] #card-2-container,
-            body.ig-deactivated[data-active-tab="instagram"] #card-3-container,
-            body.ig-deactivated[data-active-tab="instagram"] #card-4-container,
-            body.fb-deactivated[data-active-tab="facebook"] #card-2-container,
-            body.fb-deactivated[data-active-tab="facebook"] #card-3-container,
-            body.fb-deactivated[data-active-tab="facebook"] #card-4-container {
-                opacity: 0 !important;
-                transform: scale(0.95) translateY(-10px) !important;
-                height: 0 !important;
-                padding-top: 0 !important;
-                padding-bottom: 0 !important;
-                margin-top: -15px !important;
-                margin-bottom: 0 !important;
-                border-width: 0 !important;
-                overflow: clip !important;
-                overflow-clip-margin: 150px !important;
-                pointer-events: none !important;
-            }
-            
             body.ig-deactivated #loc-instagram,
             body.fb-deactivated #loc-facebook {
                 display: none !important;
@@ -176,7 +156,7 @@ export function setupUIEvents() {
             warningEl.innerHTML = `<div style="background: rgba(255, 165, 0, 0.1); border: 1px solid rgba(255, 165, 0, 0.3); color: #ffa500; padding: 12px; border-radius: 8px; font-size: 13px; display: flex; align-items: center; gap: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg><span>${timeText} Expect replies as early as <strong>${targetLocalTime.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}</strong> in your local time.</span></div>`;
             
             warningEl.style.display = 'block';
-            void warningEl.offsetWidth;
+            void warningEl.offsetWidth; 
             warningEl.classList.add('is-visible');
         } else {
             warningEl.classList.remove('is-visible');
@@ -443,6 +423,80 @@ export function setupUIEvents() {
         }
     });
 
+    function applyDebugCardHiding(tabMatch, isDeact) {
+        const activeTab = document.body.getAttribute('data-active-tab');
+        
+        if (activeTab === tabMatch) {
+            ['card-2-container', 'card-3-container', 'card-4-container'].forEach(id => {
+                const card = document.getElementById(id);
+                if (card) {
+                    const parent = card.parentElement;
+                    const gap = parent ? (parseFloat(window.getComputedStyle(parent).gap) || 0) : 0;
+                    
+                    if (isDeact) {
+                        card.style.transition = 'none';
+                        const currentHeight = card.offsetHeight;
+                        card.style.height = currentHeight + 'px';
+                        void card.offsetHeight;
+                        
+                        card.style.transition = 'height 0.65s cubic-bezier(0.25, 1, 0.5, 1), margin 0.65s cubic-bezier(0.25, 1, 0.5, 1), padding 0.65s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease';
+                        card.classList.add('hide-card');
+                        card.style.height = '0px';
+                        card.style.padding = '0px';
+                        card.style.borderWidth = '0px';
+                        card.style.marginTop = '0px';
+                        card.style.marginBottom = `-${gap}px`;
+                        card.style.opacity = '0';
+                        
+                        setTimeout(() => {
+                            if (document.body.classList.contains(tabMatch === 'instagram' ? 'ig-deactivated' : 'fb-deactivated')) {
+                                card.style.display = 'none';
+                            }
+                        }, 650);
+                        
+                    } else {
+                        card.style.display = 'block';
+                        
+                        card.style.transition = 'none';
+                        card.classList.remove('hide-card');
+                        card.style.height = 'auto';
+                        card.style.padding = '';
+                        card.style.borderWidth = '';
+                        card.style.marginTop = '';
+                        card.style.marginBottom = '';
+                        card.style.opacity = '0';
+                        
+                        const targetHeight = card.offsetHeight;
+                        
+                        card.classList.add('hide-card');
+                        card.style.height = '0px';
+                        card.style.padding = '0px';
+                        card.style.borderWidth = '0px';
+                        card.style.marginTop = '0px';
+                        card.style.marginBottom = `-${gap}px`;
+                        
+                        void card.offsetHeight;
+
+                        card.style.transition = 'height 0.65s cubic-bezier(0.25, 1, 0.5, 1), margin 0.65s cubic-bezier(0.25, 1, 0.5, 1), padding 0.65s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease';
+                        card.classList.remove('hide-card');
+                        card.style.height = targetHeight + 'px';
+                        card.style.padding = '';
+                        card.style.borderWidth = '';
+                        card.style.marginTop = '';
+                        card.style.marginBottom = '';
+                        card.style.opacity = '1';
+                        
+                        setTimeout(() => {
+                            if (!document.body.classList.contains(tabMatch === 'instagram' ? 'ig-deactivated' : 'fb-deactivated')) {
+                                card.style.height = 'auto';
+                            }
+                        }, 650);
+                    }
+                }
+            });
+        }
+    }
+
     function injectAndOpenDebugger() {
         let dbgUI = $('dev-debugger');
         
@@ -491,11 +545,19 @@ export function setupUIEvents() {
             document.body.appendChild(dbgUI);
 
             $('dbg-ig-toggle').addEventListener('change', (e) => {
-                document.dispatchEvent(new CustomEvent('toggle-ig-deactivation', { detail: { deactivated: e.target.checked } }));
+                const isDeact = e.target.checked;
+                document.body.classList.toggle('ig-deactivated', isDeact);
+                document.dispatchEvent(new CustomEvent('toggle-ig-deactivation', { detail: { deactivated: isDeact } }));
+                
+                applyDebugCardHiding('instagram', isDeact);
             });
             
             $('dbg-fb-toggle').addEventListener('change', (e) => {
-                document.dispatchEvent(new CustomEvent('toggle-fb-deactivation', { detail: { deactivated: e.target.checked } }));
+                const isDeact = e.target.checked;
+                document.body.classList.toggle('fb-deactivated', isDeact);
+                document.dispatchEvent(new CustomEvent('toggle-fb-deactivation', { detail: { deactivated: isDeact } }));
+                
+                applyDebugCardHiding('facebook', isDeact);
             });
 
             $('dbg-email-select').addEventListener('change', (e) => {

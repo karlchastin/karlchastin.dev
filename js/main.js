@@ -129,6 +129,9 @@ function refreshDynamicCard(cardId, targetTab, isActiveGetter) {
     const isVisible = window.getComputedStyle(card).display !== 'none' && !card.classList.contains('hide-card');
     if (show === isVisible) return; 
 
+    const contentId = cardId.replace('-container', '-content');
+    const contentEl = document.getElementById(contentId);
+
     if (typeof isGlobalEntrance !== 'undefined' && isGlobalEntrance) {
         if (show) {
             card.style.opacity = '';
@@ -139,6 +142,8 @@ function refreshDynamicCard(cardId, targetTab, isActiveGetter) {
             
             card.style.display = 'block';
             card.classList.remove('hide-card');
+            
+            if (contentEl) contentEl.classList.remove('fade-out');
             
             if (typeof hasEntered !== 'undefined' && !hasEntered) {
                 card.classList.add('staged-for-drop');
@@ -170,6 +175,8 @@ function refreshDynamicCard(cardId, targetTab, isActiveGetter) {
         card.style.display = 'block';
         card.classList.add('hide-card');
         card.style.height = '0px';
+        
+        if (contentEl) contentEl.classList.remove('fade-out');
         
         card.style.height = 'auto';
         card.classList.remove('hide-card');
