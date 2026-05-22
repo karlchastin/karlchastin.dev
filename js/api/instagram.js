@@ -32,6 +32,39 @@ export function updateInstagramUI(profile) {
     const igProfile = profiles.instagram;
     const activeTab = document.querySelector('.tab.active')?.getAttribute('data-tab');
 
+    const animateProfileChange = (avatarUrl, nameText, bioText) => {
+        const avatarImg = $('avatar-img');
+        const profileName = $('profile-name');
+        const profileBio = $('profile-bio');
+        
+        const isSameAvatar = !avatarImg || !avatarUrl || avatarImg.src === avatarUrl || avatarImg.getAttribute('src') === avatarUrl;
+
+        if (avatarImg && !isSameAvatar) avatarImg.style.opacity = '0';
+        if (profileName) {
+            profileName.style.transition = 'opacity 0.15s ease';
+            profileName.style.opacity = '0';
+        }
+        if (profileBio) {
+            profileBio.style.transition = 'opacity 0.15s ease';
+            profileBio.style.opacity = '0';
+        }
+
+        setTimeout(() => {
+            if (avatarImg && !isSameAvatar) {
+                avatarImg.src = avatarUrl;
+                avatarImg.style.opacity = '1';
+            }
+            if (profileName) {
+                profileName.textContent = nameText;
+                profileName.style.opacity = '1';
+            }
+            if (profileBio) {
+                profileBio.textContent = bioText;
+                profileBio.style.opacity = '1';
+            }
+        }, 150);
+    };
+
     if (profile.error === "not_found" || profile.error || profile.isDeactivatedMock) {
         igProfile.name = "Account Deactivated";
         igProfile.bio = "This Instagram account is currently deactivated or unavailable.";
@@ -40,10 +73,7 @@ export function updateInstagramUI(profile) {
         document.dispatchEvent(new CustomEvent('deactivation-state-changed'));
         
         if (activeTab === 'instagram') {
-            const profileName = $('profile-name');
-            const profileBio = $('profile-bio');
-            if (profileName) profileName.textContent = igProfile.name;
-            if (profileBio) profileBio.textContent = igProfile.bio;
+            animateProfileChange(null, igProfile.name, igProfile.bio);
         }
 
         const statsMap = { 'ig-posts': '--', 'ig-followers': '--', 'ig-following': '--' };
@@ -75,13 +105,7 @@ export function updateInstagramUI(profile) {
     igProfile.name = (profile.fullName && profile.fullName.trim() !== '') ? profile.fullName : profile.username.replace(/^@/, '');
 
     if (activeTab === 'instagram') {
-        const avatarImg = $('avatar-img');
-        const profileName = $('profile-name');
-        const profileBio = $('profile-bio');
-        
-        if (avatarImg) avatarImg.src = igProfile.avatar;
-        if (profileName) profileName.textContent = igProfile.name;
-        if (profileBio) profileBio.textContent = igProfile.bio;
+        animateProfileChange(igProfile.avatar, igProfile.name, igProfile.bio);
     }
 
     const statsMap = {

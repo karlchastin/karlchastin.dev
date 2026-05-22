@@ -33,6 +33,39 @@ export function updateFacebookUI(profile) {
     const fbProfile = profiles.facebook;
     const activeTab = document.querySelector('.tab.active')?.getAttribute('data-tab');
 
+    const animateProfileChange = (avatarUrl, nameText, bioText) => {
+        const avatarImg = $('avatar-img');
+        const profileName = $('profile-name');
+        const profileBio = $('profile-bio');
+        
+        const isSameAvatar = !avatarImg || !avatarUrl || avatarImg.src === avatarUrl || avatarImg.getAttribute('src') === avatarUrl;
+
+        if (avatarImg && !isSameAvatar) avatarImg.style.opacity = '0';
+        if (profileName) {
+            profileName.style.transition = 'opacity 0.15s ease';
+            profileName.style.opacity = '0';
+        }
+        if (profileBio) {
+            profileBio.style.transition = 'opacity 0.15s ease';
+            profileBio.style.opacity = '0';
+        }
+
+        setTimeout(() => {
+            if (avatarImg && !isSameAvatar) {
+                avatarImg.src = avatarUrl;
+                avatarImg.style.opacity = '1';
+            }
+            if (profileName) {
+                profileName.textContent = nameText;
+                profileName.style.opacity = '1';
+            }
+            if (profileBio) {
+                profileBio.textContent = bioText;
+                profileBio.style.opacity = '1';
+            }
+        }, 150);
+    };
+
     if (profile.name === "" || profile.name === undefined || profile.isDeactivatedMock) {
         fbProfile.name = "Account Deactivated";
         fbProfile.bio = "This Facebook account is currently deactivated or unavailable.";
@@ -41,11 +74,7 @@ export function updateFacebookUI(profile) {
         document.dispatchEvent(new CustomEvent('deactivation-state-changed'));
 
         if (activeTab === 'facebook') {
-            const profileName = $('profile-name');
-            const profileBio = $('profile-bio');
-            
-            if (profileName) profileName.textContent = fbProfile.name;
-            if (profileBio) profileBio.textContent = fbProfile.bio;
+            animateProfileChange(null, fbProfile.name, fbProfile.bio);
         }
 
         const followersEl = $('fb-followers');
@@ -66,13 +95,7 @@ export function updateFacebookUI(profile) {
     fbProfile.bio = profile.intro ? profile.intro : "No bio available.";
 
     if (activeTab === 'facebook') {
-        const avatarImg = $('avatar-img');
-        const profileName = $('profile-name');
-        const profileBio = $('profile-bio');
-        
-        if (avatarImg) avatarImg.src = fbProfile.avatar;
-        if (profileName) profileName.textContent = fbProfile.name;
-        if (profileBio) profileBio.textContent = fbProfile.bio;
+        animateProfileChange(fbProfile.avatar, fbProfile.name, fbProfile.bio);
     }
 
     const followersEl = $('fb-followers');
