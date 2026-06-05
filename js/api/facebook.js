@@ -1,28 +1,32 @@
 import { $ } from '../utils/dom.js';
-import { profiles } from '../config.js';
+import { profiles, WORKER_URL } from '../config.js';
 
 export let cachedFbData = null;
 
 export async function loadFacebookData() {
-    const workerUrl = `https://steam-proxy.karlchastin-personal.workers.dev/?route=facebook`;
+    const workerUrl = `${WORKER_URL}?route=facebook`;
 
     try {
         const response = await fetch(workerUrl);
         if (!response.ok) throw new Error('Failed to fetch FB data from Worker');
         
         const data = await response.json();
+        
         if (data && data.length > 0) {
             cachedFbData = data[0];
             updateFacebookUI(cachedFbData);
+        } else {
+            updateFacebookUI({ name: "" });
         }
     } catch (error) {
         console.error("Facebook API Error:", error);
+        updateFacebookUI({ name: "" });
     }
 }
 
 document.addEventListener('toggle-fb-deactivation', (e) => {
     if (e.detail.deactivated) {
-        updateFacebookUI({ name: "", isDeactivatedMock: true });
+        updateFacebookUI({ name: "" });
     } else if (cachedFbData) {
         updateFacebookUI(cachedFbData);
     }
@@ -66,11 +70,12 @@ export function updateFacebookUI(profile) {
         }, 150);
     };
 
-    if (profile.name === "" || profile.name === undefined || profile.isDeactivatedMock) {
+    if (!profile || profile.name === "" || profile.name === undefined) {
         fbProfile.name = "Account Deactivated";
         fbProfile.bio = "This Facebook account is currently deactivated or unavailable.";
         
         document.body.classList.add('fb-deactivated');
+        
         document.dispatchEvent(new CustomEvent('deactivation-state-changed'));
 
         if (activeTab === 'facebook') {
@@ -84,15 +89,16 @@ export function updateFacebookUI(profile) {
     }
 
     document.body.classList.remove('fb-deactivated');
+    
     document.dispatchEvent(new CustomEvent('deactivation-state-changed'));
 
     if (profile.image) {
-        fbProfile.avatar = `https://steam-proxy.karlchastin-personal.workers.dev/?route=image-proxy&url=${encodeURIComponent(profile.image)}`;
+        fbProfile.avatar = `${WORKER_URL}?route=image-proxy&url=${encodeURIComponent(profile.image)}`;
         new Image().src = fbProfile.avatar;
     }
     
     if (profile.name) fbProfile.name = profile.name;
-    fbProfile.bio = profile.intro ? profile.intro : "No bio available.";
+    fbProfile.bio = (profile.intro && profile.intro.trim() !== '') ? profile.intro : "No bio available.";
 
     if (activeTab === 'facebook') {
         animateProfileChange(fbProfile.avatar, fbProfile.name, fbProfile.bio);
@@ -100,6 +106,15 @@ export function updateFacebookUI(profile) {
 
     const followersEl = $('fb-followers');
     if (followersEl && profile.followers !== undefined) {
-        followersEl.textContent = profile.followers.toLocaleString();
+        let num = parseInt(profile.followers, 10);
+        if (!isNaN(num)) {
+            if (num >= 1000) {
+                followersEl.textContent = (num / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+            } else {
+                followersEl.textContent = num.toString();
+            }
+        } else {
+            followersEl.textContent = '--';
+        }
     }
 }

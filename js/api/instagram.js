@@ -1,28 +1,32 @@
-import { profiles } from '../config.js'; 
+import { profiles, WORKER_URL } from '../config.js';
 import { $, $$ } from '../utils/dom.js';
 
 export let cachedIgData = null;
 
 export async function loadInstagramData() {
-    const workerUrl = `https://steam-proxy.karlchastin-personal.workers.dev/?route=instagram`;
+    const workerUrl = `${WORKER_URL}?route=instagram`;
 
     try {
         const response = await fetch(workerUrl);
         if (!response.ok) throw new Error('Failed to fetch IG data from Worker');
         
         const data = await response.json();
+        
         if (data && data.length > 0) {
             cachedIgData = data[0];
             updateInstagramUI(cachedIgData);
+        } else {
+            updateInstagramUI({ error: "not_found" });
         }
     } catch (error) {
         console.error("Instagram API Error:", error);
+        updateInstagramUI({ error: "not_found" });
     }
 }
 
 document.addEventListener('toggle-ig-deactivation', (e) => {
     if (e.detail.deactivated) {
-        updateInstagramUI({ error: "not_found", isDeactivatedMock: true });
+        updateInstagramUI({ error: "not_found" });
     } else if (cachedIgData) {
         updateInstagramUI(cachedIgData);
     }
@@ -65,7 +69,7 @@ export function updateInstagramUI(profile) {
         }, 150);
     };
 
-    if (profile.error === "not_found" || profile.error || profile.isDeactivatedMock) {
+    if (!profile || profile.error === "not_found" || profile.error) {
         igProfile.name = "Account Deactivated";
         igProfile.bio = "This Instagram account is currently deactivated or unavailable.";
         
@@ -96,13 +100,12 @@ export function updateInstagramUI(profile) {
     document.dispatchEvent(new CustomEvent('deactivation-state-changed'));
     
     if (profile.profilePicUrlHD) {
-        igProfile.avatar = `https://steam-proxy.karlchastin-personal.workers.dev/?route=image-proxy&url=${encodeURIComponent(profile.profilePicUrlHD)}`;
+        igProfile.avatar = `${WORKER_URL}?route=image-proxy&url=${encodeURIComponent(profile.profilePicUrlHD)}`;
         new Image().src = igProfile.avatar;
     }
     
-    if (profile.biography) igProfile.bio = profile.biography;
-    
-    igProfile.name = (profile.fullName && profile.fullName.trim() !== '') ? profile.fullName : profile.username.replace(/^@/, '');
+    igProfile.bio = (profile.biography && profile.biography.trim() !== '') ? profile.biography : "No bio available.";
+    igProfile.name = (profile.fullName && profile.fullName.trim() !== '') ? profile.fullName : (profile.username ? profile.username.replace(/^@/, '') : "Instagram Profile");
 
     if (activeTab === 'instagram') {
         animateProfileChange(igProfile.avatar, igProfile.name, igProfile.bio);
@@ -122,7 +125,7 @@ export function updateInstagramUI(profile) {
     const postsGrid = document.querySelector('.ig-posts-grid');
     if (postsGrid && profile.latestPosts) {
         postsGrid.innerHTML = profile.latestPosts.slice(0, 6).map(post => {
-            const proxyImageUrl = `https://steam-proxy.karlchastin-personal.workers.dev/?route=image-proxy&url=${encodeURIComponent(post.displayUrl)}`;
+            const proxyImageUrl = `${WORKER_URL}?route=image-proxy&url=${encodeURIComponent(post.displayUrl)}`;
             const dateStr = post.timestamp ? new Date(post.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : "";
             
             let snippet = post.caption ? post.caption.trim() : '';
@@ -132,12 +135,10 @@ export function updateInstagramUI(profile) {
             return `
                 <a href="${post.url}" target="_blank" class="ig-post-item" style="display: block; position: relative; overflow: hidden; border-radius: 8px; aspect-ratio: 1/1; text-decoration: none; background: #111;">
                     <img src="${proxyImageUrl}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; display: block; border: none; padding: 0; margin: 0;" alt="Instagram Post">
-                    
                     <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 30px 12px 10px; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); color: white; font-size: 11px; display: flex; flex-direction: column; gap: 3px; box-sizing: border-box; pointer-events: none;">
                         ${dateStr ? `<span style="opacity: 0.7; font-weight: 600; font-size: 10px; letter-spacing: 0.5px;">${dateStr.toUpperCase()}</span>` : ''}
                         <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0px 1px 2px rgba(0,0,0,0.8);">${snippet}</span>
                     </div>
-
                     <div class="ig-post-overlay" style="opacity: 0; transition: opacity 0.2s ease-in-out; background: rgba(0,0,0,0.65); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: flex; align-items: center; justify-content: center; gap: 15px; color: white; font-weight: bold; font-size: 14px;">
                         <span>🤍 ${post.likesCount || 0}</span>
                         <span>💬 ${post.commentsCount || 0}</span>

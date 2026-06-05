@@ -495,9 +495,11 @@ if (enterBtn) {
         enterBtn.style.pointerEvents = 'none';
         enterBtn.disabled = true;
 
-        if (bgAudio) bgAudio.load();
         const sfxAudio = document.getElementById('sfx-audio');
-        if (sfxAudio) sfxAudio.load();
+
+        if (window.audioCtx && window.audioCtx.state === 'suspended') {
+            window.audioCtx.resume();
+        }
 
         if (bgAudio && !window.audioCtx) {
             try {
@@ -536,10 +538,6 @@ if (enterBtn) {
             if (window.masterGain) window.masterGain.gain.value = 1.0;
         }
 
-        if (window.audioCtx && window.audioCtx.state === 'suspended') {
-            window.audioCtx.resume();
-        }
-
         setTimeout(() => {
             if (bgAudio) { 
                 bgAudio.volume = 1.0;
@@ -547,9 +545,9 @@ if (enterBtn) {
                 bgAudio.play().catch(() => {}); 
             }
 
-            const sfxAudio = document.getElementById('sfx-audio');
             if (sfxAudio) { 
                 sfxAudio.volume = 0.6; 
+                sfxAudio.currentTime = 0;
                 sfxAudio.play().catch(() => {}); 
             }
 

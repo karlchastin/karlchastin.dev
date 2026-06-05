@@ -1,5 +1,5 @@
 export const DISCORD_ID = "330950042863271936"; 
-export const WORKER_URL = 'https://steam-proxy.karlchastin-personal.workers.dev/'; 
+export const WORKER_URL = 'https://portfolio-api.karlchastin-personal.workers.dev/';
 
 export const defaultLayout = {
     showDiscord: false, showGithubStats: false, showLocMusic: false, 
