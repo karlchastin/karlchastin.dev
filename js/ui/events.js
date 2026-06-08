@@ -19,7 +19,6 @@ export function setupUIEvents() {
                 display: none !important;
             }
             
-            /* Smooth Transition for Email Warning */
             #email-night-warning {
                 transition: opacity 0.5s ease, max-height 0.5s ease, margin-bottom 0.5s ease !important;
                 max-height: 0;
@@ -33,7 +32,6 @@ export function setupUIEvents() {
                 margin-bottom: 15px;
             }
 
-            /* --- CUSTOM DEBUGGER UI STYLES --- */
             .dbg-toggle {
                 position: relative;
                 display: inline-block;
@@ -94,7 +92,6 @@ export function setupUIEvents() {
                 font-weight: 600;
             }
 
-            /* FIXED GRADIENT BUTTON - Perfectly matches VIEW ON GITHUB */
             .dbg-btn {
                 width: 100%;
                 height: 48px;
@@ -127,7 +124,6 @@ export function setupUIEvents() {
                 transform: scale(0.98);
             }
 
-            /* Debug Shake Animation */
             @keyframes debugShake {
                 0% { transform: translate(0, 0); }
                 25% { transform: translate(6px, 0); }
@@ -139,7 +135,6 @@ export function setupUIEvents() {
                 animation: debugShake 0.05s linear 3;
             }
 
-            /* Threatening Shaking Animation for the Audio Transcript */
             @keyframes aftonWordShake {
                 0%, 100% { transform: translateX(0); }
                 25% { transform: translateX(-1px) translateY(1px); }
@@ -154,7 +149,6 @@ export function setupUIEvents() {
                 text-shadow: 0 0 8px rgba(255,0,0,0.6);
             }
 
-            /* MOBILE INTERFACE ENHANCEMENTS FOR OVERLAYS */
             @media (max-width: 768px) {
                 #loading-percentage {
                     font-size: 3.5rem !important;
@@ -838,7 +832,7 @@ export function setupUIEvents() {
             <div class="afton-overlay" style="position: fixed; z-index: 9999999; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5,5,5,0.98); display: flex; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.4s ease; will-change: opacity; transform: translateZ(0); pointer-events: auto;">
                 
                 <style>
-                    .afton-content-wrapper { overscroll-behavior: contain; pointer-events: auto !important; position: relative; }
+                    .afton-content-wrapper { flex: 1; min-height: 0; overflow: hidden; pointer-events: auto !important; position: relative; }
                     .afton-scroll-content { padding-right: 20px; padding-bottom: 50px; }
                     
                     .afton-content-wrapper::-webkit-scrollbar { width: 6px; }
@@ -869,30 +863,10 @@ export function setupUIEvents() {
                         animation: aftonWordShake 0.15s infinite linear;
                         text-shadow: 0 0 8px rgba(255,0,0,0.6);
                     }
-
-                    /* MOBILE INTERFACE ENHANCEMENTS FOR OVERLAYS */
-                    @media (max-width: 768px) {
-                        #loading-percentage {
-                            font-size: 3.5rem !important;
-                        }
-                        #loading-bar, .loading-bar, #loading-bar-fill {
-                            height: 10px !important;
-                        }
-                        #enter-overlay h1, #enter-overlay .glitch, #enter-overlay [data-glitch] {
-                            font-size: 2.4rem !important;
-                            line-height: 1.3 !important;
-                        }
-                        #enter-btn {
-                            font-size: 1.3rem !important;
-                            padding: 16px 42px !important;
-                            height: auto !important;
-                        }
-                    }
                 </style>
 
                 <div class="afton-box" style="background: rgba(17,17,17,0.85); border: 5px solid var(--panel-border); width: 90%; max-width: 800px; height: 85vh; padding: 35px; border-radius: 25px; box-shadow: 0 0 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; position: relative; will-change: transform, opacity; transform: translateZ(0); pointer-events: auto;">
                     
-                    <!-- Header -->
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0;">
                         <div>
                             <h2 style="font-family: 'Onest', sans-serif; font-size: 26px; font-weight: 900; color: #fff; margin: 0; text-shadow: 0 2px 10px rgba(255,0,0,0.4);">WILLIAM AFTON</h2>
@@ -900,10 +874,8 @@ export function setupUIEvents() {
                         </div>
                     </div>
 
-                    <!-- Scrollable Content -->
                     <div class="afton-content-wrapper" style="mask-image: linear-gradient(to bottom, black 90%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, black 90%, transparent 100%);">
                         <div class="afton-scroll-content">
-                            <!-- AUDIO LOG INTERFACE MOVED TO TOP -->
                             <div style="background: rgba(30,0,0,0.5); border: 1px solid rgba(255,0,0,0.2); padding: 20px; border-radius: 12px; margin-top: 0px; margin-bottom: 10px;">
                                 <div style="display: flex; align-items: center; gap: 15px;">
                                     <button id="afton-voice-btn" class="afton-audio-btn">
@@ -948,7 +920,6 @@ export function setupUIEvents() {
                         </div>
                     </div>
 
-                    <!-- Footer / Close -->
                     <div style="padding-top: 20px; text-align: right; border-top: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;">
                         <button id="afton-close-btn" class="dbg-btn" style="width: auto; padding: 0 32px; display: inline-flex;">CLOSE FILE</button>
                     </div>
