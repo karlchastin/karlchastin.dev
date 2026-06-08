@@ -21,15 +21,16 @@ function preloadAssets() {
         const lenis = new Lenis({
             lerp: 0.15,
             wheelMultiplier: 0.9,
+            syncTouch: true,
             smoothWheel: true,
-            smoothTouch: false,
+            smoothTouch: true,
+            autoResize: true
         });
 
         function raf(time) {
             lenis.raf(time);
             requestAnimationFrame(raf);
         }
-
         requestAnimationFrame(raf);
     }
     
