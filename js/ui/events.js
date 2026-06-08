@@ -405,7 +405,7 @@ export function setupUIEvents() {
                 tooltipEl.innerHTML = newTooltipText;
             }
 
-            const targetFreq = isDeafened ? 200 : 24000;
+            const targetFreq = isDeafened ? 200 : 22050;
             window.lowpassFilter.frequency.cancelScheduledValues(window.audioCtx.currentTime);
             window.lowpassFilter.frequency.setValueAtTime(window.lowpassFilter.frequency.value, window.audioCtx.currentTime);
             window.lowpassFilter.frequency.exponentialRampToValueAtTime(targetFreq, window.audioCtx.currentTime + 0.8);
@@ -590,7 +590,7 @@ export function setupUIEvents() {
             window.lowpassFilter.frequency.exponentialRampToValueAtTime(200, now + 0.5);
             window.masterGain.gain.linearRampToValueAtTime(fullyMute ? 0.0 : 0.05, now + 0.5);
         } else {
-            const targetFreq = isGloballyDeafened ? 200 : 24000;
+            const targetFreq = isGloballyDeafened ? 200 : 22050;
             const targetVol = isGloballyDeafened ? 1.0 : 0.35;
             
             const currentFreq = Math.max(window.lowpassFilter.frequency.value, 1);
