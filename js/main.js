@@ -31,6 +31,7 @@ function preloadAssets() {
             lenis.raf(time);
             requestAnimationFrame(raf);
         }
+
         requestAnimationFrame(raf);
     }
     
@@ -44,6 +45,9 @@ function preloadAssets() {
     const assetsToLoad = [];
     Object.values(profiles).forEach(p => { if (p.avatar) assetsToLoad.push(p.avatar); });
     assetsToLoad.push("https://ghchart.rshah.org/ff0000/karlchastin");
+    
+    assetsToLoad.push("./assets/Animated Background.gif");
+    
     document.querySelectorAll('img').forEach(img => { if (img.src) assetsToLoad.push(img.src); });
 
     const uniqueAssets = [...new Set(assetsToLoad)];
@@ -484,6 +488,7 @@ const enterBtn = document.getElementById('enter-btn');
 const enterOverlay = document.getElementById('enter-overlay');
 const mainContent = document.getElementById('content');
 const bgAudio = document.getElementById('bg-audio');
+const sfxAudio = document.getElementById('sfx-audio');
 
 let hasEntered = false; 
 
@@ -495,8 +500,6 @@ if (enterBtn) {
         enterBtn.style.opacity = '0';
         enterBtn.style.pointerEvents = 'none';
         enterBtn.disabled = true;
-
-        const sfxAudio = document.getElementById('sfx-audio');
 
         if (window.audioCtx && window.audioCtx.state === 'suspended') {
             window.audioCtx.resume();
@@ -539,63 +542,62 @@ if (enterBtn) {
             if (window.masterGain) window.masterGain.gain.value = 1.0;
         }
 
+        if (bgAudio) { 
+            bgAudio.volume = 1.0;
+            bgAudio.currentTime = 0;
+            const bgPromise = bgAudio.play();
+            if (bgPromise !== undefined) bgPromise.catch(() => {});
+        }
+
+        if (sfxAudio) { 
+            sfxAudio.volume = 0.6; 
+            sfxAudio.currentTime = 0;
+            const sfxPromise = sfxAudio.play();
+            if (sfxPromise !== undefined) sfxPromise.catch(() => {});
+        }
+
+        const flash = document.createElement('div');
+        flash.style.position = 'fixed';
+        flash.style.top = '0';
+        flash.style.left = '0';
+        flash.style.width = '100vw';
+        flash.style.height = '100vh';
+        flash.style.backgroundColor = '#fff';
+        flash.style.zIndex = '99999';
+        flash.style.pointerEvents = 'none';
+        flash.style.willChange = 'opacity';
+        document.body.appendChild(flash);
+        
+        flash.animate([
+            { opacity: 1, offset: 0 },
+            { opacity: 0, offset: 1 }
+        ], { duration: 800, easing: 'ease-out' }).onfinish = () => flash.remove();
+
         setTimeout(() => {
-            if (bgAudio) { 
-                bgAudio.volume = 1.0;
-                bgAudio.currentTime = 0;
-                bgAudio.play().catch(() => {}); 
+            if (enterOverlay) {
+                enterOverlay.style.pointerEvents = 'none'; 
+                enterOverlay.style.transition = 'opacity 3s ease-out'; 
+                void enterOverlay.offsetWidth;
+                enterOverlay.style.opacity = '0';
             }
+        }, 100);
 
-            if (sfxAudio) { 
-                sfxAudio.volume = 0.6; 
-                sfxAudio.currentTime = 0;
-                sfxAudio.play().catch(() => {}); 
-            }
-
-            const flash = document.createElement('div');
-            flash.style.position = 'fixed';
-            flash.style.top = '0';
-            flash.style.left = '0';
-            flash.style.width = '100vw';
-            flash.style.height = '100vh';
-            flash.style.backgroundColor = '#fff';
-            flash.style.zIndex = '99999';
-            flash.style.pointerEvents = 'none';
-            flash.style.willChange = 'opacity';
-            document.body.appendChild(flash);
+        if (mainContent) {
+            mainContent.classList.remove('hidden'); 
+            void mainContent.offsetWidth;
             
-            flash.animate([
-                { opacity: 1, offset: 0 },
-                { opacity: 0, offset: 1 }
-            ], { duration: 800, easing: 'ease-out' }).onfinish = () => flash.remove();
-
-            setTimeout(() => {
-                if (enterOverlay) {
-                    enterOverlay.style.pointerEvents = 'none'; 
-                    enterOverlay.style.transition = 'opacity 3s ease-out'; 
-                    void enterOverlay.offsetWidth;
-                    enterOverlay.style.opacity = '0';
-                }
-            }, 800);
-
-            if (mainContent) {
-                mainContent.classList.remove('hidden'); 
-                void mainContent.offsetWidth;
-                
-                const animTargets = [
-                    ...document.querySelectorAll('.glass-panel'),
-                    ...document.querySelectorAll('.tab'),
-                    ...document.querySelectorAll('.card')
-                ];
-                
-                animTargets.forEach(el => el.classList.add('staged-for-drop'));
-                
-                if (typeof syncBackgrounds === 'function') syncBackgrounds(0); 
-            }
-        }, 150);
+            const animTargets = [
+                ...document.querySelectorAll('.glass-panel'),
+                ...document.querySelectorAll('.tab'),
+                ...document.querySelectorAll('.card')
+            ];
+            
+            animTargets.forEach(el => el.classList.add('staged-for-drop'));
+            
+            if (typeof syncBackgrounds === 'function') syncBackgrounds(0); 
+        }
         
         setTimeout(() => { 
-            
             if (window.audioCtx) {
                 if (window.lowpassFilter) {
                     window.lowpassFilter.frequency.setTargetAtTime(22050, window.audioCtx.currentTime, 0.05);
