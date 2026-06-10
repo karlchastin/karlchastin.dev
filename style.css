@@ -224,7 +224,7 @@ body::after {
     display: block; 
     color: var(--primary); 
     filter: drop-shadow(0 0 8px rgba(255, 0, 0, 0.8)); 
-    transition: all 0.2s ease; 
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease; 
 }
 
 .tab:not(.active):hover svg { 
@@ -246,13 +246,35 @@ body::after {
     font-weight: 800; 
     font-size: 16px; 
     color: #fff; 
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
 }
 
 .tab.show-text .tab-text { 
     max-width: 150px; 
     opacity: 1; 
     margin-left: 8px; 
+}
+
+body.tabs-hidden .tab svg,
+body.tabs-hidden .tab-text {
+    opacity: 0 !important;
+    transition: none !important; 
+}
+
+body.tabs-hidden .tab.show-text .tab-text {
+    opacity: 0 !important;
+}
+
+@keyframes pureTabFade {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+body.tabs-reveal-mode .tab svg,
+body.tabs-reveal-mode .tab-text {
+    opacity: 0;
+    animation: pureTabFade 0.6s ease forwards !important;
+    transition: none !important;
 }
 
 /* =========================================

@@ -5,6 +5,9 @@ import { startSyncing, stopSyncing, syncBackgrounds } from './animations.js';
 import { isAnimating, currentIndex } from './tabs.js';
 
 export function setupUIEvents() {
+    let isAftonSequenceRunning = false;
+    let preFocusAudioState = null;
+
     Object.values(emailAvatars).forEach(src => {
         const img = new Image();
         img.src = src;
@@ -41,7 +44,7 @@ export function setupUIEvents() {
             }
             .dbg-toggle input { opacity: 0; width: 0; height: 0; }
             .dbg-slider {
-                position: absolute; cursor: pointer;
+                position: absolute cursor: pointer;
                 top: 0; left: 0; right: 0; bottom: 0;
                 background-color: rgba(0,0,0,0.5);
                 transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -170,6 +173,83 @@ export function setupUIEvents() {
         document.head.appendChild(style);
     }
 
+    let vignetteEl = $('tab-blur-vignette');
+    if (!vignetteEl) {
+        vignetteEl = document.createElement('div');
+        vignetteEl.id = 'tab-blur-vignette';
+        vignetteEl.style.position = 'fixed';
+        vignetteEl.style.top = '0';
+        vignetteEl.style.left = '0';
+        vignetteEl.style.width = '100vw';
+        vignetteEl.style.height = '100vh';
+        vignetteEl.style.pointerEvents = 'none';
+        vignetteEl.style.zIndex = '999998'; 
+        vignetteEl.style.background = 'radial-gradient(circle, transparent 30%, rgba(0,0,0,0.85) 100%)';
+        vignetteEl.style.opacity = '0';
+        vignetteEl.style.transition = 'opacity 0.8s ease';
+        document.body.appendChild(vignetteEl);
+    }
+
+    let fnafMasterGain = null;
+    let fnafLowpass = null;
+
+    function getFNAFMasterNode() {
+        if (fnafMasterGain && fnafLowpass) return fnafLowpass;
+        if (!window.audioCtx) return null;
+
+        fnafMasterGain = window.audioCtx.createGain();
+        fnafMasterGain.gain.value = 1.0;
+
+        fnafLowpass = window.audioCtx.createBiquadFilter();
+        fnafLowpass.type = "lowpass";
+        fnafLowpass.frequency.value = 22050;
+
+        fnafLowpass.connect(fnafMasterGain);
+        fnafMasterGain.connect(window.tabFocusBass || window.audioCtx.destination);
+
+        return fnafLowpass;
+    }
+
+    function ensureTabFocusNodes() {
+        if (window.audioCtx && window.masterGain && !window.tabFocusNodesInjected) {
+            try {
+                window.tabFocusBass = window.audioCtx.createBiquadFilter();
+                window.tabFocusBass.type = 'lowshelf';
+                window.tabFocusBass.frequency.value = 250;
+                window.tabFocusBass.gain.value = 0; 
+
+                window.tabFocusTreble = window.audioCtx.createBiquadFilter();
+                window.tabFocusTreble.type = 'highshelf';
+                window.tabFocusTreble.frequency.value = 4000;
+                window.tabFocusTreble.gain.value = 0; 
+
+                window.tabFocusFilter = window.audioCtx.createBiquadFilter();
+                window.tabFocusFilter.type = 'lowpass';
+                window.tabFocusFilter.frequency.value = 22050; 
+
+                window.tabFocusGain = window.audioCtx.createGain();
+                window.tabFocusGain.gain.value = 1.0; 
+
+                window.tabFocusBass.connect(window.tabFocusTreble);
+                window.tabFocusTreble.connect(window.tabFocusFilter);
+                window.tabFocusFilter.connect(window.tabFocusGain);
+                window.tabFocusGain.connect(window.audioCtx.destination);
+
+                window.masterGain.disconnect();
+                window.masterGain.connect(window.tabFocusBass);
+                
+                if (fnafMasterGain) {
+                    fnafMasterGain.disconnect();
+                    fnafMasterGain.connect(window.tabFocusBass);
+                }
+                
+                window.tabFocusNodesInjected = true;
+            } catch(e) {
+                console.error("Could not inject tab focus nodes", e);
+            }
+        }
+    }
+
     function updateEmailWarningState(forceMode = 'auto') {
         const warningEl = $('email-night-warning');
         if (!warningEl) return;
@@ -225,7 +305,71 @@ export function setupUIEvents() {
     document.addEventListener('debug-email-warning', (e) => updateEmailWarningState(e.detail.mode));
 
     document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) {
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isHidden = document.hidden;
+        const bgAudio = $('bg-audio');
+        const sfxAudio = $('sfx-audio'); 
+        const voiceAudio = $('afton-voice-audio');
+
+        if (isMobile) {
+            if (isHidden) {
+                if (bgAudio && !bgAudio.paused) { bgAudio.dataset.wasPlaying = 'true'; bgAudio.pause(); }
+                if (sfxAudio && !sfxAudio.paused) { sfxAudio.dataset.wasPlaying = 'true'; sfxAudio.pause(); }
+                if (voiceAudio && !voiceAudio.paused) { voiceAudio.dataset.wasPlaying = 'true'; voiceAudio.pause(); }
+                if (window.audioCtx && window.audioCtx.state === 'running') window.audioCtx.suspend();
+            } else {
+                if (bgAudio && bgAudio.dataset.wasPlaying === 'true') bgAudio.play();
+                if (sfxAudio && sfxAudio.dataset.wasPlaying === 'true') sfxAudio.play();
+                if (voiceAudio && voiceAudio.dataset.wasPlaying === 'true') voiceAudio.play();
+                if (window.audioCtx && window.audioCtx.state === 'suspended') window.audioCtx.resume();
+            }
+        } else {
+            ensureTabFocusNodes();
+            
+            if (window.tabFocusNodesInjected) {
+                const now = window.audioCtx.currentTime;
+
+                if (isHidden) {
+                    window.tabFocusBass.gain.cancelScheduledValues(now);
+                    window.tabFocusBass.gain.setValueAtTime(window.tabFocusBass.gain.value, now);
+                    window.tabFocusBass.gain.linearRampToValueAtTime(-8, now + 0.8);
+
+                    window.tabFocusTreble.gain.cancelScheduledValues(now);
+                    window.tabFocusTreble.gain.setValueAtTime(window.tabFocusTreble.gain.value, now);
+                    window.tabFocusTreble.gain.linearRampToValueAtTime(-8, now + 0.8);
+
+                    window.tabFocusFilter.frequency.cancelScheduledValues(now);
+                    window.tabFocusFilter.frequency.setValueAtTime(window.tabFocusFilter.frequency.value, now);
+                    window.tabFocusFilter.frequency.exponentialRampToValueAtTime(200, now + 0.8);
+                    
+                    window.tabFocusGain.gain.cancelScheduledValues(now);
+                    window.tabFocusGain.gain.setValueAtTime(window.tabFocusGain.gain.value, now);
+                    window.tabFocusGain.gain.linearRampToValueAtTime(0.10, now + 0.8);
+
+                    if (vignetteEl) vignetteEl.style.opacity = '1';
+                } else {
+                    window.tabFocusBass.gain.cancelScheduledValues(now);
+                    window.tabFocusBass.gain.setValueAtTime(window.tabFocusBass.gain.value, now);
+                    window.tabFocusBass.gain.linearRampToValueAtTime(0, now + 0.8);
+
+                    window.tabFocusTreble.gain.cancelScheduledValues(now);
+                    window.tabFocusTreble.gain.setValueAtTime(window.tabFocusTreble.gain.value, now);
+                    window.tabFocusTreble.gain.linearRampToValueAtTime(0, now + 0.8);
+
+                    window.tabFocusFilter.frequency.cancelScheduledValues(now);
+                    window.tabFocusFilter.frequency.setValueAtTime(window.tabFocusFilter.frequency.value, now);
+                    window.tabFocusFilter.frequency.exponentialRampToValueAtTime(22050, now + 0.8);
+                    
+                    window.tabFocusGain.gain.cancelScheduledValues(now);
+                    window.tabFocusGain.gain.setValueAtTime(window.tabFocusGain.gain.value, now);
+                    window.tabFocusGain.gain.linearRampToValueAtTime(1.0, now + 0.8);
+
+                    if (vignetteEl) vignetteEl.style.opacity = '0';
+                }
+            }
+        }
+
+        if (!isHidden) {
             const gl = $('glass-left'), ga = $('glass-active'), gr = $('glass-right');
             
             if (gl) gl.style.transition = 'none';
@@ -499,7 +643,7 @@ export function setupUIEvents() {
         treble.gain.value = 8;
         
         bass.connect(treble);
-        treble.connect(window.audioCtx.destination);
+        treble.connect(getFNAFMasterNode() || window.audioCtx.destination);
         
         fnafNode = bass;
         return fnafNode;
@@ -512,7 +656,7 @@ export function setupUIEvents() {
         
         fnafMusicGain = window.audioCtx.createGain();
         fnafMusicGain.gain.value = 0.25; 
-        fnafMusicGain.connect(getFNAFNode() || window.audioCtx.destination);
+        fnafMusicGain.connect(getFNAFNode() || getFNAFMasterNode() || window.audioCtx.destination);
         
         return fnafMusicGain;
     }
@@ -523,7 +667,7 @@ export function setupUIEvents() {
         if(buf) {
             const src = window.audioCtx.createBufferSource();
             src.buffer = buf;
-            src.connect(getFNAFMusicNode() || window.audioCtx.destination);
+            src.connect(getFNAFMusicNode() || getFNAFMasterNode() || window.audioCtx.destination);
             src.start();
             return src;
         }
@@ -535,7 +679,6 @@ export function setupUIEvents() {
     let isBeeping = false;
     let currentSilence = 1.0;
     
-    let isAftonSequenceRunning = false;
     let aftonBeeps = [];
     let aftonLoop1Src = null;
     let aftonLoop2Src = null;
@@ -606,7 +749,7 @@ export function setupUIEvents() {
         if(buf && isBeeping) {
             const src = window.audioCtx.createBufferSource();
             src.buffer = buf;
-            src.connect(getFNAFMusicNode() || window.audioCtx.destination);
+            src.connect(getFNAFMusicNode() || getFNAFMasterNode() || window.audioCtx.destination);
             src.start();
             flashFNAF('bg'); 
             typingBeepTimer = setTimeout(scheduleNextBeep, (buf.duration + currentSilence) * 1000);
@@ -766,7 +909,7 @@ export function setupUIEvents() {
         aftonBeeps = [];
         aftonLoop1Src = null;
         aftonLoop2Src = null;
-        const targetNode = getFNAFMusicNode() || window.audioCtx.destination;
+        const targetNode = getFNAFMusicNode() || getFNAFMasterNode() || window.audioCtx.destination;
 
         for(let i=0; i<5; i++) {
             if(bufBeep) {
@@ -844,8 +987,12 @@ export function setupUIEvents() {
                     .afton-text { font-family: 'Satoshi', sans-serif; font-size: 14px; color: #ccc; line-height: 1.7; font-weight: 500; }
                     .afton-highlight { color: #fff; font-weight: 800; text-shadow: 0 0 5px rgba(255,255,255,0.3); }
                     
-                    .afton-redact { background-color: #3a0000; color: transparent; border-radius: 4px; padding: 0 5px; transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); user-select: none; display: inline-block; line-height: 1.2; box-shadow: inset 0 0 6px rgba(0,0,0,0.9); cursor: help; border: 1px solid rgba(255,0,0,0.15); }
-                    .afton-redact.hoverable:hover { background-color: rgba(255, 0, 0, 0.12); color: #ff5555; box-shadow: none; border-color: rgba(255,0,0,0.4); text-shadow: 0 0 8px rgba(255,0,0,0.6); }
+                    .afton-redact { background-color: #000 !important; color: transparent !important; border-radius: 2px; padding: 0 5px; transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); user-select: none; display: inline-block; line-height: 1.2; box-shadow: none; cursor: help; border: 1px solid #000; text-shadow: none !important; }
+                    .afton-redact * { color: transparent !important; text-shadow: none !important; }
+                    .afton-redact.hoverable:hover { background-color: rgba(255, 0, 0, 0.12) !important; color: #ff5555 !important; box-shadow: none; border-color: rgba(255,0,0,0.4); text-shadow: 0 0 8px rgba(255,0,0,0.6) !important; }
+                    .afton-redact.hoverable:hover * { color: #ff5555 !important; text-shadow: 0 0 8px rgba(255,0,0,0.6) !important; }
+                    
+                    .afton-final-redact { background-color: #000 !important; color: transparent !important; text-shadow: none !important; border-radius: 2px !important; pointer-events: none !important; }
                     
                     .afton-audio-btn { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,0,0,0.15); border: 1px solid rgba(255,0,0,0.5); color: #fff; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: all 0.2s ease; flex-shrink: 0; }
                     .afton-audio-btn:hover { background: rgba(255,0,0,0.3); transform: scale(1.05); box-shadow: 0 0 10px rgba(255,0,0,0.4); }
@@ -965,12 +1112,14 @@ export function setupUIEvents() {
         const pauseIcon = document.getElementById('afton-pause-icon');
         const voiceProgress = document.getElementById('afton-voice-progress');
         
-        if (window.audioCtx && !window.voiceRoutedAfton) {
+        if (window.audioCtx) {
             try {
-                const source = window.audioCtx.createMediaElementSource(voiceAudio);
-                source.connect(getFNAFNode() || window.audioCtx.destination);
-                window.voiceRoutedAfton = true;
-            } catch(e) {}
+                if (!voiceAudio.dataset.routed) {
+                    const source = window.audioCtx.createMediaElementSource(voiceAudio);
+                    source.connect(getFNAFNode() || getFNAFMasterNode() || window.audioCtx.destination);
+                    voiceAudio.dataset.routed = 'true';
+                }
+            } catch(e) { console.error("Could not route Afton voice:", e); }
         }
 
         voiceAudio.volume = 1.0;
@@ -1034,6 +1183,14 @@ export function setupUIEvents() {
             this.style.pointerEvents = 'none';
             this.style.transition = 'opacity 0.2s';
             this.style.opacity = '0';
+            
+            const box = modal.querySelector('.afton-box');
+            if (box) box.style.pointerEvents = 'none';
+
+            modal.querySelectorAll('.afton-redact').forEach(el => {
+                el.classList.remove('hoverable');
+                el.style.cursor = 'default';
+            });
 
             if (voiceAudio) {
                 voiceAudio.pause();
@@ -1059,7 +1216,7 @@ export function setupUIEvents() {
             const timeRemainingMs = Math.max(50, (nextBoundary - now) * 1000);
 
             const textNodes = [];
-            const walk = document.createTreeWalker(scrollContent, NodeFilter.SHOW_TEXT, null, false);
+            const walk = document.createTreeWalker(modal.querySelector('.afton-box'), NodeFilter.SHOW_TEXT, null, false);
             let node;
             while(node = walk.nextNode()) {
                 if(node.nodeValue.trim().length > 0) {
@@ -1086,7 +1243,19 @@ export function setupUIEvents() {
                     
                     if (currentLen > 0) {
                         let toRemove = Math.min(currentLen, charsToDeleteThisFrame);
-                        current.nodeValue = current.nodeValue.slice(0, -toRemove);
+                        
+                        if (!current.redactSpan) {
+                            current.redactSpan = document.createElement('span');
+                            current.redactSpan.className = 'afton-final-redact';
+                            current.parentNode.insertBefore(current.redactSpan, current.nextSibling);
+                        }
+
+                        let keepText = current.nodeValue.slice(0, -toRemove);
+                        let redactText = current.nodeValue.slice(-toRemove);
+                        
+                        current.nodeValue = keepText;
+                        current.redactSpan.textContent = redactText + current.redactSpan.textContent;
+                        
                         charsToDeleteThisFrame -= toRemove;
                         charsDeletedSoFar += toRemove;
                     }
@@ -1104,17 +1273,17 @@ export function setupUIEvents() {
 
             setTimeout(() => {
                 const overlay = modal.querySelector('.afton-overlay');
-                const box = modal.querySelector('.afton-box');
 
-                box.style.boxShadow = 'none';
+                if (box) box.style.boxShadow = 'none';
 
                 const windowFadeDur = outroDur * 0.5;
-                box.style.transition = `transform ${windowFadeDur}s cubic-bezier(0.25, 1, 0.5, 1), opacity ${windowFadeDur}s linear`;
-                box.style.transform = 'scale(0.95) translateY(15px)';
-                box.style.opacity = '0';
+                if (box) {
+                    box.style.transition = `transform ${windowFadeDur}s cubic-bezier(0.25, 1, 0.5, 1), opacity ${windowFadeDur}s linear`;
+                    box.style.transform = 'scale(0.95) translateY(15px)';
+                    box.style.opacity = '0';
+                }
                 
-                box.style.pointerEvents = 'none';
-                overlay.style.pointerEvents = 'none'; 
+                if (overlay) overlay.style.pointerEvents = 'none'; 
 
                 triggerAftonOutro(nextBoundary, () => {
                     if (overlay) {
@@ -1175,7 +1344,7 @@ export function setupUIEvents() {
         if(bufOutro) {
             let outro = window.audioCtx.createBufferSource();
             outro.buffer = bufOutro;
-            outro.connect(getFNAFMusicNode() || window.audioCtx.destination);
+            outro.connect(getFNAFMusicNode() || getFNAFMasterNode() || window.audioCtx.destination);
             outro.start(nextBoundary);
 
             outro.onended = () => {

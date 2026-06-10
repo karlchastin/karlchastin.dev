@@ -11,6 +11,8 @@ import { loadInstagramData } from './api/instagram.js';
 import { loadFacebookData } from './api/facebook.js';
 import { updateDBDData, updateValorantData, updateApexData, fetchOverwatchLiveStats } from './api/games.js';
 
+document.body.classList.add('tabs-hidden');
+
 function preloadAssets() {
     const loadingScreen = document.getElementById('loading-screen');
     const loadingPct = document.getElementById('loading-percentage');
@@ -535,11 +537,32 @@ if (enterBtn) {
             } catch (e) {
                 console.warn("Audio routing error:", e);
             }
-        } else if (window.lowpassFilter) {
-            window.lowpassFilter.frequency.value = 200; 
-            if (window.bassFilter) window.bassFilter.gain.value = 0;
-            if (window.trebleFilter) window.trebleFilter.gain.value = 0;
-            if (window.masterGain) window.masterGain.gain.value = 1.0;
+        }
+
+        if (window.audioCtx && window.masterGain) {
+            const now = window.audioCtx.currentTime;
+            const dropTime = now + 4.4; 
+            
+            if (window.lowpassFilter) {
+                window.lowpassFilter.frequency.cancelScheduledValues(now);
+                window.lowpassFilter.frequency.setValueAtTime(200, now);
+                window.lowpassFilter.frequency.setTargetAtTime(22050, dropTime, 0.05);
+            }
+            if (window.bassFilter) {
+                window.bassFilter.gain.cancelScheduledValues(now);
+                window.bassFilter.gain.setValueAtTime(0, now);
+                window.bassFilter.gain.setTargetAtTime(8, dropTime, 0.05);
+            }
+            if (window.trebleFilter) {
+                window.trebleFilter.gain.cancelScheduledValues(now);
+                window.trebleFilter.gain.setValueAtTime(0, now);
+                window.trebleFilter.gain.setTargetAtTime(8, dropTime, 0.05);
+            }
+            
+            window.masterGain.gain.cancelScheduledValues(now);
+            window.masterGain.gain.setValueAtTime(1.0, now);
+            window.masterGain.gain.setValueAtTime(1.0, dropTime);
+            window.masterGain.gain.linearRampToValueAtTime(0.35, dropTime + 0.15);
         }
 
         if (bgAudio) { 
@@ -586,6 +609,9 @@ if (enterBtn) {
             mainContent.classList.remove('hidden'); 
             void mainContent.offsetWidth;
             
+            const activeTabNode = document.querySelector('.tab.active');
+            if (activeTabNode) activeTabNode.classList.add('show-text');
+
             const animTargets = [
                 ...document.querySelectorAll('.glass-panel'),
                 ...document.querySelectorAll('.tab'),
@@ -598,24 +624,6 @@ if (enterBtn) {
         }
         
         setTimeout(() => { 
-            if (window.audioCtx) {
-                if (window.lowpassFilter) {
-                    window.lowpassFilter.frequency.setTargetAtTime(22050, window.audioCtx.currentTime, 0.05);
-                }
-                if (window.bassFilter) {
-                    window.bassFilter.gain.setTargetAtTime(8, window.audioCtx.currentTime, 0.05);
-                }
-                if (window.trebleFilter) {
-                    window.trebleFilter.gain.setTargetAtTime(8, window.audioCtx.currentTime, 0.05);
-                }
-                
-                if (window.masterGain) {
-                    window.masterGain.gain.cancelScheduledValues(window.audioCtx.currentTime);
-                    window.masterGain.gain.setValueAtTime(window.masterGain.gain.value, window.audioCtx.currentTime);
-                    window.masterGain.gain.linearRampToValueAtTime(0.35, window.audioCtx.currentTime + 0.15);
-                }
-            }
-
             if (bgAudio) {
                 bgAudio.volume = 1.0; 
             }
@@ -640,16 +648,28 @@ if (enterBtn) {
                 animTargets.forEach(el => el.classList.remove('staged-for-drop'));
 
                 setTimeout(() => {
+                    document.body.classList.add('tabs-reveal-mode');
+                    document.body.classList.remove('tabs-hidden');
+
+                    setTimeout(() => {
+                        document.body.classList.remove('tabs-reveal-mode');
+                    }, 1000);
+                }, 300);
+
+                setTimeout(() => {
                     animTargets.forEach(el => el.classList.remove('is-dropping'));
                     if (typeof isGlobalEntrance !== 'undefined') isGlobalEntrance = false; 
                 }, 800);
+
             } else {
                 if (typeof isGlobalEntrance !== 'undefined') isGlobalEntrance = false; 
+                document.body.classList.remove('tabs-hidden');
             }
-        }, 4500); 
+        }, 4400); 
     });
 } else {
     if (typeof isGlobalEntrance !== 'undefined') isGlobalEntrance = false; 
+    document.body.classList.remove('tabs-hidden');
 }
 
 try {
