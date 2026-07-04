@@ -533,7 +533,7 @@ function setupPreferencesTabs() {
 
             const targetId = 'bios-tab-' + tab.dataset.biostab;
             const newContent = document.getElementById(targetId);
-
+            const biosContainer = document.getElementById('bios-tab-container');
 
             let oldContent = null;
             document.querySelectorAll('.bios-tab-content').forEach(content => {
@@ -542,39 +542,56 @@ function setupPreferencesTabs() {
                 }
             });
 
-            if (oldContent) {
-                oldContent.style.transition = 'opacity 0.15s ease';
-                oldContent.style.opacity = '0';
+            let startHeight = 0;
+            if (biosContainer) {
+                startHeight = biosContainer.offsetHeight;
+                biosContainer.style.height = startHeight + 'px';
+                biosContainer.style.overflow = 'hidden';
             }
 
-            await delay(150);
-
-            biosTabs.forEach(t => {
-                t.classList.remove('active');
-            });
-            tab.classList.add('active');
-
             if (oldContent) {
+                oldContent.style.transition = 'opacity 0.2s ease';
+                oldContent.style.opacity = '0';
+                await delay(200);
+
                 oldContent.style.display = 'none';
                 oldContent.classList.remove('active');
                 oldContent.style.transition = '';
                 oldContent.style.opacity = '';
             }
 
-            if (newContent) {
+            biosTabs.forEach(t => {
+                t.classList.remove('active');
+            });
+            tab.classList.add('active');
+
+            if (newContent && biosContainer) {
                 newContent.style.opacity = '0';
                 newContent.style.display = 'block';
                 newContent.classList.add('active');
 
-                void newContent.offsetWidth;
+                biosContainer.style.height = 'auto';
+                const targetHeight = biosContainer.offsetHeight;
 
-                newContent.style.transition = 'opacity 0.25s ease';
+                biosContainer.style.height = startHeight + 'px';
+                void biosContainer.offsetWidth;
+
+                biosContainer.style.transition = 'height 0.65s cubic-bezier(0.25, 1, 0.5, 1)';
+                biosContainer.style.height = targetHeight + 'px';
+
+                await delay(600);
+
+                newContent.style.transition = 'opacity 0.3s ease';
                 newContent.style.opacity = '1';
 
-                await delay(250);
+                await delay(300);
 
                 newContent.style.transition = '';
                 newContent.style.opacity = '';
+
+                biosContainer.style.transition = '';
+                biosContainer.style.height = 'auto';
+                biosContainer.style.overflow = '';
             }
 
             isBiosTabAnimating = false;
