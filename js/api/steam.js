@@ -210,7 +210,7 @@ export async function updateSteamData() {
         if (activeTab === 'steam') {
             $('profile-name').textContent = cache.name || 'Loading...';
             if(cache.avatar) $('avatar-img').src = cache.avatar;
-            $('profile-bio').textContent = cache.bio || 'Welcome to my Steam profile.';
+            $('profile-bio').innerHTML = cache.bio || 'Welcome to my Steam profile.';
         }
 
         const elLevel = $('steam-live-level');

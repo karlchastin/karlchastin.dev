@@ -44,7 +44,7 @@ export function setupUIEvents() {
             }
             .dbg-toggle input { opacity: 0; width: 0; height: 0; }
             .dbg-slider {
-                position: absolute cursor: pointer;
+                position: absolute; cursor: pointer;
                 top: 0; left: 0; right: 0; bottom: 0;
                 background-color: rgba(0,0,0,0.5);
                 transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -460,7 +460,7 @@ export function setupUIEvents() {
                 avatarImgEl.src = avatar;
             }
             usernameEl.textContent = username;
-            bioEl.textContent = bio;
+            bioEl.innerHTML = bio;
 
             usernameEl.style.opacity = '1';
             bioEl.style.opacity = '1';
@@ -521,7 +521,7 @@ export function setupUIEvents() {
                             bioEl.style.opacity = '0';
                             
                             setTimeout(() => {
-                                bioEl.textContent = currentLyric.text;
+                                bioEl.innerHTML = currentLyric.text;
                                 bioEl.style.opacity = '1';
                             }, 100); 
                         }
@@ -597,12 +597,12 @@ export function setupUIEvents() {
     const MAX_BUFFER = 10;
     
     const aftonAssets = {
-        beep: './assets/Headlock Beep.mp3',
-        loop1: './assets/Headlock Loop 1.mp3',
-        loop2: './assets/Headlock Loop 2.mp3',
-        outro: './assets/Headlock Loop Outro.mp3',
-        keypress: './assets/Keypress.mp3',
-        success: './assets/Debug Success.mp3'
+        beep: './assets/Headlock Beep.webm',
+        loop1: './assets/Headlock Loop 1.webm',
+        loop2: './assets/Headlock Loop 2.webm',
+        outro: './assets/Headlock Loop Outro.webm',
+        keypress: './assets/Keypress.webm',
+        success: './assets/Debug Success.webm'
     };
     
     const rawAudioData = {};
@@ -1039,7 +1039,7 @@ export function setupUIEvents() {
                                 <p class="afton-text" style="font-style: italic; color: #999; font-size: 13px; margin-top: 15px; margin-bottom: 0; padding-left: 55px; border-left: 2px solid rgba(255,0,0,0.3);">
                                     "How could you do that to your own father?! I hate you. I've <span class="afton-shake">ALWAYS</span> hated you. I'm going to kill you, and I'm going to make it <span class="afton-shake">HURT</span>. Oh, how I miss the way you used to cry when I screamed at you. It's going to get so much <span class="afton-shake">WORSE</span>. I'm going to get out... and I'm going to find you... and I'll give you a <span class="afton-shake">REAL</span> reason to cry."
                                 </p>
-                                <audio id="afton-voice-audio" src="./assets/William Voice.mp3" preload="auto" crossorigin="anonymous"></audio>
+                                <audio id="afton-voice-audio" src="./assets/William Voice.webm" preload="auto" crossorigin="anonymous"></audio>
                             </div>
                             <p class="afton-text" style="font-size: 12px; color: #777; text-align: right; margin-top: 5px; margin-bottom: 25px;">Intercepted from an encrypted cellular relay; believed to be directed at his eldest son, Michael Afton.</p>
 

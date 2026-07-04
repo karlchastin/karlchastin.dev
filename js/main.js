@@ -16,9 +16,9 @@ document.body.classList.add('tabs-hidden');
 function preloadAssets() {
     const loadingScreen = document.getElementById('loading-screen');
     const loadingPct = document.getElementById('loading-percentage');
-    const loadingBarFill = document.getElementById('loading-bar-fill'); 
+    const loadingBarFill = document.getElementById('loading-bar-fill');
     const enterOverlay = document.getElementById('enter-overlay');
-    
+
     if (typeof Lenis !== 'undefined') {
         const lenis = new Lenis({
             lerp: 0.15,
@@ -36,7 +36,7 @@ function preloadAssets() {
 
         requestAnimationFrame(raf);
     }
-    
+
     if (!loadingScreen || !loadingPct) return;
 
     let currentVal = 0;
@@ -47,9 +47,9 @@ function preloadAssets() {
     const assetsToLoad = [];
     Object.values(profiles).forEach(p => { if (p.avatar) assetsToLoad.push(p.avatar); });
     assetsToLoad.push("https://ghchart.rshah.org/ff0000/karlchastin");
-    
+
     assetsToLoad.push("./assets/Animated Background.gif");
-    
+
     document.querySelectorAll('img').forEach(img => { if (img.src) assetsToLoad.push(img.src); });
 
     const uniqueAssets = [...new Set(assetsToLoad)];
@@ -79,18 +79,18 @@ function preloadAssets() {
         finishLoading();
     } else {
         window.addEventListener('load', finishLoading);
-        setTimeout(finishLoading, 8000); 
+        setTimeout(finishLoading, 8000);
     }
 
     const animateLoading = () => {
         const diff = targetVal - currentVal;
-        
+
         if (diff > 0) {
-            currentVal += Math.ceil(diff * 0.15); 
+            currentVal += Math.ceil(diff * 0.15);
         }
 
         if (currentVal > 100) currentVal = 100;
-        
+
         if (currentVal !== lastRenderedVal) {
             loadingPct.textContent = `${currentVal}%`;
             if (loadingBarFill) loadingBarFill.style.width = `${currentVal}%`;
@@ -99,20 +99,20 @@ function preloadAssets() {
 
         if (currentVal === 100 && isLoaded) {
             setTimeout(() => {
-                
+
                 loadingScreen.style.opacity = '0';
                 loadingScreen.style.filter = 'blur(15px)';
-                
+
                 setTimeout(() => {
-                    loadingScreen.remove(); 
-                    
+                    loadingScreen.remove();
+
                     if (enterOverlay) {
                         enterOverlay.style.opacity = '1';
                         enterOverlay.style.filter = 'blur(0px)';
                     }
                 }, 800);
 
-            }, 400); 
+            }, 400);
         } else {
             requestAnimationFrame(animateLoading);
         }
@@ -121,20 +121,20 @@ function preloadAssets() {
     requestAnimationFrame(animateLoading);
 }
 
-let isGlobalEntrance = true; 
+let isGlobalEntrance = true;
 window.isAppAnimating = () => isTabsAnimating;
 
 function refreshDynamicCard(cardId, targetTab, isActiveGetter) {
     const card = document.getElementById(cardId);
     if (!card) return;
-    
+
     const activeTabNode = document.querySelector('.tab.active');
     const activeTab = activeTabNode ? activeTabNode.getAttribute('data-tab') : 'home';
     if (activeTab !== targetTab) return;
 
     const show = !!isActiveGetter();
     const isVisible = window.getComputedStyle(card).display !== 'none' && !card.classList.contains('hide-card');
-    if (show === isVisible) return; 
+    if (show === isVisible) return;
 
     const contentId = cardId.replace('-container', '-content');
     const contentEl = document.getElementById(contentId);
@@ -146,16 +146,16 @@ function refreshDynamicCard(cardId, targetTab, isActiveGetter) {
             card.style.padding = '';
             card.style.borderWidth = '';
             card.style.transform = '';
-            
+
             card.style.display = 'block';
             card.classList.remove('hide-card');
-            
+
             if (contentEl) contentEl.classList.remove('fade-out');
-            
+
             if (typeof hasEntered !== 'undefined' && !hasEntered) {
                 card.classList.add('staged-for-drop');
             }
-            
+
             card.style.height = 'auto';
         } else {
             card.style.display = 'none';
@@ -177,29 +177,29 @@ function refreshDynamicCard(cardId, targetTab, isActiveGetter) {
         card.style.padding = '';
         card.style.borderWidth = '';
         card.style.transform = '';
-        
+
         card.style.transition = 'none';
         card.style.display = 'block';
         card.classList.add('hide-card');
         card.style.height = '0px';
-        
+
         if (contentEl) contentEl.classList.remove('fade-out');
-        
+
         card.style.height = 'auto';
         card.classList.remove('hide-card');
         card.style.overflow = 'visible';
         const targetHeight = card.offsetHeight;
-        
+
         card.classList.add('hide-card');
         card.style.height = '0px';
         card.style.overflow = 'clip';
         card.style.overflowClipMargin = '150px';
-        void card.offsetHeight; 
-        
-        card.style.transition = smoothTransition; 
+        void card.offsetHeight;
+
+        card.style.transition = smoothTransition;
         card.classList.remove('hide-card');
         card.style.height = targetHeight + 'px';
-        
+
         setTimeout(() => {
             if (isActiveGetter()) {
                 card.style.height = 'auto';
@@ -213,13 +213,13 @@ function refreshDynamicCard(cardId, targetTab, isActiveGetter) {
         card.style.overflow = 'clip';
         card.style.overflowClipMargin = '150px';
         card.style.transition = 'none';
-        
-        void card.offsetHeight; 
-        
+
+        void card.offsetHeight;
+
         card.style.transition = smoothTransition;
         card.classList.add('hide-card');
         card.style.height = '0px';
-        
+
         setTimeout(() => {
             if (!isActiveGetter()) {
                 card.style.display = 'none';
@@ -242,7 +242,7 @@ Object.defineProperty(window, 'currentMusicActivities', {
     set: (val) => {
         if (_musicActive !== val) {
             _musicActive = val;
-            
+
             if (profiles && profiles.apple_music && profiles.apple_music.layout) {
                 let showCards = profiles.apple_music.layout.showCards;
                 if (val && !showCards.includes('card-3-container')) {
@@ -251,8 +251,8 @@ Object.defineProperty(window, 'currentMusicActivities', {
                     profiles.apple_music.layout.showCards = showCards.filter(id => id !== 'card-3-container');
                 }
             }
-            
-            setTimeout(window.refreshMusicCard, 10); 
+
+            setTimeout(window.refreshMusicCard, 10);
         }
     }
 });
@@ -263,7 +263,7 @@ Object.defineProperty(window, 'currentDiscordActivities', {
     set: (val) => {
         if (_discordActive !== val) {
             _discordActive = val;
-            
+
             if (profiles && profiles.home && profiles.home.layout) {
                 let showCards = profiles.home.layout.showCards;
                 if (val && !showCards.includes('card-2-container')) {
@@ -272,8 +272,8 @@ Object.defineProperty(window, 'currentDiscordActivities', {
                     profiles.home.layout.showCards = showCards.filter(id => id !== 'card-2-container');
                 }
             }
-            
-            setTimeout(window.refreshDiscordCard, 10); 
+
+            setTimeout(window.refreshDiscordCard, 10);
         }
     }
 });
@@ -291,31 +291,31 @@ function attachGlobalHeightObservers() {
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
                 if (isGlobalEntrance || isTabsAnimating || card.classList.contains('hide-card') || window.getComputedStyle(card).display === 'none' || isAnimatingHeight) return;
-                
+
                 const oldHeight = card.offsetHeight;
                 if (oldHeight === 0) return;
-                
+
                 const originalTransition = card.style.transition;
-                
+
                 card.style.transition = 'none';
                 card.style.height = 'auto';
                 const newHeight = card.offsetHeight;
-                
+
                 if (Math.abs(oldHeight - newHeight) > 2) {
                     isAnimatingHeight = true;
                     card.style.height = oldHeight + 'px';
-                    void card.offsetHeight; 
-                    
+                    void card.offsetHeight;
+
                     if (originalTransition && originalTransition !== 'none') {
-                        card.style.transition = originalTransition.includes('height') 
-                            ? originalTransition 
+                        card.style.transition = originalTransition.includes('height')
+                            ? originalTransition
                             : originalTransition + ', height 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
                     } else {
-                        card.style.transition = ''; 
+                        card.style.transition = '';
                     }
-                    
+
                     card.style.height = newHeight + 'px';
-                    
+
                     clearTimeout(animTimeout);
                     animTimeout = setTimeout(() => {
                         isAnimatingHeight = false;
@@ -332,7 +332,7 @@ function attachGlobalHeightObservers() {
 
         const resizeObserver = new ResizeObserver(checkAndAnimate);
         resizeObserver.observe(container);
-        
+
         const mutationObserver = new MutationObserver(checkAndAnimate);
         mutationObserver.observe(container, { childList: true, subtree: true, characterData: true });
     });
@@ -350,7 +350,7 @@ function setupPreferencesTabs() {
             isPrefAnimating = true;
 
             const originalIsAppAnimating = window.isAppAnimating;
-            window.isAppAnimating = () => true; 
+            window.isAppAnimating = () => true;
 
             const targetId = 'pref-' + tab.dataset.pref;
             const newContent = document.getElementById(targetId);
@@ -379,14 +379,14 @@ function setupPreferencesTabs() {
                 oldContent.style.transition = '';
                 oldContent.style.opacity = '';
             }
-            
+
             newContent.style.opacity = '0';
             newContent.classList.add('active');
 
             card.style.height = 'auto';
             card.style.overflow = 'visible';
             const targetHeight = card.offsetHeight;
-            
+
             card.style.height = currentHeight + 'px';
             card.style.overflow = 'clip';
             card.style.overflowClipMargin = '150px';
@@ -408,7 +408,7 @@ function setupPreferencesTabs() {
             card.style.overflowClipMargin = '';
             newContent.style.transition = '';
             newContent.style.opacity = '';
-            
+
             window.isAppAnimating = originalIsAppAnimating;
             isPrefAnimating = false;
         });
@@ -417,26 +417,86 @@ function setupPreferencesTabs() {
     const subPrefTabs = document.querySelectorAll('.sub-pref-tab');
     let isSubPrefAnimating = false;
 
+    const desktopToggle = document.getElementById('desktop-toggle');
+    const desktopSubmenu = document.getElementById('desktop-submenu');
+    const desktopChevron = document.getElementById('desktop-chevron');
+
+    let isDesktopSubmenuOpen = true;
+
+    if (desktopToggle && desktopSubmenu) {
+        desktopToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (window.isAppAnimating()) return;
+
+            isDesktopSubmenuOpen = !isDesktopSubmenuOpen;
+
+            if (isDesktopSubmenuOpen) {
+                desktopSubmenu.style.maxHeight = desktopSubmenu.scrollHeight + 'px';
+                desktopSubmenu.style.opacity = '1';
+                desktopSubmenu.style.margin = '-5px 0 5px 0';
+                if (desktopChevron) desktopChevron.style.transform = 'rotate(180deg)';
+                desktopToggle.classList.add('active');
+
+                let hasActiveChild = false;
+                desktopSubmenu.querySelectorAll('.sub-pref-tab').forEach(t => {
+                    if (t.classList.contains('active')) hasActiveChild = true;
+                });
+                if (!hasActiveChild) {
+                    const mbTab = desktopSubmenu.querySelector('[data-subpref="motherboard"]');
+                    if (mbTab) mbTab.click();
+                }
+
+                setTimeout(() => {
+                    if (isDesktopSubmenuOpen) desktopSubmenu.style.maxHeight = '500px';
+                }, 500);
+            } else {
+                desktopSubmenu.style.maxHeight = desktopSubmenu.scrollHeight + 'px';
+                void desktopSubmenu.offsetWidth;
+                desktopSubmenu.style.maxHeight = '0px';
+                desktopSubmenu.style.opacity = '0';
+                desktopSubmenu.style.margin = '-10px 0 0 0';
+                if (desktopChevron) desktopChevron.style.transform = 'rotate(0deg)';
+                desktopToggle.classList.remove('active');
+            }
+        });
+    }
+
     subPrefTabs.forEach(tab => {
         tab.addEventListener('click', async (e) => {
+            if (tab.id === 'desktop-toggle') return;
             e.preventDefault();
             if (isSubPrefAnimating || tab.classList.contains('active')) return;
             isSubPrefAnimating = true;
+
+            if (desktopSubmenu && desktopToggle) {
+                if (!desktopSubmenu.contains(tab)) {
+                    isDesktopSubmenuOpen = false;
+                    desktopSubmenu.style.maxHeight = desktopSubmenu.scrollHeight + 'px';
+                    void desktopSubmenu.offsetWidth;
+                    desktopSubmenu.style.maxHeight = '0px';
+                    desktopSubmenu.style.opacity = '0';
+                    desktopSubmenu.style.margin = '-10px 0 0 0';
+                    if (desktopChevron) desktopChevron.style.transform = 'rotate(0deg)';
+                    desktopToggle.classList.remove('active');
+                }
+            }
 
             const parent = tab.closest('.pref-content');
             const targetId = 'subpref-' + tab.dataset.subpref;
             const newContent = document.getElementById(targetId);
             const oldContent = parent.querySelector('.sub-pref-content.active');
-            const oldTab = parent.querySelector('.sub-pref-tab.active');
+            const oldTabs = parent.querySelectorAll('.sub-pref-tab.active');
 
             if (oldContent) {
                 oldContent.style.transition = 'opacity 0.15s ease';
                 oldContent.style.opacity = '0';
             }
-            
+
             await delay(150);
 
-            if (oldTab) oldTab.classList.remove('active');
+            oldTabs.forEach(t => {
+                if (t.id !== 'desktop-toggle') t.classList.remove('active');
+            });
             tab.classList.add('active');
 
             if (oldContent) {
@@ -461,14 +521,73 @@ function setupPreferencesTabs() {
             isSubPrefAnimating = false;
         });
     });
+
+    let isBiosTabAnimating = false;
+    const biosTabs = document.querySelectorAll('.bios-tab-btn');
+    biosTabs.forEach(tab => {
+        tab.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (tab.classList.contains('active') || isBiosTabAnimating) return;
+
+            isBiosTabAnimating = true;
+
+            const targetId = 'bios-tab-' + tab.dataset.biostab;
+            const newContent = document.getElementById(targetId);
+
+
+            let oldContent = null;
+            document.querySelectorAll('.bios-tab-content').forEach(content => {
+                if (content.classList.contains('active') || content.style.display === 'block') {
+                    oldContent = content;
+                }
+            });
+
+            if (oldContent) {
+                oldContent.style.transition = 'opacity 0.15s ease';
+                oldContent.style.opacity = '0';
+            }
+
+            await delay(150);
+
+            biosTabs.forEach(t => {
+                t.classList.remove('active');
+            });
+            tab.classList.add('active');
+
+            if (oldContent) {
+                oldContent.style.display = 'none';
+                oldContent.classList.remove('active');
+                oldContent.style.transition = '';
+                oldContent.style.opacity = '';
+            }
+
+            if (newContent) {
+                newContent.style.opacity = '0';
+                newContent.style.display = 'block';
+                newContent.classList.add('active');
+
+                void newContent.offsetWidth;
+
+                newContent.style.transition = 'opacity 0.25s ease';
+                newContent.style.opacity = '1';
+
+                await delay(250);
+
+                newContent.style.transition = '';
+                newContent.style.opacity = '';
+            }
+
+            isBiosTabAnimating = false;
+        });
+    });
 }
 
 try {
-    injectIcons(); 
+    injectIcons();
     preloadAssets();
-    renderAllComponents(); 
+    renderAllComponents();
     setupTabs();
-    
+
     document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', () => {
             setTimeout(() => {
@@ -492,11 +611,11 @@ const mainContent = document.getElementById('content');
 const bgAudio = document.getElementById('bg-audio');
 const sfxAudio = document.getElementById('sfx-audio');
 
-let hasEntered = false; 
+let hasEntered = false;
 
 if (enterBtn) {
     enterBtn.addEventListener('click', () => {
-        if (hasEntered) return; 
+        if (hasEntered) return;
         hasEntered = true;
 
         enterBtn.style.opacity = '0';
@@ -511,15 +630,15 @@ if (enterBtn) {
             try {
                 window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 window.audioSource = window.audioCtx.createMediaElementSource(bgAudio);
-                
+
                 window.lowpassFilter = window.audioCtx.createBiquadFilter();
                 window.lowpassFilter.type = 'lowpass';
-                window.lowpassFilter.frequency.value = 200; 
-                
+                window.lowpassFilter.frequency.value = 200;
+
                 window.bassFilter = window.audioCtx.createBiquadFilter();
                 window.bassFilter.type = 'lowshelf';
-                window.bassFilter.frequency.value = 150; 
-                window.bassFilter.gain.value = 0; 
+                window.bassFilter.frequency.value = 150;
+                window.bassFilter.gain.value = 0;
 
                 window.trebleFilter = window.audioCtx.createBiquadFilter();
                 window.trebleFilter.type = 'highshelf';
@@ -527,13 +646,13 @@ if (enterBtn) {
                 window.trebleFilter.gain.value = 0;
 
                 window.masterGain = window.audioCtx.createGain();
-                window.masterGain.gain.value = 1.0; 
+                window.masterGain.gain.value = 1.0;
 
                 window.audioSource.connect(window.bassFilter);
                 window.bassFilter.connect(window.trebleFilter);
                 window.trebleFilter.connect(window.lowpassFilter);
-                window.lowpassFilter.connect(window.masterGain); 
-                window.masterGain.connect(window.audioCtx.destination); 
+                window.lowpassFilter.connect(window.masterGain);
+                window.masterGain.connect(window.audioCtx.destination);
             } catch (e) {
                 console.warn("Audio routing error:", e);
             }
@@ -541,8 +660,8 @@ if (enterBtn) {
 
         if (window.audioCtx && window.masterGain) {
             const now = window.audioCtx.currentTime;
-            const dropTime = now + 4.4; 
-            
+            const dropTime = now + 4.4;
+
             if (window.lowpassFilter) {
                 window.lowpassFilter.frequency.cancelScheduledValues(now);
                 window.lowpassFilter.frequency.setValueAtTime(200, now);
@@ -558,25 +677,25 @@ if (enterBtn) {
                 window.trebleFilter.gain.setValueAtTime(0, now);
                 window.trebleFilter.gain.setTargetAtTime(8, dropTime, 0.05);
             }
-            
+
             window.masterGain.gain.cancelScheduledValues(now);
             window.masterGain.gain.setValueAtTime(1.0, now);
             window.masterGain.gain.setValueAtTime(1.0, dropTime);
             window.masterGain.gain.linearRampToValueAtTime(0.35, dropTime + 0.15);
         }
 
-        if (bgAudio) { 
+        if (bgAudio) {
             bgAudio.volume = 1.0;
             bgAudio.currentTime = 0;
             const bgPromise = bgAudio.play();
-            if (bgPromise !== undefined) bgPromise.catch(() => {});
+            if (bgPromise !== undefined) bgPromise.catch(() => { });
         }
 
-        if (sfxAudio) { 
-            sfxAudio.volume = 0.6; 
+        if (sfxAudio) {
+            sfxAudio.volume = 0.6;
             sfxAudio.currentTime = 0;
             const sfxPromise = sfxAudio.play();
-            if (sfxPromise !== undefined) sfxPromise.catch(() => {});
+            if (sfxPromise !== undefined) sfxPromise.catch(() => { });
         }
 
         const flash = document.createElement('div');
@@ -590,7 +709,7 @@ if (enterBtn) {
         flash.style.pointerEvents = 'none';
         flash.style.willChange = 'opacity';
         document.body.appendChild(flash);
-        
+
         flash.animate([
             { opacity: 1, offset: 0 },
             { opacity: 0, offset: 1 }
@@ -598,17 +717,17 @@ if (enterBtn) {
 
         setTimeout(() => {
             if (enterOverlay) {
-                enterOverlay.style.pointerEvents = 'none'; 
-                enterOverlay.style.transition = 'opacity 3s ease-out'; 
+                enterOverlay.style.pointerEvents = 'none';
+                enterOverlay.style.transition = 'opacity 3s ease-out';
                 void enterOverlay.offsetWidth;
                 enterOverlay.style.opacity = '0';
             }
         }, 100);
 
         if (mainContent) {
-            mainContent.classList.remove('hidden'); 
+            mainContent.classList.remove('hidden');
             void mainContent.offsetWidth;
-            
+
             const activeTabNode = document.querySelector('.tab.active');
             if (activeTabNode) activeTabNode.classList.add('show-text');
 
@@ -617,15 +736,15 @@ if (enterBtn) {
                 ...document.querySelectorAll('.tab'),
                 ...document.querySelectorAll('.card')
             ];
-            
+
             animTargets.forEach(el => el.classList.add('staged-for-drop'));
-            
-            if (typeof syncBackgrounds === 'function') syncBackgrounds(0); 
+
+            if (typeof syncBackgrounds === 'function') syncBackgrounds(0);
         }
-        
-        setTimeout(() => { 
+
+        setTimeout(() => {
             if (bgAudio) {
-                bgAudio.volume = 1.0; 
+                bgAudio.volume = 1.0;
             }
 
             if (enterOverlay) enterOverlay.style.display = 'none';
@@ -633,18 +752,18 @@ if (enterBtn) {
             if (!window.location.hash) {
                 window.history.replaceState(null, null, '#home');
             }
-            
+
             if (mainContent) {
                 const animTargets = [
                     ...document.querySelectorAll('.glass-panel'),
                     ...document.querySelectorAll('.tab'),
                     ...document.querySelectorAll('.card')
                 ];
-                
+
                 animTargets.forEach(el => el.classList.add('is-dropping'));
-                
+
                 void mainContent.offsetWidth;
-                
+
                 animTargets.forEach(el => el.classList.remove('staged-for-drop'));
 
                 setTimeout(() => {
@@ -658,17 +777,17 @@ if (enterBtn) {
 
                 setTimeout(() => {
                     animTargets.forEach(el => el.classList.remove('is-dropping'));
-                    if (typeof isGlobalEntrance !== 'undefined') isGlobalEntrance = false; 
+                    if (typeof isGlobalEntrance !== 'undefined') isGlobalEntrance = false;
                 }, 800);
 
             } else {
-                if (typeof isGlobalEntrance !== 'undefined') isGlobalEntrance = false; 
+                if (typeof isGlobalEntrance !== 'undefined') isGlobalEntrance = false;
                 document.body.classList.remove('tabs-hidden');
             }
-        }, 4400); 
+        }, 4400);
     });
 } else {
-    if (typeof isGlobalEntrance !== 'undefined') isGlobalEntrance = false; 
+    if (typeof isGlobalEntrance !== 'undefined') isGlobalEntrance = false;
     document.body.classList.remove('tabs-hidden');
 }
 
@@ -676,7 +795,7 @@ try {
     prefetchGitHubProfile();
     updateGitHubData();
     updateSteamData();
-    connectLanyard(); 
+    connectLanyard();
     loadInstagramData();
 
     updateDBDData();
@@ -684,8 +803,8 @@ try {
     updateApexData();
     fetchOverwatchLiveStats('https://overwatch.blizzard.com/en-us/career/d156b69ebd3ccaffbfa9%7Cf27cbe61960ce0f2f4d04c2ebe83a618/');
 
-    swapData('home'); 
-    
+    swapData('home');
+
     const activeLayout = profiles['home'].layout;
     const targetCards = activeLayout.showCards || [];
     document.querySelectorAll('.card').forEach(card => {
@@ -715,18 +834,18 @@ setInterval(() => {
     if (document.hidden) return;
     const activeTabNode = document.querySelector('.tab.active');
     const activeTab = activeTabNode ? activeTabNode.getAttribute('data-tab') : null;
-    if(activeTab === 'steam') {
+    if (activeTab === 'steam') {
         fetch(`${WORKER_URL}?route=status`)
             .then(res => res.json())
             .then(data => {
                 if (!data.error && data.stateMessage) {
                     const statusEl = document.getElementById('steam-live-status');
-                    if (statusEl) { 
-                        statusEl.innerHTML = data.stateMessage; 
-                        statusEl.className = `steam-status ${data.onlineState}`; 
+                    if (statusEl) {
+                        statusEl.innerHTML = data.stateMessage;
+                        statusEl.className = `steam-status ${data.onlineState}`;
                     }
                 }
-            }).catch(() => {});
+            }).catch(() => { });
     }
 }, 5000);
 
@@ -735,7 +854,7 @@ setInterval(() => {
     const activeTabNode = document.querySelector('.tab.active');
     const activeTab = activeTabNode ? activeTabNode.getAttribute('data-tab') : 'home';
     const activeLayout = profiles[activeTab]?.layout || profiles.home.layout;
-    
+
     if (activeLayout.showGithubStats) updateGitHubData();
     if (activeLayout.showSteamExtra) updateSteamData();
 }, 60000);
@@ -747,3 +866,105 @@ if (initialHash) {
         targetTab.click();
     }
 }
+
+const biosTabs = document.querySelectorAll('.bios-tab');
+biosTabs.forEach(tab => {
+    tab.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (tab.classList.contains('active')) return;
+
+        biosTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        const panels = document.querySelectorAll('.bios-panel');
+        panels.forEach(p => {
+            p.style.display = 'none';
+            p.classList.remove('active');
+        });
+
+        const targetId = 'bios-' + tab.dataset.bios;
+        const targetPanel = document.getElementById(targetId);
+        if (targetPanel) {
+            targetPanel.style.display = 'block';
+            targetPanel.classList.add('active');
+        }
+    });
+});
+
+const accordionHeaders = document.querySelectorAll('.accordion-header');
+accordionHeaders.forEach(header => {
+    header.addEventListener('click', () => {
+        const group = header.closest('.bios-accordion-group');
+        const content = group.querySelector(':scope > .accordion-content');
+        const chevron = header.querySelector('.accordion-chevron');
+
+        const isOpen = content.classList.contains('show');
+
+        const resetInnerAccordions = (container) => {
+            const innerContents = container.querySelectorAll('.accordion-content.show');
+            innerContents.forEach(inner => {
+                inner.style.height = '0';
+                inner.style.opacity = '0';
+                inner.style.display = 'none';
+                inner.classList.remove('show');
+                const innerChevron = inner.parentElement.querySelector('.accordion-header .accordion-chevron');
+                if (innerChevron) innerChevron.style.transform = 'rotate(0deg)';
+            });
+        };
+
+        const parentGroup = group.parentElement;
+        const siblingGroups = parentGroup.querySelectorAll(':scope > .bios-accordion-group');
+        siblingGroups.forEach(sibling => {
+            if (sibling !== group) {
+                const siblingContent = sibling.querySelector(':scope > .accordion-content');
+                const siblingChevron = sibling.querySelector('.accordion-header .accordion-chevron');
+                if (siblingContent && siblingContent.classList.contains('show')) {
+                    siblingContent.style.height = siblingContent.scrollHeight + 'px';
+                    void siblingContent.offsetHeight;
+                    siblingContent.style.height = '0';
+                    siblingContent.style.opacity = '0';
+                    siblingContent.classList.remove('show');
+                    if (siblingChevron) siblingChevron.style.transform = 'rotate(0deg)';
+
+                    resetInnerAccordions(siblingContent);
+
+                    setTimeout(() => {
+                        if (!siblingContent.classList.contains('show')) {
+                            siblingContent.style.display = 'none';
+                        }
+                    }, 300);
+                }
+            }
+        });
+
+        if (isOpen) {
+            content.style.height = content.scrollHeight + 'px';
+            void content.offsetHeight;
+            content.style.height = '0';
+            content.style.opacity = '0';
+            content.classList.remove('show');
+            if (chevron) chevron.style.transform = 'rotate(0deg)';
+
+            resetInnerAccordions(content);
+
+            setTimeout(() => {
+                if (!content.classList.contains('show')) {
+                    content.style.display = 'none';
+                }
+            }, 300);
+        } else {
+            content.style.display = 'block';
+            content.classList.add('show');
+            const height = content.scrollHeight + 'px';
+            content.style.height = height;
+            content.style.opacity = '1';
+            if (chevron) chevron.style.transform = 'rotate(180deg)';
+
+            setTimeout(() => {
+                if (content.classList.contains('show')) {
+                    content.style.height = 'auto';
+                }
+            }, 300);
+        }
+    });
+});

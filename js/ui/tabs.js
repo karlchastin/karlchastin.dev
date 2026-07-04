@@ -39,7 +39,7 @@ export async function swapData(tabName) {
     if (profileName) profileName.textContent = profileData.name;
     if (profileUsername) profileUsername.textContent = profileData.username;
     if (profileBio) {
-        profileBio.textContent = profileData.bio;
+        profileBio.innerHTML = profileData.bio;
         profileBio.style.minHeight = tabName === 'email' ? '86px' : '0px';
     }
 

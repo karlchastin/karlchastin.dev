@@ -41,7 +41,7 @@ export const profiles = {
     discord: {
         avatar: "./assets/Home%20Tab%20Avatar.webp",
         name: "Discord", username: "@chas",
-        bio: "i refuse.",
+        bio: '<i>"—didn\'t want you to <b>only hear</b>."</i>',
         layout: { ...defaultLayout, showLocDiscord: true, showDiscordStatus: true, showDiscordBadges: true, showDiscordServers: true, showCards: ['card-4-container'] }
     },
     apple_music: {
@@ -171,8 +171,8 @@ export const emailBios = { personal: "Reach out here for casual networking, pers
 export const discordBadges = [
     { name: "Nitro Platinum", desc: "Subscriber since 3/12/25", icon: "https://cdn.discordapp.com/badge-icons/0334688279c8359120922938dcb1d6f8.png" },
     { name: "Hypesquad Bravery", icon: "https://cdn.discordapp.com/badge-icons/8a88d63823d8a71cd5e390baa45efa02.png" },
-    { name: "Server Boosting", desc: "Since Mar 31, 2026", icon: "https://cdn.discordapp.com/badge-icons/51040c70d4f20a921ad6674ff86fc95c.png" },
+    { name: "Server Boosting", desc: "Since Jul 1, 2026", icon: "https://cdn.discordapp.com/badge-icons/51040c70d4f20a921ad6674ff86fc95c.png" },
     { name: "Completed a Quest", icon: "https://cdn.discordapp.com/badge-icons/7d9ae358c8c5e118768335dbe68b4fb8.png" }, 
-    { name: "Gifting Luminary", icon: "https://cdn.discordapp.com/badge-icons/3119f5504b2cd09576a323908c7c3517.png" },
-    { name: "Orbs", desc: "Apprentice", icon: "https://cdn.discordapp.com/badge-icons/83d8a1eb09a8d64e59233eec5d4d5c2d.png" } 
+    { name: "Orbs", desc: "Apprentice", icon: "https://cdn.discordapp.com/badge-icons/83d8a1eb09a8d64e59233eec5d4d5c2d.png" },
+    { name: "Gifting Luminary", icon: "https://cdn.discordapp.com/badge-icons/3119f5504b2cd09576a323908c7c3517.png" }
 ];

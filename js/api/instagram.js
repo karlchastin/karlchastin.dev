@@ -63,7 +63,7 @@ export function updateInstagramUI(profile) {
                 profileName.style.opacity = '1';
             }
             if (profileBio) {
-                profileBio.textContent = bioText;
+                profileBio.innerHTML = bioText;
                 profileBio.style.opacity = '1';
             }
         }, 150);
