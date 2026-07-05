@@ -29,7 +29,7 @@ export const profiles = {
     email: {
         avatar: "https://lh3.googleusercontent.com/a/ACg8ocKT0TRPKQOi9HhhEUz48ZwapMWtuFTnsCNewew3vTrVOjs3F8jtsA=s1000-c",
         name: "Karl Chastin Delfin", username: "Choose your contact intention",
-        bio: "You can hover over your preferred contact method, and select to be redirected to your default email provider.",
+        bio: "Select a contact method below to reach out via your preferred email provider.",
         layout: { ...defaultLayout, showTimeLoc: true, showEmailActions: true, showCards: ['card-2-container'] }
     },
     steam: {
@@ -67,7 +67,7 @@ export const profiles = {
     preferences: {
         avatar: "./assets/Home%20Tab%20Avatar.webp",
         name: "Preferences", username: "System Settings",
-        bio: "My per-game preferences, mod configurations, and custom setups.",
+        bio: "Game preferences, custom setups, mods, and performance statistics.",
         layout: { ...defaultLayout, showPreferences: true, showCards: ['card-2-container'] }
     }
 };
@@ -166,7 +166,7 @@ export const instagramHighlights = [
 ];
 
 export const emailAvatars = { personal: "https://lh3.googleusercontent.com/a/ACg8ocKT0TRPKQOi9HhhEUz48ZwapMWtuFTnsCNewew3vTrVOjs3F8jtsA=s1000-c", business: "https://lh3.googleusercontent.com/a/ACg8ocJuf1q6J2ASav0wtbSxzLmSrDjZybT3LGBTEtDgQb23oN7r7aJv=s1000-c", school: "https://lh3.googleusercontent.com/a/ACg8ocISwd6aSM0UDXFLqiKEuYtdiKtJw1TNDDA-J2rTI62UO7OGsfvH=s1000-c" };
-export const emailBios = { personal: "Reach out here for casual networking, personal inquiries, and general communication.", business: "For professional inquiries, freelance opportunities, and serious collaborations.", school: "Strictly for academic purposes, professor communications, and university matters." };
+export const emailBios = { personal: "Drop me a line for casual chats, networking, or general inquiries.", business: "Reach out for professional opportunities, freelancing, and collaborations.", school: "Reserved for academic inquiries, professors, and university matters." };
 
 export const discordBadges = [
     { name: "Nitro Platinum", desc: "Subscriber since 3/12/25", icon: "https://cdn.discordapp.com/badge-icons/0334688279c8359120922938dcb1d6f8.png" },

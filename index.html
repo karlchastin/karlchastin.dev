@@ -202,6 +202,8 @@
                                 </button>
                                 <div id="desktop-submenu"
                                     style="display: flex; flex-direction: column; gap: 5px; padding-left: 15px; overflow: hidden; transition: max-height 0.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease, margin 0.5s cubic-bezier(0.25, 1, 0.5, 1); max-height: 500px; opacity: 1; margin-top: -5px; margin-bottom: 5px;">
+                                    <button class="sub-pref-tab" data-subpref="monitor"
+                                        style="display: flex; align-items: center; padding: 0 20px; flex-shrink: 0; text-align: left; width: 100%; height: 36px; box-sizing: border-box; font-size: 13px;">Monitor</button>
                                     <button class="sub-pref-tab active" data-subpref="motherboard"
                                         style="display: flex; align-items: center; padding: 0 20px; flex-shrink: 0; text-align: left; width: 100%; height: 36px; box-sizing: border-box; font-size: 13px;">Motherboard</button>
                                     <button class="sub-pref-tab" data-subpref="cpu"
@@ -238,6 +240,23 @@
                             </div>
                             <div style="flex: 1; position: relative; min-width: 0;">
 
+                                <div class="sub-pref-content" id="subpref-monitor">
+                                    <div
+                                        style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: center;">
+                                        <div
+                                            style="height: 260px; display: flex; align-items: center; justify-content: center; width: 100%; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-sizing: border-box;">
+                                            <img src="./assets/MSI MAG 255XF.webp" alt="MSI MAG 255XF"
+                                                style="width: 220px; height: 220px; object-fit: contain; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));">
+                                        </div>
+                                        <h3 style="font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 5px;">
+                                            MSI MAG 255XF</h3>
+                                        <p style="color: #888; font-size: 14px; margin-bottom: 20px;">24.5" FHD (1920x1080) · 300Hz · 0.5ms (GtG) · Rapid IPS</p>
+                                        <a href="https://ecommerce.datablitz.com.ph/products/msi-mag-255xf-24-5-fhd-1920x1080-300hz-0-5ms-gtg-rapid-ips-gaming-monitor" target="_blank" class="btn-visit-external"
+                                            style="display: inline-flex; width: auto; padding: 10px 25px;">VIEW PRODUCT
+                                            LISTING ONLINE <i data-icon="external-link"></i></a>
+                                    </div>
+                                </div>
+
                                 <div class="sub-pref-content active" id="subpref-motherboard">
                                     <div
                                         style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: center;">
@@ -252,7 +271,7 @@
                                         <p style="color: #888; font-size: 14px; margin-bottom: 20px;">Micro ATX AM4
                                             Motherboard · AMD Quad CrossFireX™ Support · 4x DDR4 DIMM · Ultra M.2 (PCIe
                                             Gen3x4)</p>
-                                        <a href="#" class="btn-visit-external"
+                                        <a href="https://ecommerce.datablitz.com.ph/products/asrock-b450m-steel-legend-ddr4-motherboard" target="_blank" class="btn-visit-external"
                                             style="display: inline-flex; width: auto; padding: 10px 25px;">VIEW PRODUCT
                                             LISTING ONLINE <i data-icon="external-link"></i></a>
                                     </div>
@@ -271,7 +290,7 @@
                                         <p style="color: #888; font-size: 14px; margin-bottom: 20px;">8 Cores · 16
                                             Threads · 3.4 GHz to 4.6 GHz · 32MB L3 Cache · 65W TDP · Precision Boost 2
                                         </p>
-                                        <a href="#" class="btn-visit-external"
+                                        <a href="https://ecommerce.datablitz.com.ph/products/amd-ryzen-7-5700x-processor" target="_blank" class="btn-visit-external"
                                             style="display: inline-flex; width: auto; padding: 10px 25px;">VIEW PRODUCT
                                             LISTING ONLINE <i data-icon="external-link"></i></a>
                                     </div>
@@ -289,7 +308,7 @@
                                             Ocypus Gamma A20</h3>
                                         <p style="color: #888; font-size: 14px; margin-bottom: 20px;">32CFM · 1mmH2O ·
                                             92*66*122.5mm · 110W TDP</p>
-                                        <a href="#" class="btn-visit-external"
+                                        <a href="https://ecommerce.datablitz.com.ph/products/ocypus-gamma-a20-argb-dual-heat-pipes-92mm-fan-small-tower-air-cooler-with-argb-lighting-black-white" target="_blank" class="btn-visit-external"
                                             style="display: inline-flex; width: auto; padding: 10px 25px;">VIEW PRODUCT
                                             LISTING ONLINE <i data-icon="external-link"></i></a>
                                     </div>
@@ -309,7 +328,7 @@
                                         <p style="color: #888; font-size: 14px; margin-bottom: 20px;">8GB GDDR7 · 2512
                                             MHz Core Clock · 3840 CUDA® Cores · 28 Gbps Memory Clock · 128-bit Memory
                                             Bus</p>
-                                        <a href="#" class="btn-visit-external"
+                                        <a href="https://ecommerce.datablitz.com.ph/products/gigabyte-geforce-rtx-5060-windforce-oc-8gb-gddr7-graphics-card" target="_blank" class="btn-visit-external"
                                             style="display: inline-flex; width: auto; padding: 10px 25px;">VIEW PRODUCT
                                             LISTING ONLINE <i data-icon="external-link"></i></a>
                                     </div>
@@ -328,7 +347,7 @@
                                             TeamGroup T-Force Delta RGB</h3>
                                         <p style="color: #888; font-size: 14px; margin-bottom: 20px;">2x 8GB DDR4 Dual
                                             Channel · 3200MHz · CL16</p>
-                                        <a href="#" class="btn-visit-external"
+                                        <a href="https://ecommerce.datablitz.com.ph/collections/all/products/teamgroup-t-force-delta-rgb-ddr4-16gb-2x8gb-3200mhz-cl16-18-18-38-1-35v-gaming-desktop-memory-black-white-tf3d416g3200hc16cdc01-tf4d416g3200hc16cdc01" target="_blank" class="btn-visit-external"
                                             style="display: inline-flex; width: auto; padding: 10px 25px;">VIEW PRODUCT
                                             LISTING ONLINE <i data-icon="external-link"></i></a>
                                     </div>
@@ -346,7 +365,7 @@
                                             Kingston NV3 1TB</h3>
                                         <p style="color: #888; font-size: 14px; margin-bottom: 20px;">1 Terrabyte · NVMe
                                             PCIe 4.0 x4 M.2 2280</p>
-                                        <a href="#" class="btn-visit-external"
+                                        <a href="https://ecommerce.datablitz.com.ph/collections/all/products/kingston-500gb-nv3-m-2-2280-pcie-4-0-nvme-ssd-snv3s-500g?variant=47086863810719" target="_blank" class="btn-visit-external"
                                             style="display: inline-flex; width: auto; padding: 10px 25px;">VIEW PRODUCT
                                             LISTING ONLINE <i data-icon="external-link"></i></a>
                                     </div>
@@ -364,7 +383,7 @@
                                             Corsair CX650</h3>
                                         <p style="color: #888; font-size: 14px; margin-bottom: 20px;">650W · 80 PLUS ·
                                             Bronze Certified · Non-Modular</p>
-                                        <a href="#" class="btn-visit-external"
+                                        <a href="https://ecommerce.datablitz.com.ph/products/corsair-cx-series-cx650-650w-80-bronze-atx-power-supply" target="_blank" class="btn-visit-external"
                                             style="display: inline-flex; width: auto; padding: 10px 25px;">VIEW PRODUCT
                                             LISTING ONLINE <i data-icon="external-link"></i></a>
                                     </div>
@@ -383,7 +402,7 @@
                                             HiteqPC Coolman Spectra</h3>
                                         <p style="color: #888; font-size: 14px; margin-bottom: 20px;">Micro-ATX
                                             Dual-Chamber · Tempered Glass Front and Side Panels</p>
-                                        <a href="#" class="btn-visit-external"
+                                        <a href="https://ph.shp.ee/SFHr2GE9" target="_blank" class="btn-visit-external"
                                             style="display: inline-flex; width: auto; padding: 10px 25px;">VIEW PRODUCT
                                             LISTING ONLINE <i data-icon="external-link"></i></a>
                                     </div>

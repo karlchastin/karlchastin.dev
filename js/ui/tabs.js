@@ -24,12 +24,12 @@ const safeDelay = (ms) => new Promise(resolve => {
 });
 
 export async function swapData(tabName) {
-    const profileData = profiles[tabName] || profiles.home; 
+    const profileData = profiles[tabName] || profiles.home;
     const newLayout = { ...defaultLayout, ...(profileData.layout || {}) };
 
     const isIgDeact = document.body.classList.contains('ig-deactivated');
     const isFbDeact = document.body.classList.contains('fb-deactivated');
-    
+
     const avatarImg = document.getElementById('avatar-img');
     const profileName = document.getElementById('profile-name');
     const profileUsername = document.getElementById('profile-username');
@@ -40,13 +40,13 @@ export async function swapData(tabName) {
     if (profileUsername) profileUsername.textContent = profileData.username;
     if (profileBio) {
         profileBio.innerHTML = profileData.bio;
-        profileBio.style.minHeight = tabName === 'email' ? '86px' : '0px';
+        profileBio.style.minHeight = '';
     }
 
     const displayMap = {
         'home-discord': { show: newLayout.showDiscord, type: 'block' },
         'github-stats-wrapper': { show: newLayout.showGithubStats, type: 'block' },
-        'music-player': { show: newLayout.showMusic, type: 'flex' }, 
+        'music-player': { show: newLayout.showMusic, type: 'flex' },
         'github-contributions-wrapper': { show: newLayout.showGithubContribs, type: 'block' },
         'email-actions-wrapper': { show: newLayout.showEmailActions, type: 'block' },
         'loc-home': { show: newLayout.showLocHome, type: 'flex' },
@@ -62,8 +62,8 @@ export async function swapData(tabName) {
         'steam-stats-wrapper': { show: newLayout.showSteamStats, type: 'block' },
         'github-repos': { show: newLayout.showGithubRepos, type: 'block' },
         'steam-review-wrapper': { show: newLayout.showSteamReview, type: 'block' },
-        'discord-status-wrapper': { show: newLayout.showDiscordStatus, type: 'flex' }, 
-        'steam-status-wrapper': { show: newLayout.showSteamStatus, type: 'flex' }, 
+        'discord-status-wrapper': { show: newLayout.showDiscordStatus, type: 'flex' },
+        'steam-status-wrapper': { show: newLayout.showSteamStatus, type: 'flex' },
         'discord-badges-wrapper': { show: newLayout.showDiscordBadges, type: 'block' },
         'discord-servers-wrapper': { show: newLayout.showDiscordServers, type: 'block' },
         'apple-music-activity-wrapper': { show: newLayout.showMusicActivity, type: 'block' },
@@ -79,10 +79,10 @@ export async function swapData(tabName) {
         const el = document.getElementById(id);
         if (el) {
             let shouldShow = config.show;
-            
+
             if (tabName === 'instagram' && isIgDeact && id.includes('instagram')) shouldShow = false;
             if (tabName === 'facebook' && isFbDeact && id.includes('facebook')) shouldShow = false;
-            
+
             el.style.display = shouldShow ? config.type : 'none';
         }
     }
@@ -103,7 +103,7 @@ export function setupTabs() {
     let resizeTimer;
     window.addEventListener('resize', () => {
         clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(() => requestAnimationFrame(() => syncBackgrounds(currentIndex, false)), 50); 
+        resizeTimer = setTimeout(() => requestAnimationFrame(() => syncBackgrounds(currentIndex, false)), 50);
     });
 
     const tabs = document.querySelectorAll('.tab');
@@ -114,27 +114,27 @@ export function setupTabs() {
         const observer = new ResizeObserver(() => {
             if (!isAnimating) {
                 requestAnimationFrame(() => syncBackgrounds(currentIndex, true));
-                
+
                 clearTimeout(roTimer);
                 roTimer = setTimeout(() => {
                     if (!isAnimating) requestAnimationFrame(() => syncBackgrounds(currentIndex, false));
                 }, 50);
             }
         });
-        
+
         if (track) observer.observe(track);
         tabs.forEach(t => observer.observe(t));
     }
     tabs.forEach((link, idx) => {
         link.addEventListener('click', async (e) => {
             e.preventDefault();
-            if(isAnimating || link.classList.contains('active')) return;
+            if (isAnimating || link.classList.contains('active')) return;
             isAnimating = true;
             window.isTabsAnimating = true;
 
             const oldTab = document.querySelector('.tab.active');
             if (oldTab) oldTab.classList.remove('show-text');
-            
+
             const allCards = document.querySelectorAll('.card');
 
             allCards.forEach(card => {
@@ -143,13 +143,13 @@ export function setupTabs() {
                     card.style.height = h + 'px';
                     card.style.overflow = 'clip';
                     card.style.overflowClipMargin = '150px';
-                    card.style.transition = 'none'; 
+                    card.style.transition = 'none';
                 }
             });
 
-            void document.body.offsetHeight; 
-            allCards.forEach(card => card.style.transition = ''); 
-            
+            void document.body.offsetHeight;
+            allCards.forEach(card => card.style.transition = '');
+
             const avatarImg = document.getElementById('avatar-img');
             const locContainer = document.getElementById('location-container');
             if (avatarImg) {
@@ -157,16 +157,16 @@ export function setupTabs() {
                 avatarImg.parentElement.style.opacity = '0';
             }
             if (locContainer) locContainer.style.opacity = '0';
-            
+
             document.querySelectorAll('.transition-container').forEach(c => c.classList.add('fade-out'));
 
             startSyncing(() => currentIndex);
-            await safeDelay(150); 
+            await safeDelay(150);
             if (oldTab) oldTab.classList.remove('active');
-            await safeDelay(150); 
-            
-            stopSyncing(); 
-            
+            await safeDelay(150);
+
+            stopSyncing();
+
             const glassLeft = document.getElementById('glass-left');
             const glassActive = document.getElementById('glass-active');
             const glassRight = document.getElementById('glass-right');
@@ -176,13 +176,13 @@ export function setupTabs() {
             if (glassRight) glassRight.classList.add('sliding');
 
             currentIndex = idx;
-            syncBackgrounds(currentIndex); 
-            await safeDelay(350); 
+            syncBackgrounds(currentIndex);
+            await safeDelay(350);
 
             if (glassLeft) glassLeft.classList.remove('sliding');
             if (glassActive) glassActive.classList.remove('sliding');
             if (glassRight) glassRight.classList.remove('sliding');
-            
+
             const tabName = link.getAttribute('data-tab');
             window.history.pushState(null, null, `#${tabName}`);
             const newLayout = profiles[tabName]?.layout || profiles.home.layout;
@@ -194,7 +194,7 @@ export function setupTabs() {
 
             allCards.forEach(card => {
                 const shouldShow = card.id === 'main-profile-card' || targetCards.includes(card.id);
-                
+
                 let finalShow = shouldShow;
 
                 if (tabName === 'instagram' && isIgDeact && card.id !== 'main-profile-card') finalShow = false;
@@ -202,22 +202,22 @@ export function setupTabs() {
 
                 if (tabName === 'music' && card.id === 'card-3-container' && !window.currentMusicActivities) finalShow = false;
                 if (tabName === 'home' && card.id === 'card-2-container' && !window.currentDiscordActivities) finalShow = false;
-                
+
                 cardVisibility.set(card, finalShow);
             });
 
-            await swapData(tabName); 
+            await swapData(tabName);
 
             allCards.forEach(card => {
                 const finalShow = cardVisibility.get(card);
                 const isCurrentlyVisible = window.getComputedStyle(card).display !== 'none';
-                
+
                 if (finalShow) {
                     if (!isCurrentlyVisible) {
-                        card.style.transition = 'none'; 
+                        card.style.transition = 'none';
                         card.style.display = 'block';
-                        card.classList.add('hide-card'); 
-                        card.style.height = '0px'; 
+                        card.classList.add('hide-card');
+                        card.style.height = '0px';
                     } else {
                         card.classList.remove('hide-card');
                     }
@@ -236,19 +236,19 @@ export function setupTabs() {
                     card.dataset.tempOverflow = card.style.overflow;
                     card.dataset.tempMargin = card.style.overflowClipMargin;
                     card.dataset.tempTransition = card.style.transition;
-                    
-                    card.style.transition = 'none'; 
-                    if (hadHideCard) card.style.opacity = '0'; 
+
+                    card.style.transition = 'none';
+                    if (hadHideCard) card.style.opacity = '0';
                     card.classList.remove('hide-card');
-                    
+
                     card.style.margin = '';
                     card.style.padding = '';
                     card.style.borderWidth = '';
                     card.style.opacity = '';
                     card.style.transform = '';
-                    
+
                     card.style.height = 'auto';
-                    card.style.overflow = 'visible'; 
+                    card.style.overflow = 'visible';
                     card.style.overflowClipMargin = '';
                 }
             });
@@ -258,24 +258,24 @@ export function setupTabs() {
 
                 if (finalShow) {
                     targetHeights.set(card, card.offsetHeight);
-                    
+
                     if (card.dataset.hadHideCard === 'true') {
-                        card.style.opacity = ''; 
+                        card.style.opacity = '';
                         card.classList.add('hide-card');
                     }
                     card.style.overflow = card.dataset.tempOverflow;
                     card.style.overflowClipMargin = card.dataset.tempMargin;
                     card.style.height = card.dataset.tempHeight;
-                    void card.offsetHeight; 
+                    void card.offsetHeight;
                     card.style.transition = card.dataset.tempTransition;
                 }
             });
 
-            void document.body.offsetHeight; 
+            void document.body.offsetHeight;
 
             allCards.forEach(card => {
                 const finalShow = cardVisibility.get(card);
-                
+
                 card.style.transition = 'height 0.65s cubic-bezier(0.25, 1, 0.5, 1), margin 0.65s cubic-bezier(0.25, 1, 0.5, 1), padding 0.65s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease';
 
                 if (finalShow) {
@@ -287,7 +287,7 @@ export function setupTabs() {
                 } else {
                     const parent = card.parentElement;
                     const gap = parent ? (parseFloat(window.getComputedStyle(parent).gap) || 0) : 0;
-                    
+
                     card.classList.add('hide-card');
                     card.style.height = '0px';
                     card.style.padding = '0px';
@@ -300,12 +300,12 @@ export function setupTabs() {
 
             link.classList.add('active');
             startSyncing(() => currentIndex);
-            await safeDelay(600); 
+            await safeDelay(600);
 
             link.classList.add('show-text');
             if (avatarImg) avatarImg.parentElement.style.opacity = '1';
             if (locContainer) locContainer.style.opacity = '1';
-            
+
             const dynamicInfo = document.getElementById('dynamic-info');
             if (dynamicInfo) dynamicInfo.classList.remove('fade-out');
 
@@ -316,19 +316,19 @@ export function setupTabs() {
                 }
             });
 
-            await safeDelay(300); 
+            await safeDelay(300);
 
             allCards.forEach(card => {
                 const finalShow = cardVisibility.get(card);
 
                 if (finalShow) {
                     card.style.height = 'auto';
-                    card.style.overflow = 'visible'; 
+                    card.style.overflow = 'visible';
                     card.style.overflowClipMargin = '';
                 } else {
                     card.style.display = 'none';
                     card.classList.remove('hide-card');
-                    
+
                     card.style.margin = '';
                     card.style.padding = '';
                     card.style.borderWidth = '';
@@ -336,17 +336,17 @@ export function setupTabs() {
             });
 
             stopSyncing();
-            syncBackgrounds(currentIndex); 
+            syncBackgrounds(currentIndex);
             isAnimating = false;
             window.isTabsAnimating = false;
         });
     });
 
     window.addEventListener('popstate', () => {
-        const hash = window.location.hash.substring(1) || 'home'; 
+        const hash = window.location.hash.substring(1) || 'home';
         const targetTab = document.querySelector(`.tab[data-tab="${hash}"]`);
         if (targetTab && !targetTab.classList.contains('active')) {
-            targetTab.click(); 
+            targetTab.click();
         }
     });
 
