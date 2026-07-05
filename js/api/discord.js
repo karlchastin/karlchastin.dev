@@ -182,12 +182,24 @@ function updateDiscordUI(data) {
     data.activities
       .filter((a) => a.type !== 4)
       .forEach((activity, i) => {
-        let isMusic =
-          activity.type === 2 ||
-          activity.name === "Apple Music" ||
-          activity.name === "Spotify" ||
-          activity.id === "spotify";
-        let title = isMusic ? `LISTENING TO APPLE MUSIC` : "PLAYING A GAME";
+        let isAppleMusic = activity.name === "Apple Music";
+        let isSpotify = activity.name === "Spotify" || activity.id === "spotify";
+        let isListening = activity.type === 2 || isAppleMusic || isSpotify;
+        let isWatching = activity.type === 3;
+        
+        let typeCategory = "playing";
+        if (isListening) typeCategory = "listening";
+        else if (isWatching) typeCategory = "watching";
+
+        let title = "PLAYING A GAME";
+        let actNameStr = activity.name ? activity.name.toUpperCase() : "MEDIA";
+        if (typeCategory === "listening") {
+          title = `LISTENING TO ${actNameStr}`;
+        } else if (typeCategory === "watching") {
+          title = `WATCHING ${actNameStr}`;
+        } else {
+          title = activity.name ? `PLAYING ${actNameStr}` : "PLAYING A GAME";
+        }
         let titleColor = "#ff0000";
 
         let largeImgTooltip = activity.assets?.large_text
@@ -200,7 +212,7 @@ function updateDiscordUI(data) {
           "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23888888' fill-rule='evenodd' clip-rule='evenodd' d='M5 2a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3V5a3 3 0 0 0-3-3H5Zm6.81 7c-.54 0-1 .26-1.23.61A1 1 0 0 1 8.92 8.5 3.49 3.49 0 0 1 11.82 7c1.81 0 3.43 1.38 3.43 3.25 0 1.45-.98 2.61-2.27 3.06a1 1 0 0 1-1.96.37l-.19-1a1 1 0 0 1 .98-1.18c.87 0 1.44-.63 1.44-1.25S12.68 9 11.81 9ZM13 16a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm7-10.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM18.5 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM7 18.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM5.5 7a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z'/%3E%3C/svg%3E";
         let largeImgHTML = `<div ${largeImgTooltip} style="width:100%; height:100%; background: rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; cursor:default;"><img src="${fallbackSvg}" style="width:50%; height:50%; opacity:0.8; object-fit:cover;"></div>`;
 
-        let smallImgHTML = isMusic
+        let smallImgHTML = typeCategory === "listening"
           ? `<div style="position:absolute; bottom:-4px; right:-4px; width:28px; height:28px; border-radius:50%; border:3px solid #1e1e1e; background:#fa243c; display:flex; align-items:center; justify-content:center; pointer-events:auto; cursor:default; z-index:10;"><svg width="50%" height="50%" viewBox="0 0 24 24" fill="#fff"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg></div>`
           : "";
 
@@ -291,7 +303,8 @@ function updateDiscordUI(data) {
         let textHash = title + actName + lines.join("|") + timeHash + tId;
 
         activitiesList.push({
-          isMusic,
+          typeCategory,
+          isAppleMusic,
           title,
           actName,
           lines,
@@ -305,7 +318,7 @@ function updateDiscordUI(data) {
       });
   }
 
-  activitiesList.sort((a, b) => (a.isMusic ? 1 : -1));
+  activitiesList.sort((a, b) => (a.typeCategory === "playing" ? -1 : 1));
 
   const preloadAndSwap = (wrap, html) => {
     if (wrap.getAttribute("data-hash") === html) return;
@@ -380,14 +393,24 @@ function updateDiscordUI(data) {
 
   const homeEl = document.getElementById("discord-dynamic-content");
   if (homeEl) {
-    const gameAct = activitiesList.find((a) => !a.isMusic);
-    const musicAct = activitiesList.find((a) => a.isMusic);
+    const gameAct = activitiesList.find((a) => a.typeCategory === "playing");
+    const listeningAct = activitiesList.find((a) => a.typeCategory === "listening");
+    const watchingAct = activitiesList.find((a) => a.typeCategory === "watching");
+    
+    let leftAct = gameAct;
+    let rightAct = listeningAct || watchingAct;
+
+    if (!gameAct && watchingAct && listeningAct) {
+      leftAct = watchingAct;
+      rightAct = listeningAct;
+    }
+
     let currentState =
-      gameAct && musicAct
+      leftAct && rightAct
         ? "both"
-        : gameAct
+        : leftAct
           ? "game"
-          : musicAct
+          : rightAct
             ? "music"
             : "none";
 
@@ -427,26 +450,26 @@ function updateDiscordUI(data) {
         flexGrid.className = `home-activities-wrapper state-${currentState} ${transitionClass}`;
       }
 
-      if (gameAct)
-        renderSingleBox(homeEl.querySelector("#home-game-slot"), gameAct);
-      if (musicAct)
-        renderSingleBox(homeEl.querySelector("#home-music-slot"), musicAct);
+      if (leftAct)
+        renderSingleBox(homeEl.querySelector("#home-game-slot"), leftAct);
+      if (rightAct)
+        renderSingleBox(homeEl.querySelector("#home-music-slot"), rightAct);
     }
   }
 
-  const musicActs = activitiesList.filter((a) => a.isMusic);
-  window.currentMusicActivities = musicActs.length > 0;
+  const appleMusicActs = activitiesList.filter((a) => a.isAppleMusic);
+  window.currentMusicActivities = appleMusicActs.length > 0;
 
   window.currentDiscordActivities = baseStatus !== "offline";
 
   const musicEl = document.getElementById("apple-music-dynamic-content");
   if (musicEl) {
-    if (musicActs.length > 0) {
+    if (appleMusicActs.length > 0) {
       let flexGrid = musicEl.querySelector(".discord-activities-flex");
       if (!flexGrid) {
         musicEl.innerHTML = `<div class="discord-activities-flex" style="display: flex; gap: 15px; width: 100%;"><div id="apple-music-slot" style="flex: 1; min-width: 0; max-width: 100%;"></div></div>`;
       }
-      renderSingleBox(musicEl.querySelector("#apple-music-slot"), musicActs[0]);
+      renderSingleBox(musicEl.querySelector("#apple-music-slot"), appleMusicActs[0]);
     } else {
       musicEl.innerHTML = `<div style="text-align:center; padding: 25px 20px; color: #888; font-weight: 700; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); border-radius: 16px;"><span>No activity on Apple Music.</span></div>`;
     }
