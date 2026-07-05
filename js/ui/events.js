@@ -1,22 +1,22 @@
-import { $, $$ } from '../utils/dom.js';
-import { formatTime } from '../utils/core.js';
-import { profiles, emailAvatars, emailBios, GREEDY_LYRICS } from '../config.js';
-import { startSyncing, stopSyncing, syncBackgrounds } from './animations.js';
-import { isAnimating, currentIndex } from './tabs.js';
+import { $, $$ } from "../utils/dom.js";
+import { formatTime } from "../utils/core.js";
+import { profiles, emailAvatars, emailBios, GREEDY_LYRICS } from "../config.js";
+import { startSyncing, stopSyncing, syncBackgrounds } from "./animations.js";
+import { isAnimating, currentIndex } from "./tabs.js";
 
 export function setupUIEvents() {
-    let isAftonSequenceRunning = false;
-    let preFocusAudioState = null;
+  let isAftonSequenceRunning = false;
+  let preFocusAudioState = null;
 
-    Object.values(emailAvatars).forEach(src => {
-        const img = new Image();
-        img.src = src;
-    });
+  Object.values(emailAvatars).forEach((src) => {
+    const img = new Image();
+    img.src = src;
+  });
 
-    if (!$('dynamic-injected-css')) {
-        const style = document.createElement('style');
-        style.id = 'dynamic-injected-css';
-        style.textContent = `
+  if (!$("dynamic-injected-css")) {
+    const style = document.createElement("style");
+    style.id = "dynamic-injected-css";
+    style.textContent = `
             body.ig-deactivated #loc-instagram,
             body.fb-deactivated #loc-facebook {
                 display: none !important;
@@ -170,808 +170,999 @@ export function setupUIEvents() {
                 }
             }
         `;
-        document.head.appendChild(style);
-    }
+    document.head.appendChild(style);
+  }
 
-    let vignetteEl = $('tab-blur-vignette');
-    if (!vignetteEl) {
-        vignetteEl = document.createElement('div');
-        vignetteEl.id = 'tab-blur-vignette';
-        vignetteEl.style.position = 'fixed';
-        vignetteEl.style.top = '0';
-        vignetteEl.style.left = '0';
-        vignetteEl.style.width = '100vw';
-        vignetteEl.style.height = '100vh';
-        vignetteEl.style.pointerEvents = 'none';
-        vignetteEl.style.zIndex = '999998'; 
-        vignetteEl.style.background = 'radial-gradient(circle, transparent 30%, rgba(0,0,0,0.85) 100%)';
-        vignetteEl.style.opacity = '0';
-        vignetteEl.style.transition = 'opacity 0.8s ease';
-        document.body.appendChild(vignetteEl);
-    }
+  let vignetteEl = $("tab-blur-vignette");
+  if (!vignetteEl) {
+    vignetteEl = document.createElement("div");
+    vignetteEl.id = "tab-blur-vignette";
+    vignetteEl.style.position = "fixed";
+    vignetteEl.style.top = "0";
+    vignetteEl.style.left = "0";
+    vignetteEl.style.width = "100vw";
+    vignetteEl.style.height = "100vh";
+    vignetteEl.style.pointerEvents = "none";
+    vignetteEl.style.zIndex = "999998";
+    vignetteEl.style.background =
+      "radial-gradient(circle, transparent 30%, rgba(0,0,0,0.85) 100%)";
+    vignetteEl.style.opacity = "0";
+    vignetteEl.style.transition = "opacity 0.8s ease";
+    document.body.appendChild(vignetteEl);
+  }
 
-    let fnafMasterGain = null;
-    let fnafLowpass = null;
+  let fnafMasterGain = null;
+  let fnafLowpass = null;
 
-    function getFNAFMasterNode() {
-        if (fnafMasterGain && fnafLowpass) return fnafLowpass;
-        if (!window.audioCtx) return null;
+  function getFNAFMasterNode() {
+    if (fnafMasterGain && fnafLowpass) return fnafLowpass;
+    if (!window.audioCtx) return null;
 
-        fnafMasterGain = window.audioCtx.createGain();
-        fnafMasterGain.gain.value = 1.0;
+    fnafMasterGain = window.audioCtx.createGain();
+    fnafMasterGain.gain.value = 1.0;
 
-        fnafLowpass = window.audioCtx.createBiquadFilter();
-        fnafLowpass.type = "lowpass";
-        fnafLowpass.frequency.value = 22050;
+    fnafLowpass = window.audioCtx.createBiquadFilter();
+    fnafLowpass.type = "lowpass";
+    fnafLowpass.frequency.value = 22050;
 
-        fnafLowpass.connect(fnafMasterGain);
-        fnafMasterGain.connect(window.tabFocusBass || window.audioCtx.destination);
+    fnafLowpass.connect(fnafMasterGain);
+    fnafMasterGain.connect(window.tabFocusBass || window.audioCtx.destination);
 
-        return fnafLowpass;
-    }
+    return fnafLowpass;
+  }
 
-    function ensureTabFocusNodes() {
-        if (window.audioCtx && window.masterGain && !window.tabFocusNodesInjected) {
-            try {
-                window.tabFocusBass = window.audioCtx.createBiquadFilter();
-                window.tabFocusBass.type = 'lowshelf';
-                window.tabFocusBass.frequency.value = 250;
-                window.tabFocusBass.gain.value = 0; 
+  function ensureTabFocusNodes() {
+    if (window.audioCtx && window.masterGain && !window.tabFocusNodesInjected) {
+      try {
+        window.tabFocusBass = window.audioCtx.createBiquadFilter();
+        window.tabFocusBass.type = "lowshelf";
+        window.tabFocusBass.frequency.value = 250;
+        window.tabFocusBass.gain.value = 0;
 
-                window.tabFocusTreble = window.audioCtx.createBiquadFilter();
-                window.tabFocusTreble.type = 'highshelf';
-                window.tabFocusTreble.frequency.value = 4000;
-                window.tabFocusTreble.gain.value = 0; 
+        window.tabFocusTreble = window.audioCtx.createBiquadFilter();
+        window.tabFocusTreble.type = "highshelf";
+        window.tabFocusTreble.frequency.value = 4000;
+        window.tabFocusTreble.gain.value = 0;
 
-                window.tabFocusFilter = window.audioCtx.createBiquadFilter();
-                window.tabFocusFilter.type = 'lowpass';
-                window.tabFocusFilter.frequency.value = 22050; 
+        window.tabFocusFilter = window.audioCtx.createBiquadFilter();
+        window.tabFocusFilter.type = "lowpass";
+        window.tabFocusFilter.frequency.value = 22050;
 
-                window.tabFocusGain = window.audioCtx.createGain();
-                window.tabFocusGain.gain.value = 1.0; 
+        window.tabFocusGain = window.audioCtx.createGain();
+        window.tabFocusGain.gain.value = 1.0;
 
-                window.tabFocusBass.connect(window.tabFocusTreble);
-                window.tabFocusTreble.connect(window.tabFocusFilter);
-                window.tabFocusFilter.connect(window.tabFocusGain);
-                window.tabFocusGain.connect(window.audioCtx.destination);
+        window.tabFocusBass.connect(window.tabFocusTreble);
+        window.tabFocusTreble.connect(window.tabFocusFilter);
+        window.tabFocusFilter.connect(window.tabFocusGain);
+        window.tabFocusGain.connect(window.audioCtx.destination);
 
-                window.masterGain.disconnect();
-                window.masterGain.connect(window.tabFocusBass);
-                
-                if (fnafMasterGain) {
-                    fnafMasterGain.disconnect();
-                    fnafMasterGain.connect(window.tabFocusBass);
-                }
-                
-                window.tabFocusNodesInjected = true;
-            } catch(e) {
-                console.error("Could not inject tab focus nodes", e);
-            }
-        }
-    }
+        window.masterGain.disconnect();
+        window.masterGain.connect(window.tabFocusBass);
 
-    function updateEmailWarningState(forceMode = 'auto') {
-        const warningEl = $('email-night-warning');
-        if (!warningEl) return;
-
-        const now = new Date();
-        let phtHour = parseInt(new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Manila', hour: 'numeric', hour12: false }).format(now));
-        if (phtHour === 24) phtHour = 0;
-
-        let isNight = (phtHour >= 22 || phtHour < 7);
-        if (forceMode === 'night') isNight = true;
-        if (forceMode === 'morning') isNight = true;
-        if (forceMode === 'off') isNight = false;
-
-        const isCurrentlyVisible = warningEl.classList.contains('is-visible');
-        if (forceMode === 'auto') {
-            if (isNight && isCurrentlyVisible) return; 
-            if (!isNight && !isCurrentlyVisible) return;
+        if (fnafMasterGain) {
+          fnafMasterGain.disconnect();
+          fnafMasterGain.connect(window.tabFocusBass);
         }
 
-        if (isNight || localStorage.getItem('testEmailWarning') === 'true') {
-            const phtOffset = 8 * 60 * 60 * 1000;
-            const nowPHT = new Date(now.getTime() + (now.getTimezoneOffset() * 60000) + phtOffset);
-            const targetPHT = new Date(nowPHT);
-            targetPHT.setHours(10, 0, 0, 0); 
-            if (nowPHT.getHours() >= 22) targetPHT.setDate(targetPHT.getDate() + 1); 
-            
-            const targetLocalTime = new Date(targetPHT.getTime() - phtOffset - (new Date().getTimezoneOffset() * 60000));
-            
-            let timeText = "It is currently late at night.";
-            if ((phtHour >= 0 && phtHour < 7) || forceMode === 'morning') {
-                timeText = "It is currently early in the morning.";
-            }
-            if (forceMode === 'night') timeText = "It is currently late at night.";
+        window.tabFocusNodesInjected = true;
+      } catch (e) {
+        console.error("Could not inject tab focus nodes", e);
+      }
+    }
+  }
 
-            warningEl.innerHTML = `<div style="background: rgba(255, 165, 0, 0.1); border: 1px solid rgba(255, 165, 0, 0.3); color: #ffa500; padding: 12px; border-radius: 8px; font-size: 13px; display: flex; align-items: center; gap: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg><span>${timeText} Expect replies as early as <strong>${targetLocalTime.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}</strong> in your local time.</span></div>`;
-            
-            warningEl.style.display = 'block';
-            void warningEl.offsetWidth; 
-            warningEl.classList.add('is-visible');
-        } else {
-            warningEl.classList.remove('is-visible');
-            setTimeout(() => {
-                if (!warningEl.classList.contains('is-visible')) {
-                    warningEl.style.display = 'none';
-                    warningEl.innerHTML = '';
-                }
-            }, 500); 
+  function updateEmailWarningState(forceMode = "auto") {
+    const warningEl = $("email-night-warning");
+    if (!warningEl) return;
+
+    const now = new Date();
+    let phtHour = parseInt(
+      new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Manila",
+        hour: "numeric",
+        hour12: false,
+      }).format(now),
+    );
+    if (phtHour === 24) phtHour = 0;
+
+    let isNight = phtHour >= 22 || phtHour < 7;
+    if (forceMode === "night") isNight = true;
+    if (forceMode === "morning") isNight = true;
+    if (forceMode === "off") isNight = false;
+
+    const isCurrentlyVisible = warningEl.classList.contains("is-visible");
+    if (forceMode === "auto") {
+      if (isNight && isCurrentlyVisible) return;
+      if (!isNight && !isCurrentlyVisible) return;
+    }
+
+    if (isNight || localStorage.getItem("testEmailWarning") === "true") {
+      const phtOffset = 8 * 60 * 60 * 1000;
+      const nowPHT = new Date(
+        now.getTime() + now.getTimezoneOffset() * 60000 + phtOffset,
+      );
+      const targetPHT = new Date(nowPHT);
+      targetPHT.setHours(10, 0, 0, 0);
+      if (nowPHT.getHours() >= 22) targetPHT.setDate(targetPHT.getDate() + 1);
+
+      const targetLocalTime = new Date(
+        targetPHT.getTime() -
+          phtOffset -
+          new Date().getTimezoneOffset() * 60000,
+      );
+
+      let timeText = "It is currently late at night.";
+      if ((phtHour >= 0 && phtHour < 7) || forceMode === "morning") {
+        timeText = "It is currently early in the morning.";
+      }
+      if (forceMode === "night") timeText = "It is currently late at night.";
+
+      warningEl.innerHTML = `<div style="background: rgba(255, 165, 0, 0.1); border: 1px solid rgba(255, 165, 0, 0.3); color: #ffa500; padding: 12px; border-radius: 8px; font-size: 13px; display: flex; align-items: center; gap: 8px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg><span>${timeText} Expect replies as early as <strong>${targetLocalTime.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}</strong> in your local time.</span></div>`;
+
+      warningEl.style.display = "block";
+      void warningEl.offsetWidth;
+      warningEl.classList.add("is-visible");
+    } else {
+      warningEl.classList.remove("is-visible");
+      setTimeout(() => {
+        if (!warningEl.classList.contains("is-visible")) {
+          warningEl.style.display = "none";
+          warningEl.innerHTML = "";
         }
+      }, 500);
     }
-    
-    updateEmailWarningState();
-    setInterval(() => updateEmailWarningState('auto'), 60000);
-    document.addEventListener('debug-email-warning', (e) => updateEmailWarningState(e.detail.mode));
+  }
 
-    document.addEventListener('visibilitychange', () => {
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        const isHidden = document.hidden;
-        const bgAudio = $('bg-audio');
-        const sfxAudio = $('sfx-audio'); 
-        const voiceAudio = $('afton-voice-audio');
+  updateEmailWarningState();
+  setInterval(() => updateEmailWarningState("auto"), 60000);
+  document.addEventListener("debug-email-warning", (e) =>
+    updateEmailWarningState(e.detail.mode),
+  );
 
-        if (isMobile) {
-            if (isHidden) {
-                if (bgAudio && !bgAudio.paused) { bgAudio.dataset.wasPlaying = 'true'; bgAudio.pause(); }
-                if (sfxAudio && !sfxAudio.paused) { sfxAudio.dataset.wasPlaying = 'true'; sfxAudio.pause(); }
-                if (voiceAudio && !voiceAudio.paused) { voiceAudio.dataset.wasPlaying = 'true'; voiceAudio.pause(); }
-                if (window.audioCtx && window.audioCtx.state === 'running') window.audioCtx.suspend();
-            } else {
-                if (bgAudio && bgAudio.dataset.wasPlaying === 'true') bgAudio.play();
-                if (sfxAudio && sfxAudio.dataset.wasPlaying === 'true') sfxAudio.play();
-                if (voiceAudio && voiceAudio.dataset.wasPlaying === 'true') voiceAudio.play();
-                if (window.audioCtx && window.audioCtx.state === 'suspended') window.audioCtx.resume();
-            }
-        } else {
-            ensureTabFocusNodes();
-            
-            if (window.tabFocusNodesInjected) {
-                const now = window.audioCtx.currentTime;
+  document.addEventListener("visibilitychange", () => {
+    const isMobile =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent,
+      );
+    const isHidden = document.hidden;
+    const bgAudio = $("bg-audio");
+    const sfxAudio = $("sfx-audio");
+    const voiceAudio = $("afton-voice-audio");
 
-                if (isHidden) {
-                    window.tabFocusBass.gain.cancelScheduledValues(now);
-                    window.tabFocusBass.gain.setValueAtTime(window.tabFocusBass.gain.value, now);
-                    window.tabFocusBass.gain.linearRampToValueAtTime(-8, now + 0.8);
-
-                    window.tabFocusTreble.gain.cancelScheduledValues(now);
-                    window.tabFocusTreble.gain.setValueAtTime(window.tabFocusTreble.gain.value, now);
-                    window.tabFocusTreble.gain.linearRampToValueAtTime(-8, now + 0.8);
-
-                    window.tabFocusFilter.frequency.cancelScheduledValues(now);
-                    window.tabFocusFilter.frequency.setValueAtTime(window.tabFocusFilter.frequency.value, now);
-                    window.tabFocusFilter.frequency.exponentialRampToValueAtTime(200, now + 0.8);
-                    
-                    window.tabFocusGain.gain.cancelScheduledValues(now);
-                    window.tabFocusGain.gain.setValueAtTime(window.tabFocusGain.gain.value, now);
-                    window.tabFocusGain.gain.linearRampToValueAtTime(0.10, now + 0.8);
-
-                    if (vignetteEl) vignetteEl.style.opacity = '1';
-                } else {
-                    window.tabFocusBass.gain.cancelScheduledValues(now);
-                    window.tabFocusBass.gain.setValueAtTime(window.tabFocusBass.gain.value, now);
-                    window.tabFocusBass.gain.linearRampToValueAtTime(0, now + 0.8);
-
-                    window.tabFocusTreble.gain.cancelScheduledValues(now);
-                    window.tabFocusTreble.gain.setValueAtTime(window.tabFocusTreble.gain.value, now);
-                    window.tabFocusTreble.gain.linearRampToValueAtTime(0, now + 0.8);
-
-                    window.tabFocusFilter.frequency.cancelScheduledValues(now);
-                    window.tabFocusFilter.frequency.setValueAtTime(window.tabFocusFilter.frequency.value, now);
-                    window.tabFocusFilter.frequency.exponentialRampToValueAtTime(22050, now + 0.8);
-                    
-                    window.tabFocusGain.gain.cancelScheduledValues(now);
-                    window.tabFocusGain.gain.setValueAtTime(window.tabFocusGain.gain.value, now);
-                    window.tabFocusGain.gain.linearRampToValueAtTime(1.0, now + 0.8);
-
-                    if (vignetteEl) vignetteEl.style.opacity = '0';
-                }
-            }
+    if (isMobile) {
+      if (isHidden) {
+        if (bgAudio && !bgAudio.paused) {
+          bgAudio.dataset.wasPlaying = "true";
+          bgAudio.pause();
         }
-
-        if (!isHidden) {
-            const gl = $('glass-left'), ga = $('glass-active'), gr = $('glass-right');
-            
-            if (gl) gl.style.transition = 'none';
-            if (ga) ga.style.transition = 'none';
-            if (gr) gr.style.transition = 'none';
-            
-            requestAnimationFrame(() => {
-                syncBackgrounds(currentIndex);
-                
-                if (gl) gl.style.transition = '';
-                if (ga) ga.style.transition = '';
-                if (gr) gr.style.transition = '';
-                
-                if (isAnimating) startSyncing(() => currentIndex);
-            });
-        } else {
-            stopSyncing();
+        if (sfxAudio && !sfxAudio.paused) {
+          sfxAudio.dataset.wasPlaying = "true";
+          sfxAudio.pause();
         }
-    });
-
-    const locHome = $('loc-home'), locationText = $('location-text');
-    if(locHome && locationText) {
-        locHome.addEventListener('mouseenter', () => { locationText.textContent = "Bacoor, Cavite, Philippines"; locationText.style.color = "#ffffff"; locationText.classList.remove('always-glitch'); });
-        locHome.addEventListener('mouseleave', () => { locationText.textContent = "END OF TIME?"; locationText.style.color = ""; locationText.classList.add('always-glitch'); locationText.setAttribute('data-glitch', "END OF TIME?"); });
-    }
-
-    const tooltipEl = $('custom-tooltip');
-    if(tooltipEl) {
-        tooltipEl.style.left = '0px';
-        tooltipEl.style.top = '0px';
-
-        let tooltipRAF;
-        let isTooltipVisible = false;
-
-        document.addEventListener('mousemove', (e) => {
-            const target = e.target.closest('[data-tooltip]');
-            
-            if (target) {
-                if (!isTooltipVisible || tooltipEl.innerHTML !== target.getAttribute('data-tooltip')) {
-                    tooltipEl.innerHTML = target.getAttribute('data-tooltip');
-                    tooltipEl.classList.add('show');
-                    isTooltipVisible = true;
-                }
-                
-                let x = e.clientX + 15;
-                let y = e.clientY + 15;
-                
-                if (!tooltipRAF) {
-                    tooltipRAF = requestAnimationFrame(() => {
-                        const tooltipRect = tooltipEl.getBoundingClientRect();
-                        
-                        if (x + tooltipRect.width > window.innerWidth - 10) x = e.clientX - tooltipRect.width - 15;
-                        if (y + tooltipRect.height > window.innerHeight - 10) y = e.clientY - tooltipRect.height - 15;
-                        
-                        tooltipEl.style.transform = `translate(${x}px, ${y}px)`;
-                        tooltipRAF = null;
-                    });
-                }
-            } else if (isTooltipVisible) {
-                tooltipEl.classList.remove('show');
-                isTooltipVisible = false;
-                if (tooltipRAF) {
-                    cancelAnimationFrame(tooltipRAF);
-                    tooltipRAF = null;
-                }
-            }
-        }, { passive: true });
-    }
-
-    let hoverAnimTimeout;
-    const updateProfileView = (avatar, username, bio) => {
-        const usernameEl = $('profile-username');
-        const bioEl = $('profile-bio');
-        const avatarImgEl = $('avatar-img');
-
-        const currentSrc = avatarImgEl.getAttribute('src');
-        const isSameAvatar = currentSrc === avatar || avatarImgEl.src === avatar;
-
-        usernameEl.style.opacity = '0';
-        bioEl.style.opacity = '0';
-        
-        if (!isSameAvatar) {
-            avatarImgEl.style.opacity = '0';
+        if (voiceAudio && !voiceAudio.paused) {
+          voiceAudio.dataset.wasPlaying = "true";
+          voiceAudio.pause();
         }
+        if (window.audioCtx && window.audioCtx.state === "running")
+          window.audioCtx.suspend();
+      } else {
+        if (bgAudio && bgAudio.dataset.wasPlaying === "true") bgAudio.play();
+        if (sfxAudio && sfxAudio.dataset.wasPlaying === "true") sfxAudio.play();
+        if (voiceAudio && voiceAudio.dataset.wasPlaying === "true")
+          voiceAudio.play();
+        if (window.audioCtx && window.audioCtx.state === "suspended")
+          window.audioCtx.resume();
+      }
+    } else {
+      ensureTabFocusNodes();
 
-        hoverAnimTimeout = setTimeout(() => {
-            if (!isSameAvatar) {
-                avatarImgEl.src = avatar;
-            }
-            usernameEl.textContent = username;
-            bioEl.innerHTML = bio;
-
-            usernameEl.style.opacity = '1';
-            bioEl.style.opacity = '1';
-            
-            avatarImgEl.style.opacity = '1';
-        }, 150);
-    };
-
-    $$('.email-btn').forEach(btn => {
-        btn.addEventListener('mouseenter', (e) => {
-            const type = e.target.getAttribute('data-type');
-            clearTimeout(hoverAnimTimeout);
-            updateProfileView(emailAvatars[type], e.target.getAttribute('data-email'), emailBios[type]);
-        });
-        btn.addEventListener('mouseleave', () => {
-            clearTimeout(hoverAnimTimeout);
-            const defaultProfile = profiles[document.querySelector('.tab.active')?.getAttribute('data-tab') || 'home'];
-            updateProfileView(defaultProfile.avatar, defaultProfile.username, defaultProfile.bio);
-        });
-    });
-
-    const bgAudio = $('bg-audio'), durationEl = $('duration'), currentTimeEl = $('current-time'), progressFill = document.querySelector('.progress-fill');
-    if(bgAudio) {
-        const updateDuration = () => { 
-            if(durationEl && !isNaN(bgAudio.duration)) durationEl.textContent = formatTime(bgAudio.duration); 
-        };
-        
-        if (bgAudio.readyState >= 1) updateDuration();
-        bgAudio.addEventListener('loadedmetadata', updateDuration);
-        
-        let audioFrame;
-        let currentLyricIndex = 0;
-
-        bgAudio.addEventListener('timeupdate', () => {
-            cancelAnimationFrame(audioFrame);
-            audioFrame = requestAnimationFrame(() => {
-                if(currentTimeEl) currentTimeEl.textContent = formatTime(bgAudio.currentTime);
-                if (progressFill && bgAudio.duration > 0) progressFill.style.width = `${(bgAudio.currentTime / bgAudio.duration) * 100}%`;
-
-                const activeTab = document.querySelector('.tab.active')?.getAttribute('data-tab');
-                if (activeTab === 'home') {
-                    
-                    while (currentLyricIndex < GREEDY_LYRICS.length - 1 && bgAudio.currentTime >= GREEDY_LYRICS[currentLyricIndex + 1].time) {
-                        currentLyricIndex++;
-                    }
-
-                    while (currentLyricIndex > 0 && bgAudio.currentTime < GREEDY_LYRICS[currentLyricIndex].time) {
-                        currentLyricIndex--;
-                    }
-
-                    const currentLyric = GREEDY_LYRICS[currentLyricIndex];
-                    
-                    if (currentLyric) {
-                        const bioEl = $('profile-bio');
-                        if (bioEl && bioEl.dataset.targetTime !== currentLyric.time.toString()) {
-                            bioEl.dataset.targetTime = currentLyric.time.toString(); 
-                            
-                            bioEl.style.opacity = '0';
-                            
-                            setTimeout(() => {
-                                bioEl.innerHTML = currentLyric.text;
-                                bioEl.style.opacity = '1';
-                            }, 100); 
-                        }
-                    }
-                }
-            });
-        });
-    }
-
-    const deafenBtn = $('deafen-btn');
-    let isDeafened = false;
-
-    if (deafenBtn) {
-        deafenBtn.addEventListener('click', () => {
-            if (!bgAudio || !window.audioCtx || !window.lowpassFilter) return;
-
-            isDeafened = !isDeafened;
-            deafenBtn.classList.toggle('is-deafened', isDeafened);
-            document.body.classList.toggle('is-deafened', isDeafened); 
-
-            const newTooltipText = isDeafened ? "Undeafen" : "Deafen";
-            deafenBtn.setAttribute('data-tooltip', newTooltipText);
-            
-            if (tooltipEl && tooltipEl.classList.contains('show')) {
-                tooltipEl.innerHTML = newTooltipText;
-            }
-
-            const targetFreq = isDeafened ? 200 : 22050;
-            window.lowpassFilter.frequency.cancelScheduledValues(window.audioCtx.currentTime);
-            window.lowpassFilter.frequency.setValueAtTime(window.lowpassFilter.frequency.value, window.audioCtx.currentTime);
-            window.lowpassFilter.frequency.exponentialRampToValueAtTime(targetFreq, window.audioCtx.currentTime + 0.8);
-            
-            if (window.bassFilter) {
-                const targetBass = isDeafened ? 0 : 8; 
-                window.bassFilter.gain.cancelScheduledValues(window.audioCtx.currentTime);
-                window.bassFilter.gain.setValueAtTime(window.bassFilter.gain.value, window.audioCtx.currentTime);
-                window.bassFilter.gain.linearRampToValueAtTime(targetBass, window.audioCtx.currentTime + 0.8);
-            }
-
-            if (window.trebleFilter) {
-                const targetTreble = isDeafened ? 0 : 8; 
-                window.trebleFilter.gain.cancelScheduledValues(window.audioCtx.currentTime);
-                window.trebleFilter.gain.setValueAtTime(window.trebleFilter.gain.value, window.audioCtx.currentTime);
-                window.trebleFilter.gain.linearRampToValueAtTime(targetTreble, window.audioCtx.currentTime + 0.8);
-            }
-
-            if (window.masterGain) {
-                const targetVol = isDeafened ? 1.0 : 0.35; 
-                
-                window.masterGain.gain.cancelScheduledValues(window.audioCtx.currentTime);
-                window.masterGain.gain.setValueAtTime(window.masterGain.gain.value, window.audioCtx.currentTime);
-                window.masterGain.gain.linearRampToValueAtTime(targetVol, window.audioCtx.currentTime + 0.8);
-            }
-        });
-    }
-
-    const syncActiveTabAttr = (tabName) => {
-        if (tabName) {
-            document.body.setAttribute('data-active-tab', tabName);
-        } else {
-            const activeTab = document.querySelector('.tab.active')?.getAttribute('data-tab') || 'home';
-            document.body.setAttribute('data-active-tab', activeTab);
-        }
-    };
-
-    $$('.tab').forEach(t => t.addEventListener('click', (e) => {
-        syncActiveTabAttr(e.currentTarget.getAttribute('data-tab'));
-    }));
-    
-    syncActiveTabAttr();
-
-    let typedBuffer = "";
-    const MAX_BUFFER = 10;
-    
-    const aftonAssets = {
-        beep: './assets/Headlock Beep.webm',
-        loop1: './assets/Headlock Loop 1.webm',
-        loop2: './assets/Headlock Loop 2.webm',
-        outro: './assets/Headlock Loop Outro.webm',
-        keypress: './assets/Keypress.webm',
-        success: './assets/Debug Success.webm'
-    };
-    
-    const rawAudioData = {};
-    const aftonBuffers = {};
-
-    Object.entries(aftonAssets).forEach(async ([key, url]) => {
-        try {
-            const res = await fetch(url);
-            rawAudioData[key] = await res.arrayBuffer();
-        } catch(e) {
-            console.warn(`Could not preload ${key} - ${url}`);
-        }
-    });
-
-    async function getDecodedBuffer(key) {
-        if(aftonBuffers[key]) return aftonBuffers[key];
-        if(rawAudioData[key] && window.audioCtx) {
-            const bufferCopy = rawAudioData[key].slice(0);
-            aftonBuffers[key] = await window.audioCtx.decodeAudioData(bufferCopy);
-            return aftonBuffers[key];
-        }
-        return null;
-    }
-
-    let fnafNode = null;
-    function getFNAFNode() {
-        if (fnafNode) return fnafNode;
-        if (!window.audioCtx) return null;
-        
-        const bass = window.audioCtx.createBiquadFilter();
-        bass.type = "lowshelf";
-        bass.frequency.value = window.bassFilter ? window.bassFilter.frequency.value : 250;
-        bass.gain.value = 8;
-        
-        const treble = window.audioCtx.createBiquadFilter();
-        treble.type = "highshelf";
-        treble.frequency.value = window.trebleFilter ? window.trebleFilter.frequency.value : 4000;
-        treble.gain.value = 8;
-        
-        bass.connect(treble);
-        treble.connect(getFNAFMasterNode() || window.audioCtx.destination);
-        
-        fnafNode = bass;
-        return fnafNode;
-    }
-
-    let fnafMusicGain = null;
-    function getFNAFMusicNode() {
-        if (fnafMusicGain) return fnafMusicGain;
-        if (!window.audioCtx) return null;
-        
-        fnafMusicGain = window.audioCtx.createGain();
-        fnafMusicGain.gain.value = 0.25; 
-        fnafMusicGain.connect(getFNAFNode() || getFNAFMasterNode() || window.audioCtx.destination);
-        
-        return fnafMusicGain;
-    }
-
-    async function playAftonSound(key) {
-        if(!window.audioCtx) return null;
-        const buf = await getDecodedBuffer(key);
-        if(buf) {
-            const src = window.audioCtx.createBufferSource();
-            src.buffer = buf;
-            src.connect(getFNAFMusicNode() || getFNAFMasterNode() || window.audioCtx.destination);
-            src.start();
-            return src;
-        }
-        return null;
-    }
-
-    let typingBeepTimer = null;
-    let typingIdleTimer = null;
-    let isBeeping = false;
-    let currentSilence = 1.0;
-    
-    let aftonBeeps = [];
-    let aftonLoop1Src = null;
-    let aftonLoop2Src = null;
-    let tLoop1Start = 0;
-    let tLoop1End = 0;
-    let tLoop2Start = 0;
-
-    function flashFNAF(type) {
-        const flash = document.createElement('div');
-        flash.style.position = 'fixed';
-        flash.style.top = '0'; 
-        flash.style.left = '0';
-        flash.style.width = '100vw'; 
-        flash.style.height = '100vh';
-        flash.style.pointerEvents = 'none';
-        flash.style.transition = 'opacity 0.3s ease-out';
-        flash.style.background = '#ff0000';
-        
-        if (type === 'bg') {
-            flash.style.zIndex = '-1'; 
-            flash.style.opacity = '0.5';
-        } else if (type === 'full') {
-            flash.style.zIndex = '99999999'; 
-            flash.style.opacity = '0.8';
-        }
-
-        document.body.appendChild(flash);
-        
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                flash.style.opacity = '0';
-                setTimeout(() => flash.remove(), 300);
-            });
-        });
-    }
-
-    function applyFNAFDeafen(isActive, fullyMute = false) {
-        if (!window.audioCtx || !window.lowpassFilter || !window.masterGain) return;
-
+      if (window.tabFocusNodesInjected) {
         const now = window.audioCtx.currentTime;
-        const isGloballyDeafened = document.body.classList.contains('is-deafened');
 
-        window.lowpassFilter.frequency.cancelScheduledValues(now);
-        window.masterGain.gain.cancelScheduledValues(now);
-        
-        try {
-            window.lowpassFilter.frequency.setValueAtTime(window.lowpassFilter.frequency.value, now);
-            window.masterGain.gain.setValueAtTime(window.masterGain.gain.value, now);
-        } catch(e) {}
+        if (isHidden) {
+          window.tabFocusBass.gain.cancelScheduledValues(now);
+          window.tabFocusBass.gain.setValueAtTime(
+            window.tabFocusBass.gain.value,
+            now,
+          );
+          window.tabFocusBass.gain.linearRampToValueAtTime(-8, now + 0.8);
 
-        if (isActive) {
-            window.lowpassFilter.frequency.exponentialRampToValueAtTime(200, now + 0.5);
-            window.masterGain.gain.linearRampToValueAtTime(fullyMute ? 0.0 : 0.05, now + 0.5);
+          window.tabFocusTreble.gain.cancelScheduledValues(now);
+          window.tabFocusTreble.gain.setValueAtTime(
+            window.tabFocusTreble.gain.value,
+            now,
+          );
+          window.tabFocusTreble.gain.linearRampToValueAtTime(-8, now + 0.8);
+
+          window.tabFocusFilter.frequency.cancelScheduledValues(now);
+          window.tabFocusFilter.frequency.setValueAtTime(
+            window.tabFocusFilter.frequency.value,
+            now,
+          );
+          window.tabFocusFilter.frequency.exponentialRampToValueAtTime(
+            200,
+            now + 0.8,
+          );
+
+          window.tabFocusGain.gain.cancelScheduledValues(now);
+          window.tabFocusGain.gain.setValueAtTime(
+            window.tabFocusGain.gain.value,
+            now,
+          );
+          window.tabFocusGain.gain.linearRampToValueAtTime(0.1, now + 0.8);
+
+          if (vignetteEl) vignetteEl.style.opacity = "1";
         } else {
-            const targetFreq = isGloballyDeafened ? 200 : 22050;
-            const targetVol = isGloballyDeafened ? 1.0 : 0.35;
-            
-            const currentFreq = Math.max(window.lowpassFilter.frequency.value, 1);
-            window.lowpassFilter.frequency.setValueAtTime(currentFreq, now);
-            window.lowpassFilter.frequency.exponentialRampToValueAtTime(targetFreq, now + 5.0);
-            window.masterGain.gain.linearRampToValueAtTime(targetVol, now + 5.0);
+          window.tabFocusBass.gain.cancelScheduledValues(now);
+          window.tabFocusBass.gain.setValueAtTime(
+            window.tabFocusBass.gain.value,
+            now,
+          );
+          window.tabFocusBass.gain.linearRampToValueAtTime(0, now + 0.8);
+
+          window.tabFocusTreble.gain.cancelScheduledValues(now);
+          window.tabFocusTreble.gain.setValueAtTime(
+            window.tabFocusTreble.gain.value,
+            now,
+          );
+          window.tabFocusTreble.gain.linearRampToValueAtTime(0, now + 0.8);
+
+          window.tabFocusFilter.frequency.cancelScheduledValues(now);
+          window.tabFocusFilter.frequency.setValueAtTime(
+            window.tabFocusFilter.frequency.value,
+            now,
+          );
+          window.tabFocusFilter.frequency.exponentialRampToValueAtTime(
+            22050,
+            now + 0.8,
+          );
+
+          window.tabFocusGain.gain.cancelScheduledValues(now);
+          window.tabFocusGain.gain.setValueAtTime(
+            window.tabFocusGain.gain.value,
+            now,
+          );
+          window.tabFocusGain.gain.linearRampToValueAtTime(1.0, now + 0.8);
+
+          if (vignetteEl) vignetteEl.style.opacity = "0";
         }
+      }
     }
 
-    async function scheduleNextBeep() {
-        if (!isBeeping) return;
-        const buf = await getDecodedBuffer('beep');
-        if(buf && isBeeping) {
-            const src = window.audioCtx.createBufferSource();
-            src.buffer = buf;
-            src.connect(getFNAFMusicNode() || getFNAFMasterNode() || window.audioCtx.destination);
-            src.start();
-            flashFNAF('bg'); 
-            typingBeepTimer = setTimeout(scheduleNextBeep, (buf.duration + currentSilence) * 1000);
-        } else {
-            typingBeepTimer = setTimeout(scheduleNextBeep, 200);
-        }
+    if (!isHidden) {
+      const gl = $("glass-left"),
+        ga = $("glass-active"),
+        gr = $("glass-right");
+
+      if (gl) gl.style.transition = "none";
+      if (ga) ga.style.transition = "none";
+      if (gr) gr.style.transition = "none";
+
+      requestAnimationFrame(() => {
+        syncBackgrounds(currentIndex);
+
+        if (gl) gl.style.transition = "";
+        if (ga) ga.style.transition = "";
+        if (gr) gr.style.transition = "";
+
+        if (isAnimating) startSyncing(() => currentIndex);
+      });
+    } else {
+      stopSyncing();
     }
+  });
 
-    function updateFNAFBeep(ratio) {
-        if (ratio === 0) {
-            if(isBeeping) {
-                isBeeping = false;
-                clearTimeout(typingBeepTimer);
-                applyFNAFDeafen(false); 
-            }
-            return;
-        }
-        
-        applyFNAFDeafen(true, true); 
-        currentSilence = 1.5 - (ratio * (1.5 - 0.360));
-
-        if (!isBeeping) {
-            isBeeping = true;
-            scheduleNextBeep();
-        }
-    }
-
-    document.addEventListener('keydown', (e) => {
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-        if (!window.audioCtx || window.audioCtx.state === 'suspended') return;
-
-        const enterOverlay = document.getElementById('enter-overlay');
-        if (enterOverlay && window.getComputedStyle(enterOverlay).display !== 'none') return;
-        if (document.querySelector('.staged-for-drop') || document.querySelector('.is-dropping')) return;
-        
-        if (isAftonSequenceRunning) return;
-
-        const key = e.key.toLowerCase();
-        if (key.length !== 1) return; 
-
-        const { isValidMatch, ratio, isComplete, matchedWord } = checkStrictFNAFProgress(typedBuffer, key);
-
-        if (isValidMatch) {
-            typedBuffer += key;
-            if (typedBuffer.length > MAX_BUFFER) typedBuffer = typedBuffer.slice(-MAX_BUFFER);
-
-            playAftonSound('keypress');
-
-            const contentWrap = $('content');
-            if (contentWrap) {
-                contentWrap.classList.remove('debug-shake');
-                void contentWrap.offsetWidth; 
-                contentWrap.classList.add('debug-shake');
-            }
-
-            if (isComplete) {
-                typedBuffer = ""; 
-                clearTimeout(typingIdleTimer);
-                
-                if (matchedWord === "debug") {
-                    playAftonSound('success');
-                    injectAndOpenDebugger();
-                } else {
-                    triggerAftonSequence();
-                }
-            } else {
-                if (matchedWord !== "debug") {
-                    updateFNAFBeep(ratio);
-                } else {
-                    updateFNAFBeep(0);
-                }
-                
-                clearTimeout(typingIdleTimer);
-                typingIdleTimer = setTimeout(() => {
-                    if (!isAftonSequenceRunning) {
-                        typedBuffer = "";
-                        updateFNAFBeep(0); 
-                    }
-                }, 2500);
-            }
-        } else {
-            typedBuffer = "";
-            clearTimeout(typingIdleTimer);
-            updateFNAFBeep(0);
-        }
+  const locHome = $("loc-home"),
+    locationText = $("location-text");
+  if (locHome && locationText) {
+    locHome.addEventListener("mouseenter", () => {
+      locationText.textContent = "Bacoor, Cavite, Philippines";
+      locationText.style.color = "#ffffff";
+      locationText.classList.remove("always-glitch");
     });
+    locHome.addEventListener("mouseleave", () => {
+      locationText.textContent = "END OF TIME?";
+      locationText.style.color = "";
+      locationText.classList.add("always-glitch");
+      locationText.setAttribute("data-glitch", "END OF TIME?");
+    });
+  }
 
-    function checkStrictFNAFProgress(currentBuffer, newKey) {
-        const targets = ["william", "afton", "spring", "debug"];
-        let isValidMatch = false;
-        let maxRatio = 0;
-        let isComplete = false;
-        let matchedWord = "";
+  const tooltipEl = $("custom-tooltip");
+  if (tooltipEl) {
+    tooltipEl.style.left = "0px";
+    tooltipEl.style.top = "0px";
 
-        if (currentBuffer === "") {
-            for (let word of targets) {
-                if (word[0] === newKey) {
-                    isValidMatch = true;
-                    let ratio = 1 / word.length;
-                    if (ratio > maxRatio) {
-                        maxRatio = ratio;
-                        matchedWord = word;
-                    }
-                }
-            }
-        } else {
-            for (let word of targets) {
-                for (let len = currentBuffer.length; len > 0; len--) {
-                    let segment = currentBuffer.slice(currentBuffer.length - len);
-                    if (word.startsWith(segment)) {
-                        if (word[segment.length] === newKey) {
-                            isValidMatch = true;
-                            let prospectiveLength = segment.length + 1;
-                            let ratio = prospectiveLength / word.length;
-                            
-                            if (ratio > maxRatio) {
-                                maxRatio = ratio;
-                                matchedWord = word;
-                            }
-                            if (prospectiveLength === word.length) isComplete = true;
-                            break;
-                        }
-                    }
-                }
-                if (isValidMatch) break;
-            }
+    let tooltipRAF;
+    let isTooltipVisible = false;
+
+    document.addEventListener(
+      "mousemove",
+      (e) => {
+        const target = e.target.closest("[data-tooltip]");
+
+        if (target) {
+          if (
+            !isTooltipVisible ||
+            tooltipEl.innerHTML !== target.getAttribute("data-tooltip")
+          ) {
+            tooltipEl.innerHTML = target.getAttribute("data-tooltip");
+            tooltipEl.classList.add("show");
+            isTooltipVisible = true;
+          }
+
+          let x = e.clientX + 15;
+          let y = e.clientY + 15;
+
+          if (!tooltipRAF) {
+            tooltipRAF = requestAnimationFrame(() => {
+              const tooltipRect = tooltipEl.getBoundingClientRect();
+
+              if (x + tooltipRect.width > window.innerWidth - 10)
+                x = e.clientX - tooltipRect.width - 15;
+              if (y + tooltipRect.height > window.innerHeight - 10)
+                y = e.clientY - tooltipRect.height - 15;
+
+              tooltipEl.style.transform = `translate(${x}px, ${y}px)`;
+              tooltipRAF = null;
+            });
+          }
+        } else if (isTooltipVisible) {
+          tooltipEl.classList.remove("show");
+          isTooltipVisible = false;
+          if (tooltipRAF) {
+            cancelAnimationFrame(tooltipRAF);
+            tooltipRAF = null;
+          }
         }
-        return { isValidMatch, ratio: maxRatio, isComplete, matchedWord };
+      },
+      { passive: true },
+    );
+  }
+
+  let hoverAnimTimeout;
+  const updateProfileView = (avatar, username, bio) => {
+    const usernameEl = $("profile-username");
+    const bioEl = $("profile-bio");
+    const avatarImgEl = $("avatar-img");
+
+    const currentSrc = avatarImgEl.getAttribute("src");
+    const isSameAvatar = currentSrc === avatar || avatarImgEl.src === avatar;
+
+    usernameEl.style.opacity = "0";
+    bioEl.style.opacity = "0";
+
+    if (!isSameAvatar) {
+      avatarImgEl.style.opacity = "0";
     }
 
-    async function triggerAftonSequence() {
-        isAftonSequenceRunning = true; 
+    hoverAnimTimeout = setTimeout(() => {
+      if (!isSameAvatar) {
+        avatarImgEl.src = avatar;
+      }
+      usernameEl.textContent = username;
+      bioEl.innerHTML = bio;
+
+      usernameEl.style.opacity = "1";
+      bioEl.style.opacity = "1";
+
+      avatarImgEl.style.opacity = "1";
+    }, 150);
+  };
+
+  $$(".email-btn").forEach((btn) => {
+    btn.addEventListener("mouseenter", (e) => {
+      const type = e.target.getAttribute("data-type");
+      clearTimeout(hoverAnimTimeout);
+      updateProfileView(
+        emailAvatars[type],
+        e.target.getAttribute("data-email"),
+        emailBios[type],
+      );
+    });
+    btn.addEventListener("mouseleave", () => {
+      clearTimeout(hoverAnimTimeout);
+      const defaultProfile =
+        profiles[
+          document.querySelector(".tab.active")?.getAttribute("data-tab") ||
+            "home"
+        ];
+      updateProfileView(
+        defaultProfile.avatar,
+        defaultProfile.username,
+        defaultProfile.bio,
+      );
+    });
+  });
+
+  const bgAudio = $("bg-audio"),
+    durationEl = $("duration"),
+    currentTimeEl = $("current-time"),
+    progressFill = document.querySelector(".progress-fill");
+  if (bgAudio) {
+    const updateDuration = () => {
+      if (durationEl && !isNaN(bgAudio.duration))
+        durationEl.textContent = formatTime(bgAudio.duration);
+    };
+
+    if (bgAudio.readyState >= 1) updateDuration();
+    bgAudio.addEventListener("loadedmetadata", updateDuration);
+
+    let audioFrame;
+    let currentLyricIndex = 0;
+
+    bgAudio.addEventListener("timeupdate", () => {
+      cancelAnimationFrame(audioFrame);
+      audioFrame = requestAnimationFrame(() => {
+        if (currentTimeEl)
+          currentTimeEl.textContent = formatTime(bgAudio.currentTime);
+        if (progressFill && bgAudio.duration > 0)
+          progressFill.style.width = `${(bgAudio.currentTime / bgAudio.duration) * 100}%`;
+
+        const activeTab = document
+          .querySelector(".tab.active")
+          ?.getAttribute("data-tab");
+        if (activeTab === "home") {
+          while (
+            currentLyricIndex < GREEDY_LYRICS.length - 1 &&
+            bgAudio.currentTime >= GREEDY_LYRICS[currentLyricIndex + 1].time
+          ) {
+            currentLyricIndex++;
+          }
+
+          while (
+            currentLyricIndex > 0 &&
+            bgAudio.currentTime < GREEDY_LYRICS[currentLyricIndex].time
+          ) {
+            currentLyricIndex--;
+          }
+
+          const currentLyric = GREEDY_LYRICS[currentLyricIndex];
+
+          if (currentLyric) {
+            const bioEl = $("profile-bio");
+            if (
+              bioEl &&
+              bioEl.dataset.targetTime !== currentLyric.time.toString()
+            ) {
+              bioEl.dataset.targetTime = currentLyric.time.toString();
+
+              bioEl.style.opacity = "0";
+
+              setTimeout(() => {
+                bioEl.innerHTML = currentLyric.text;
+                bioEl.style.opacity = "1";
+              }, 100);
+            }
+          }
+        }
+      });
+    });
+  }
+
+  const deafenBtn = $("deafen-btn");
+  let isDeafened = false;
+
+  if (deafenBtn) {
+    deafenBtn.addEventListener("click", () => {
+      if (!bgAudio || !window.audioCtx || !window.lowpassFilter) return;
+
+      isDeafened = !isDeafened;
+      deafenBtn.classList.toggle("is-deafened", isDeafened);
+      document.body.classList.toggle("is-deafened", isDeafened);
+
+      const newTooltipText = isDeafened ? "Undeafen" : "Deafen";
+      deafenBtn.setAttribute("data-tooltip", newTooltipText);
+
+      if (tooltipEl && tooltipEl.classList.contains("show")) {
+        tooltipEl.innerHTML = newTooltipText;
+      }
+
+      const targetFreq = isDeafened ? 200 : 22050;
+      window.lowpassFilter.frequency.cancelScheduledValues(
+        window.audioCtx.currentTime,
+      );
+      window.lowpassFilter.frequency.setValueAtTime(
+        window.lowpassFilter.frequency.value,
+        window.audioCtx.currentTime,
+      );
+      window.lowpassFilter.frequency.exponentialRampToValueAtTime(
+        targetFreq,
+        window.audioCtx.currentTime + 0.8,
+      );
+
+      if (window.bassFilter) {
+        const targetBass = isDeafened ? 0 : 8;
+        window.bassFilter.gain.cancelScheduledValues(
+          window.audioCtx.currentTime,
+        );
+        window.bassFilter.gain.setValueAtTime(
+          window.bassFilter.gain.value,
+          window.audioCtx.currentTime,
+        );
+        window.bassFilter.gain.linearRampToValueAtTime(
+          targetBass,
+          window.audioCtx.currentTime + 0.8,
+        );
+      }
+
+      if (window.trebleFilter) {
+        const targetTreble = isDeafened ? 0 : 8;
+        window.trebleFilter.gain.cancelScheduledValues(
+          window.audioCtx.currentTime,
+        );
+        window.trebleFilter.gain.setValueAtTime(
+          window.trebleFilter.gain.value,
+          window.audioCtx.currentTime,
+        );
+        window.trebleFilter.gain.linearRampToValueAtTime(
+          targetTreble,
+          window.audioCtx.currentTime + 0.8,
+        );
+      }
+
+      if (window.masterGain) {
+        const targetVol = isDeafened ? 1.0 : 0.35;
+
+        window.masterGain.gain.cancelScheduledValues(
+          window.audioCtx.currentTime,
+        );
+        window.masterGain.gain.setValueAtTime(
+          window.masterGain.gain.value,
+          window.audioCtx.currentTime,
+        );
+        window.masterGain.gain.linearRampToValueAtTime(
+          targetVol,
+          window.audioCtx.currentTime + 0.8,
+        );
+      }
+    });
+  }
+
+  const syncActiveTabAttr = (tabName) => {
+    if (tabName) {
+      document.body.setAttribute("data-active-tab", tabName);
+    } else {
+      const activeTab =
+        document.querySelector(".tab.active")?.getAttribute("data-tab") ||
+        "home";
+      document.body.setAttribute("data-active-tab", activeTab);
+    }
+  };
+
+  $$(".tab").forEach((t) =>
+    t.addEventListener("click", (e) => {
+      syncActiveTabAttr(e.currentTarget.getAttribute("data-tab"));
+    }),
+  );
+
+  syncActiveTabAttr();
+
+  let typedBuffer = "";
+  const MAX_BUFFER = 10;
+
+  const aftonAssets = {
+    beep: "./assets/Headlock Beep.webm",
+    loop1: "./assets/Headlock Loop 1.webm",
+    loop2: "./assets/Headlock Loop 2.webm",
+    outro: "./assets/Headlock Loop Outro.webm",
+    keypress: "./assets/Keypress.webm",
+    success: "./assets/Debug Success.webm",
+  };
+
+  const rawAudioData = {};
+  const aftonBuffers = {};
+
+  Object.entries(aftonAssets).forEach(async ([key, url]) => {
+    try {
+      const res = await fetch(url);
+      rawAudioData[key] = await res.arrayBuffer();
+    } catch (e) {
+      console.warn(`Could not preload ${key} - ${url}`);
+    }
+  });
+
+  async function getDecodedBuffer(key) {
+    if (aftonBuffers[key]) return aftonBuffers[key];
+    if (rawAudioData[key] && window.audioCtx) {
+      const bufferCopy = rawAudioData[key].slice(0);
+      aftonBuffers[key] = await window.audioCtx.decodeAudioData(bufferCopy);
+      return aftonBuffers[key];
+    }
+    return null;
+  }
+
+  let fnafNode = null;
+  function getFNAFNode() {
+    if (fnafNode) return fnafNode;
+    if (!window.audioCtx) return null;
+
+    const bass = window.audioCtx.createBiquadFilter();
+    bass.type = "lowshelf";
+    bass.frequency.value = window.bassFilter
+      ? window.bassFilter.frequency.value
+      : 250;
+    bass.gain.value = 8;
+
+    const treble = window.audioCtx.createBiquadFilter();
+    treble.type = "highshelf";
+    treble.frequency.value = window.trebleFilter
+      ? window.trebleFilter.frequency.value
+      : 4000;
+    treble.gain.value = 8;
+
+    bass.connect(treble);
+    treble.connect(getFNAFMasterNode() || window.audioCtx.destination);
+
+    fnafNode = bass;
+    return fnafNode;
+  }
+
+  let fnafMusicGain = null;
+  function getFNAFMusicNode() {
+    if (fnafMusicGain) return fnafMusicGain;
+    if (!window.audioCtx) return null;
+
+    fnafMusicGain = window.audioCtx.createGain();
+    fnafMusicGain.gain.value = 0.25;
+    fnafMusicGain.connect(
+      getFNAFNode() || getFNAFMasterNode() || window.audioCtx.destination,
+    );
+
+    return fnafMusicGain;
+  }
+
+  async function playAftonSound(key) {
+    if (!window.audioCtx) return null;
+    const buf = await getDecodedBuffer(key);
+    if (buf) {
+      const src = window.audioCtx.createBufferSource();
+      src.buffer = buf;
+      src.connect(
+        getFNAFMusicNode() ||
+          getFNAFMasterNode() ||
+          window.audioCtx.destination,
+      );
+      src.start();
+      return src;
+    }
+    return null;
+  }
+
+  let typingBeepTimer = null;
+  let typingIdleTimer = null;
+  let isBeeping = false;
+  let currentSilence = 1.0;
+
+  let aftonBeeps = [];
+  let aftonLoop1Src = null;
+  let aftonLoop2Src = null;
+  let tLoop1Start = 0;
+  let tLoop1End = 0;
+  let tLoop2Start = 0;
+
+  function flashFNAF(type) {
+    const flash = document.createElement("div");
+    flash.style.position = "fixed";
+    flash.style.top = "0";
+    flash.style.left = "0";
+    flash.style.width = "100vw";
+    flash.style.height = "100vh";
+    flash.style.pointerEvents = "none";
+    flash.style.transition = "opacity 0.3s ease-out";
+    flash.style.background = "#ff0000";
+
+    if (type === "bg") {
+      flash.style.zIndex = "-1";
+      flash.style.opacity = "0.5";
+    } else if (type === "full") {
+      flash.style.zIndex = "99999999";
+      flash.style.opacity = "0.8";
+    }
+
+    document.body.appendChild(flash);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        flash.style.opacity = "0";
+        setTimeout(() => flash.remove(), 300);
+      });
+    });
+  }
+
+  function applyFNAFDeafen(isActive, fullyMute = false) {
+    if (!window.audioCtx || !window.lowpassFilter || !window.masterGain) return;
+
+    const now = window.audioCtx.currentTime;
+    const isGloballyDeafened = document.body.classList.contains("is-deafened");
+
+    window.lowpassFilter.frequency.cancelScheduledValues(now);
+    window.masterGain.gain.cancelScheduledValues(now);
+
+    try {
+      window.lowpassFilter.frequency.setValueAtTime(
+        window.lowpassFilter.frequency.value,
+        now,
+      );
+      window.masterGain.gain.setValueAtTime(window.masterGain.gain.value, now);
+    } catch (e) {}
+
+    if (isActive) {
+      window.lowpassFilter.frequency.exponentialRampToValueAtTime(
+        200,
+        now + 0.5,
+      );
+      window.masterGain.gain.linearRampToValueAtTime(
+        fullyMute ? 0.0 : 0.05,
+        now + 0.5,
+      );
+    } else {
+      const targetFreq = isGloballyDeafened ? 200 : 22050;
+      const targetVol = isGloballyDeafened ? 1.0 : 0.35;
+
+      const currentFreq = Math.max(window.lowpassFilter.frequency.value, 1);
+      window.lowpassFilter.frequency.setValueAtTime(currentFreq, now);
+      window.lowpassFilter.frequency.exponentialRampToValueAtTime(
+        targetFreq,
+        now + 5.0,
+      );
+      window.masterGain.gain.linearRampToValueAtTime(targetVol, now + 5.0);
+    }
+  }
+
+  async function scheduleNextBeep() {
+    if (!isBeeping) return;
+    const buf = await getDecodedBuffer("beep");
+    if (buf && isBeeping) {
+      const src = window.audioCtx.createBufferSource();
+      src.buffer = buf;
+      src.connect(
+        getFNAFMusicNode() ||
+          getFNAFMasterNode() ||
+          window.audioCtx.destination,
+      );
+      src.start();
+      flashFNAF("bg");
+      typingBeepTimer = setTimeout(
+        scheduleNextBeep,
+        (buf.duration + currentSilence) * 1000,
+      );
+    } else {
+      typingBeepTimer = setTimeout(scheduleNextBeep, 200);
+    }
+  }
+
+  function updateFNAFBeep(ratio) {
+    if (ratio === 0) {
+      if (isBeeping) {
         isBeeping = false;
         clearTimeout(typingBeepTimer);
-        applyFNAFDeafen(true, true); 
-
-        const contentWrap = $('content');
-        if(contentWrap) {
-            contentWrap.classList.remove('debug-shake');
-            void contentWrap.offsetWidth;
-            contentWrap.classList.add('debug-shake');
-        }
-
-        if(!window.audioCtx) {
-            finishAftonSequence();
-            return;
-        }
-
-        const bufBeep = await getDecodedBuffer('beep');
-        const bufLoop1 = await getDecodedBuffer('loop1');
-        const bufLoop2 = await getDecodedBuffer('loop2');
-        await getDecodedBuffer('outro'); 
-
-        let t = window.audioCtx.currentTime;
-        let beepDur = bufBeep ? bufBeep.duration : 0.5;
-        
-        aftonBeeps = [];
-        aftonLoop1Src = null;
-        aftonLoop2Src = null;
-        const targetNode = getFNAFMusicNode() || getFNAFMasterNode() || window.audioCtx.destination;
-
-        for(let i=0; i<5; i++) {
-            if(bufBeep) {
-                let src = window.audioCtx.createBufferSource();
-                src.buffer = bufBeep;
-                src.connect(targetNode);
-                src.start(t);
-                aftonBeeps.push(src);
-
-                let delay = Math.max(0, (t - window.audioCtx.currentTime) * 1000);
-                setTimeout(() => flashFNAF('full'), delay);
-            }
-            t += beepDur + 0.360; 
-        }
-
-        tLoop1Start = t;
-        if(bufLoop1) {
-            let loop1 = window.audioCtx.createBufferSource();
-            loop1.buffer = bufLoop1;
-            loop1.connect(targetNode);
-            loop1.start(tLoop1Start);
-            aftonLoop1Src = loop1;
-            
-            tLoop1End = tLoop1Start + bufLoop1.duration;
-            t = tLoop1End;
-        } else {
-            tLoop1End = tLoop1Start + 2;
-            t = tLoop1End;
-        }
-
-        tLoop2Start = t;
-        if(bufLoop2) {
-            aftonLoop2Src = window.audioCtx.createBufferSource();
-            aftonLoop2Src.buffer = bufLoop2;
-            aftonLoop2Src.loop = true;
-            aftonLoop2Src.connect(targetNode);
-            aftonLoop2Src.start(tLoop2Start);
-        }
-
-        const delayToUI = Math.max(0, (tLoop1Start - window.audioCtx.currentTime) * 1000);
-        
-        setTimeout(() => {
-            showAftonFile();
-        }, delayToUI);
+        applyFNAFDeafen(false);
+      }
+      return;
     }
 
-    function showAftonFile() {
-        document.body.style.overflow = 'hidden';
-        const viewWrapper = document.getElementById('view-wrapper') || document.querySelector('.view-wrapper') || document.querySelector('.wrapper');
-        if (viewWrapper) {
-            viewWrapper.style.pointerEvents = 'none';
-            viewWrapper.style.overflow = 'hidden';
-        }
-        $$('.card, .tabs, .tab, #content, body').forEach(el => {
-            el.style.pointerEvents = 'none';
-        });
+    applyFNAFDeafen(true, true);
+    currentSilence = 1.5 - ratio * (1.5 - 0.36);
 
-        const modal = document.createElement('div');
-        modal.id = 'afton-report-modal';
-        modal.style.pointerEvents = 'auto';
-        
-        modal.innerHTML = `
+    if (!isBeeping) {
+      isBeeping = true;
+      scheduleNextBeep();
+    }
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+    if (!window.audioCtx || window.audioCtx.state === "suspended") return;
+
+    const enterOverlay = document.getElementById("enter-overlay");
+    if (
+      enterOverlay &&
+      window.getComputedStyle(enterOverlay).display !== "none"
+    )
+      return;
+    if (
+      document.querySelector(".staged-for-drop") ||
+      document.querySelector(".is-dropping")
+    )
+      return;
+
+    if (isAftonSequenceRunning) return;
+
+    const key = e.key.toLowerCase();
+    if (key.length !== 1) return;
+
+    const { isValidMatch, ratio, isComplete, matchedWord } =
+      checkStrictFNAFProgress(typedBuffer, key);
+
+    if (isValidMatch) {
+      typedBuffer += key;
+      if (typedBuffer.length > MAX_BUFFER)
+        typedBuffer = typedBuffer.slice(-MAX_BUFFER);
+
+      playAftonSound("keypress");
+
+      const contentWrap = $("content");
+      if (contentWrap) {
+        contentWrap.classList.remove("debug-shake");
+        void contentWrap.offsetWidth;
+        contentWrap.classList.add("debug-shake");
+      }
+
+      if (isComplete) {
+        typedBuffer = "";
+        clearTimeout(typingIdleTimer);
+
+        if (matchedWord === "debug") {
+          playAftonSound("success");
+          injectAndOpenDebugger();
+        } else {
+          triggerAftonSequence();
+        }
+      } else {
+        if (matchedWord !== "debug") {
+          updateFNAFBeep(ratio);
+        } else {
+          updateFNAFBeep(0);
+        }
+
+        clearTimeout(typingIdleTimer);
+        typingIdleTimer = setTimeout(() => {
+          if (!isAftonSequenceRunning) {
+            typedBuffer = "";
+            updateFNAFBeep(0);
+          }
+        }, 2500);
+      }
+    } else {
+      typedBuffer = "";
+      clearTimeout(typingIdleTimer);
+      updateFNAFBeep(0);
+    }
+  });
+
+  function checkStrictFNAFProgress(currentBuffer, newKey) {
+    const targets = ["william", "afton", "spring", "debug"];
+    let isValidMatch = false;
+    let maxRatio = 0;
+    let isComplete = false;
+    let matchedWord = "";
+
+    if (currentBuffer === "") {
+      for (let word of targets) {
+        if (word[0] === newKey) {
+          isValidMatch = true;
+          let ratio = 1 / word.length;
+          if (ratio > maxRatio) {
+            maxRatio = ratio;
+            matchedWord = word;
+          }
+        }
+      }
+    } else {
+      for (let word of targets) {
+        for (let len = currentBuffer.length; len > 0; len--) {
+          let segment = currentBuffer.slice(currentBuffer.length - len);
+          if (word.startsWith(segment)) {
+            if (word[segment.length] === newKey) {
+              isValidMatch = true;
+              let prospectiveLength = segment.length + 1;
+              let ratio = prospectiveLength / word.length;
+
+              if (ratio > maxRatio) {
+                maxRatio = ratio;
+                matchedWord = word;
+              }
+              if (prospectiveLength === word.length) isComplete = true;
+              break;
+            }
+          }
+        }
+        if (isValidMatch) break;
+      }
+    }
+    return { isValidMatch, ratio: maxRatio, isComplete, matchedWord };
+  }
+
+  async function triggerAftonSequence() {
+    isAftonSequenceRunning = true;
+    isBeeping = false;
+    clearTimeout(typingBeepTimer);
+    applyFNAFDeafen(true, true);
+
+    const contentWrap = $("content");
+    if (contentWrap) {
+      contentWrap.classList.remove("debug-shake");
+      void contentWrap.offsetWidth;
+      contentWrap.classList.add("debug-shake");
+    }
+
+    if (!window.audioCtx) {
+      finishAftonSequence();
+      return;
+    }
+
+    const bufBeep = await getDecodedBuffer("beep");
+    const bufLoop1 = await getDecodedBuffer("loop1");
+    const bufLoop2 = await getDecodedBuffer("loop2");
+    await getDecodedBuffer("outro");
+
+    let t = window.audioCtx.currentTime;
+    let beepDur = bufBeep ? bufBeep.duration : 0.5;
+
+    aftonBeeps = [];
+    aftonLoop1Src = null;
+    aftonLoop2Src = null;
+    const targetNode =
+      getFNAFMusicNode() || getFNAFMasterNode() || window.audioCtx.destination;
+
+    for (let i = 0; i < 5; i++) {
+      if (bufBeep) {
+        let src = window.audioCtx.createBufferSource();
+        src.buffer = bufBeep;
+        src.connect(targetNode);
+        src.start(t);
+        aftonBeeps.push(src);
+
+        let delay = Math.max(0, (t - window.audioCtx.currentTime) * 1000);
+        setTimeout(() => flashFNAF("full"), delay);
+      }
+      t += beepDur + 0.36;
+    }
+
+    tLoop1Start = t;
+    if (bufLoop1) {
+      let loop1 = window.audioCtx.createBufferSource();
+      loop1.buffer = bufLoop1;
+      loop1.connect(targetNode);
+      loop1.start(tLoop1Start);
+      aftonLoop1Src = loop1;
+
+      tLoop1End = tLoop1Start + bufLoop1.duration;
+      t = tLoop1End;
+    } else {
+      tLoop1End = tLoop1Start + 2;
+      t = tLoop1End;
+    }
+
+    tLoop2Start = t;
+    if (bufLoop2) {
+      aftonLoop2Src = window.audioCtx.createBufferSource();
+      aftonLoop2Src.buffer = bufLoop2;
+      aftonLoop2Src.loop = true;
+      aftonLoop2Src.connect(targetNode);
+      aftonLoop2Src.start(tLoop2Start);
+    }
+
+    const delayToUI = Math.max(
+      0,
+      (tLoop1Start - window.audioCtx.currentTime) * 1000,
+    );
+
+    setTimeout(() => {
+      showAftonFile();
+    }, delayToUI);
+  }
+
+  function showAftonFile() {
+    document.body.style.overflow = "hidden";
+    const viewWrapper =
+      document.getElementById("view-wrapper") ||
+      document.querySelector(".view-wrapper") ||
+      document.querySelector(".wrapper");
+    if (viewWrapper) {
+      viewWrapper.style.pointerEvents = "none";
+      viewWrapper.style.overflow = "hidden";
+    }
+    $$(".card, .tabs, .tab, #content, body").forEach((el) => {
+      el.style.pointerEvents = "none";
+    });
+
+    const modal = document.createElement("div");
+    modal.id = "afton-report-modal";
+    modal.style.pointerEvents = "auto";
+
+    modal.innerHTML = `
             <div class="afton-overlay" style="position: fixed; z-index: 9999999; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5,5,5,0.98); display: flex; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.4s ease; will-change: opacity; transform: translateZ(0); pointer-events: auto;">
                 
                 <style>
@@ -1074,406 +1265,468 @@ export function setupUIEvents() {
                 </div>
             </div>
         `;
-        document.body.appendChild(modal);
+    document.body.appendChild(modal);
 
-        const contentWrapper = modal.querySelector('.afton-content-wrapper');
-        const scrollContent = modal.querySelector('.afton-scroll-content');
-        const trapScroll = (e) => e.stopPropagation();
-        contentWrapper.addEventListener('wheel', trapScroll, { passive: true });
-        contentWrapper.addEventListener('touchmove', trapScroll, { passive: true });
+    const contentWrapper = modal.querySelector(".afton-content-wrapper");
+    const scrollContent = modal.querySelector(".afton-scroll-content");
+    const trapScroll = (e) => e.stopPropagation();
+    contentWrapper.addEventListener("wheel", trapScroll, { passive: true });
+    contentWrapper.addEventListener("touchmove", trapScroll, { passive: true });
 
-        let aftonLenis = null;
-        let isAftonLenisActive = false;
+    let aftonLenis = null;
+    let isAftonLenisActive = false;
 
-        if (typeof Lenis !== 'undefined') {
-            isAftonLenisActive = true;
-            aftonLenis = new Lenis({
-                wrapper: contentWrapper,
-                content: scrollContent,
-                lerp: 0.15,
-                wheelMultiplier: 0.9,
-                smoothWheel: true,
-                smoothTouch: false,
-            });
+    if (typeof Lenis !== "undefined") {
+      isAftonLenisActive = true;
+      aftonLenis = new Lenis({
+        wrapper: contentWrapper,
+        content: scrollContent,
+        lerp: 0.15,
+        wheelMultiplier: 0.9,
+        smoothWheel: true,
+        smoothTouch: false,
+      });
 
-            const rafAfton = (time) => {
-                if (!isAftonLenisActive) return;
-                aftonLenis.raf(time);
-                requestAnimationFrame(rafAfton);
-            };
-            requestAnimationFrame(rafAfton);
-        } else {
-            contentWrapper.style.overflowY = 'auto';
+      const rafAfton = (time) => {
+        if (!isAftonLenisActive) return;
+        aftonLenis.raf(time);
+        requestAnimationFrame(rafAfton);
+      };
+      requestAnimationFrame(rafAfton);
+    } else {
+      contentWrapper.style.overflowY = "auto";
+    }
+
+    const voiceAudio = document.getElementById("afton-voice-audio");
+    const voiceBtn = document.getElementById("afton-voice-btn");
+    const playIcon = document.getElementById("afton-play-icon");
+    const pauseIcon = document.getElementById("afton-pause-icon");
+    const voiceProgress = document.getElementById("afton-voice-progress");
+
+    if (window.audioCtx) {
+      try {
+        if (!voiceAudio.dataset.routed) {
+          const source = window.audioCtx.createMediaElementSource(voiceAudio);
+          source.connect(
+            getFNAFNode() || getFNAFMasterNode() || window.audioCtx.destination,
+          );
+          voiceAudio.dataset.routed = "true";
         }
+      } catch (e) {
+        console.error("Could not route Afton voice:", e);
+      }
+    }
 
-        const voiceAudio = document.getElementById('afton-voice-audio');
-        const voiceBtn = document.getElementById('afton-voice-btn');
-        const playIcon = document.getElementById('afton-play-icon');
-        const pauseIcon = document.getElementById('afton-pause-icon');
-        const voiceProgress = document.getElementById('afton-voice-progress');
-        
-        if (window.audioCtx) {
-            try {
-                if (!voiceAudio.dataset.routed) {
-                    const source = window.audioCtx.createMediaElementSource(voiceAudio);
-                    source.connect(getFNAFNode() || getFNAFMasterNode() || window.audioCtx.destination);
-                    voiceAudio.dataset.routed = 'true';
-                }
-            } catch(e) { console.error("Could not route Afton voice:", e); }
-        }
+    voiceAudio.volume = 1.0;
+    voiceAudio.isResetting = false;
+    voiceAudio.play().catch((e) => {
+      playIcon.style.display = "block";
+      pauseIcon.style.display = "none";
+    });
 
-        voiceAudio.volume = 1.0;
+    let progressRaf;
+    const updateProgress = () => {
+      if (!voiceAudio.isResetting && voiceAudio.duration > 0) {
+        const percent = (voiceAudio.currentTime / voiceAudio.duration) * 100;
+        voiceProgress.style.width = `${percent}%`;
+      }
+      if (!voiceAudio.paused && !voiceAudio.ended) {
+        progressRaf = requestAnimationFrame(updateProgress);
+      }
+    };
+
+    voiceBtn.addEventListener("click", () => {
+      if (voiceAudio.paused) {
+        voiceAudio.play();
+      } else {
+        voiceAudio.pause();
+      }
+    });
+
+    voiceAudio.addEventListener("play", () => {
+      playIcon.style.display = "none";
+      pauseIcon.style.display = "block";
+      if (progressRaf) cancelAnimationFrame(progressRaf);
+      progressRaf = requestAnimationFrame(updateProgress);
+    });
+
+    voiceAudio.addEventListener("pause", () => {
+      playIcon.style.display = "block";
+      pauseIcon.style.display = "none";
+      if (progressRaf) cancelAnimationFrame(progressRaf);
+    });
+
+    voiceAudio.addEventListener("ended", () => {
+      playIcon.style.display = "block";
+      pauseIcon.style.display = "none";
+      if (progressRaf) cancelAnimationFrame(progressRaf);
+
+      voiceAudio.isResetting = true;
+      voiceProgress.style.transition =
+        "width 0.4s cubic-bezier(0.25, 1, 0.5, 1)";
+      voiceProgress.style.width = "0%";
+
+      setTimeout(() => {
+        voiceAudio.currentTime = 0;
+        voiceProgress.style.transition = "none";
         voiceAudio.isResetting = false;
-        voiceAudio.play().catch(e => {
-            playIcon.style.display = 'block';
-            pauseIcon.style.display = 'none';
+      }, 400);
+    });
+
+    setTimeout(
+      () => (modal.querySelector(".afton-overlay").style.opacity = "1"),
+      50,
+    );
+
+    document
+      .getElementById("afton-close-btn")
+      .addEventListener("click", async function () {
+        this.style.pointerEvents = "none";
+        this.style.transition = "opacity 0.2s";
+        this.style.opacity = "0";
+
+        const box = modal.querySelector(".afton-box");
+        if (box) box.style.pointerEvents = "none";
+
+        modal.querySelectorAll(".afton-redact").forEach((el) => {
+          el.classList.remove("hoverable");
+          el.style.cursor = "default";
         });
 
-        let progressRaf;
-        const updateProgress = () => {
-            if (!voiceAudio.isResetting && voiceAudio.duration > 0) {
-                const percent = (voiceAudio.currentTime / voiceAudio.duration) * 100;
-                voiceProgress.style.width = `${percent}%`;
-            }
-            if (!voiceAudio.paused && !voiceAudio.ended) {
-                progressRaf = requestAnimationFrame(updateProgress);
-            }
-        };
-
-        voiceBtn.addEventListener('click', () => {
-            if (voiceAudio.paused) {
-                voiceAudio.play();
-            } else {
-                voiceAudio.pause();
-            }
-        });
-
-        voiceAudio.addEventListener('play', () => {
-            playIcon.style.display = 'none';
-            pauseIcon.style.display = 'block';
-            if (progressRaf) cancelAnimationFrame(progressRaf);
-            progressRaf = requestAnimationFrame(updateProgress);
-        });
-
-        voiceAudio.addEventListener('pause', () => {
-            playIcon.style.display = 'block';
-            pauseIcon.style.display = 'none';
-            if (progressRaf) cancelAnimationFrame(progressRaf);
-        });
-
-        voiceAudio.addEventListener('ended', () => {
-            playIcon.style.display = 'block';
-            pauseIcon.style.display = 'none';
-            if (progressRaf) cancelAnimationFrame(progressRaf);
-            
-            voiceAudio.isResetting = true;
-            voiceProgress.style.transition = 'width 0.4s cubic-bezier(0.25, 1, 0.5, 1)';
-            voiceProgress.style.width = '0%';
-            
-            setTimeout(() => {
-                voiceAudio.currentTime = 0;
-                voiceProgress.style.transition = 'none';
-                voiceAudio.isResetting = false;
-            }, 400);
-        });
-
-        setTimeout(() => modal.querySelector('.afton-overlay').style.opacity = '1', 50);
-
-        document.getElementById('afton-close-btn').addEventListener('click', async function() {
-            this.style.pointerEvents = 'none';
-            this.style.transition = 'opacity 0.2s';
-            this.style.opacity = '0';
-            
-            const box = modal.querySelector('.afton-box');
-            if (box) box.style.pointerEvents = 'none';
-
-            modal.querySelectorAll('.afton-redact').forEach(el => {
-                el.classList.remove('hoverable');
-                el.style.cursor = 'default';
-            });
-
-            if (voiceAudio) {
-                voiceAudio.pause();
-            }
-
-            const bufOutro = await getDecodedBuffer('outro');
-            const outroDur = bufOutro ? bufOutro.duration : 2.0;
-
-            const now = window.audioCtx.currentTime;
-            let nextBoundary = now;
-
-            if (now >= tLoop2Start && aftonLoop2Src) {
-                const duration = aftonLoop2Src.buffer.duration;
-                const elapsed = now - tLoop2Start;
-                const loopCount = Math.floor(elapsed / duration);
-                nextBoundary = tLoop2Start + ((loopCount + 1) * duration);
-            } else if (now >= tLoop1Start && now < tLoop1End && aftonLoop1Src) {
-                nextBoundary = tLoop1End;
-            } else {
-                nextBoundary = now;
-            }
-
-            const timeRemainingMs = Math.max(50, (nextBoundary - now) * 1000);
-
-            const textNodes = [];
-            const walk = document.createTreeWalker(modal.querySelector('.afton-box'), NodeFilter.SHOW_TEXT, null, false);
-            let node;
-            while(node = walk.nextNode()) {
-                if(node.nodeValue.trim().length > 0) {
-                    textNodes.push(node);
-                }
-            }
-            textNodes.reverse(); 
-
-            const totalChars = textNodes.reduce((sum, n) => sum + n.nodeValue.length, 0);
-            const deleteDuration = Math.max(16, timeRemainingMs - 50); 
-            const startTimestamp = performance.now();
-            let charsDeletedSoFar = 0;
-
-            function backspaceFrame(timestamp) {
-                let elapsed = timestamp - startTimestamp;
-                let progress = Math.min(1, elapsed / deleteDuration);
-                let targetCharsDeleted = Math.floor(progress * totalChars);
-
-                let charsToDeleteThisFrame = targetCharsDeleted - charsDeletedSoFar;
-
-                while (charsToDeleteThisFrame > 0 && textNodes.length > 0) {
-                    let current = textNodes[0];
-                    let currentLen = current.nodeValue.length;
-                    
-                    if (currentLen > 0) {
-                        let toRemove = Math.min(currentLen, charsToDeleteThisFrame);
-                        
-                        if (!current.redactSpan) {
-                            current.redactSpan = document.createElement('span');
-                            current.redactSpan.className = 'afton-final-redact';
-                            current.parentNode.insertBefore(current.redactSpan, current.nextSibling);
-                        }
-
-                        let keepText = current.nodeValue.slice(0, -toRemove);
-                        let redactText = current.nodeValue.slice(-toRemove);
-                        
-                        current.nodeValue = keepText;
-                        current.redactSpan.textContent = redactText + current.redactSpan.textContent;
-                        
-                        charsToDeleteThisFrame -= toRemove;
-                        charsDeletedSoFar += toRemove;
-                    }
-                    
-                    if (current.nodeValue.length === 0) {
-                        textNodes.shift();
-                    }
-                }
-
-                if (progress < 1 && textNodes.length > 0) {
-                    requestAnimationFrame(backspaceFrame);
-                }
-            }
-            requestAnimationFrame(backspaceFrame);
-
-            setTimeout(() => {
-                const overlay = modal.querySelector('.afton-overlay');
-
-                if (box) box.style.boxShadow = 'none';
-
-                const windowFadeDur = outroDur * 0.5;
-                if (box) {
-                    box.style.transition = `transform ${windowFadeDur}s cubic-bezier(0.25, 1, 0.5, 1), opacity ${windowFadeDur}s linear`;
-                    box.style.transform = 'scale(0.95) translateY(15px)';
-                    box.style.opacity = '0';
-                }
-                
-                if (overlay) overlay.style.pointerEvents = 'none'; 
-
-                triggerAftonOutro(nextBoundary, () => {
-                    if (overlay) {
-                        overlay.style.transition = 'opacity 1.5s ease';
-                        overlay.style.opacity = '0';
-                        setTimeout(() => {
-                            if (aftonLenis) {
-                                isAftonLenisActive = false;
-                                aftonLenis.destroy();
-                            }
-                            modal.remove();
-                        }, 1500);
-                    }
-                });
-
-            }, timeRemainingMs);
-        });
-    }
-
-    function finishAftonSequence(onComplete) {
-        applyFNAFDeafen(false);
-        isAftonSequenceRunning = false; 
-        
-        document.body.style.overflow = ''; 
-        const viewWrapper = document.getElementById('view-wrapper') || document.querySelector('.view-wrapper') || document.querySelector('.wrapper');
-        if (viewWrapper) {
-            viewWrapper.style.pointerEvents = '';
-            viewWrapper.style.overflow = '';
-        }
-        $$('.card, .tabs, .tab, #content, body').forEach(el => {
-            el.style.pointerEvents = '';
-        });
-
-        typedBuffer = "";
-        if(onComplete) onComplete();
-    }
-
-    async function triggerAftonOutro(fixedBoundary, onComplete) {
-        if(!window.audioCtx) {
-            finishAftonSequence(onComplete);
-            return;
+        if (voiceAudio) {
+          voiceAudio.pause();
         }
 
-        const bufOutro = await getDecodedBuffer('outro');
+        const bufOutro = await getDecodedBuffer("outro");
+        const outroDur = bufOutro ? bufOutro.duration : 2.0;
+
         const now = window.audioCtx.currentTime;
-        const nextBoundary = fixedBoundary || now;
+        let nextBoundary = now;
 
         if (now >= tLoop2Start && aftonLoop2Src) {
-            try { aftonLoop2Src.stop(nextBoundary); } catch(e) {}
+          const duration = aftonLoop2Src.buffer.duration;
+          const elapsed = now - tLoop2Start;
+          const loopCount = Math.floor(elapsed / duration);
+          nextBoundary = tLoop2Start + (loopCount + 1) * duration;
         } else if (now >= tLoop1Start && now < tLoop1End && aftonLoop1Src) {
-            if (aftonLoop2Src) { try { aftonLoop2Src.stop(0); } catch(e) {} }
+          nextBoundary = tLoop1End;
         } else {
-            aftonBeeps.forEach(src => { try { src.stop(nextBoundary); } catch(e) {} });
-            if (aftonLoop1Src) { try { aftonLoop1Src.stop(nextBoundary); } catch(e) {} }
-            if (aftonLoop2Src) { try { aftonLoop2Src.stop(nextBoundary); } catch(e) {} }
+          nextBoundary = now;
         }
 
-        if(bufOutro) {
-            let outro = window.audioCtx.createBufferSource();
-            outro.buffer = bufOutro;
-            outro.connect(getFNAFMusicNode() || getFNAFMasterNode() || window.audioCtx.destination);
-            outro.start(nextBoundary);
+        const timeRemainingMs = Math.max(50, (nextBoundary - now) * 1000);
 
-            outro.onended = () => {
-                finishAftonSequence(onComplete); 
-            };
-        } else {
-            setTimeout(() => {
-                finishAftonSequence(onComplete);
-            }, Math.max(0, (nextBoundary - now) * 1000) + 2000);
+        const textNodes = [];
+        const walk = document.createTreeWalker(
+          modal.querySelector(".afton-box"),
+          NodeFilter.SHOW_TEXT,
+          null,
+          false,
+        );
+        let node;
+        while ((node = walk.nextNode())) {
+          if (node.nodeValue.trim().length > 0) {
+            textNodes.push(node);
+          }
         }
-    }
+        textNodes.reverse();
 
-    const safeDelay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        const totalChars = textNodes.reduce(
+          (sum, n) => sum + n.nodeValue.length,
+          0,
+        );
+        const deleteDuration = Math.max(16, timeRemainingMs - 50);
+        const startTimestamp = performance.now();
+        let charsDeletedSoFar = 0;
 
-    async function applyDebugCardHiding(tabMatch, isDeact) {
-        const activeTab = document.body.getAttribute('data-active-tab') || 'home';
-        
-        if (activeTab === tabMatch) {
-            const newLayout = profiles[activeTab]?.layout || profiles.home.layout;
-            const targetCards = newLayout.showCards || [];
+        function backspaceFrame(timestamp) {
+          let elapsed = timestamp - startTimestamp;
+          let progress = Math.min(1, elapsed / deleteDuration);
+          let targetCharsDeleted = Math.floor(progress * totalChars);
 
-            const cardsData = ['card-2', 'card-3', 'card-4']
-                .map(num => ({
-                    id: `${num}-container`,
-                    card: document.getElementById(`${num}-container`),
-                    content: document.getElementById(`${num}-content`)
-                }))
-                .filter(obj => obj.card && targetCards.includes(obj.id));
+          let charsToDeleteThisFrame = targetCharsDeleted - charsDeletedSoFar;
 
-            if (isDeact) {
-                cardsData.forEach(({ content }) => {
-                    if (content) content.classList.add('fade-out');
-                });
-                
-                await safeDelay(250);
-                
-                cardsData.forEach(({ card }) => {
-                    const parent = card.parentElement;
-                    const gap = parent ? (parseFloat(window.getComputedStyle(parent).gap) || 0) : 0;
-                    
-                    card.style.transition = 'none';
-                    const currentHeight = card.offsetHeight;
-                    card.style.height = currentHeight + 'px';
-                    void card.offsetHeight;
-                    
-                    card.style.transition = 'height 0.65s cubic-bezier(0.25, 1, 0.5, 1), margin 0.65s cubic-bezier(0.25, 1, 0.5, 1), padding 0.65s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease';
-                    card.classList.add('hide-card');
-                    card.style.height = '0px';
-                    card.style.padding = '0px';
-                    card.style.borderWidth = '0px';
-                    card.style.marginTop = '0px';
-                    card.style.marginBottom = `-${gap}px`;
-                    card.style.opacity = '0';
-                });
-                
-                await safeDelay(650);
-                
-                cardsData.forEach(({ card }) => {
-                    if (document.body.classList.contains(tabMatch === 'instagram' ? 'ig-deactivated' : 'fb-deactivated')) {
-                        card.style.display = 'none';
-                    }
-                });
-                
-            } else {
-                cardsData.forEach(({ content }) => {
-                    if (content) content.classList.add('fade-out');
-                });
-                
-                const targetHeights = [];
-                
-                cardsData.forEach(({ card }, i) => {
-                    card.style.display = 'block';
-                    card.style.transition = 'none';
-                    card.classList.remove('hide-card');
-                    card.style.height = 'auto';
-                    card.style.padding = '';
-                    card.style.borderWidth = '';
-                    card.style.marginTop = '';
-                    card.style.marginBottom = '';
-                    card.style.opacity = '0';
-                    
-                    targetHeights[i] = card.offsetHeight;
-                });
-                
-                cardsData.forEach(({ card }) => {
-                    const parent = card.parentElement;
-                    const gap = parent ? (parseFloat(window.getComputedStyle(parent).gap) || 0) : 0;
-                    
-                    card.classList.add('hide-card');
-                    card.style.height = '0px';
-                    card.style.padding = '0px';
-                    card.style.borderWidth = '0px';
-                    card.style.marginTop = '0px';
-                    card.style.marginBottom = `-${gap}px`;
-                    
-                    void card.offsetHeight;
-                });
-                
-                cardsData.forEach(({ card }, i) => {
-                    card.style.transition = 'height 0.65s cubic-bezier(0.25, 1, 0.5, 1), margin 0.65s cubic-bezier(0.25, 1, 0.5, 1), padding 0.65s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease';
-                    card.classList.remove('hide-card');
-                    card.style.height = targetHeights[i] + 'px';
-                    card.style.padding = '';
-                    card.style.borderWidth = '';
-                    card.style.marginTop = '';
-                    card.style.marginBottom = '';
-                    card.style.opacity = '1';
-                });
-                
-                await safeDelay(650);
-                
-                cardsData.forEach(({ card, content }) => {
-                    if (!document.body.classList.contains(tabMatch === 'instagram' ? 'ig-deactivated' : 'fb-deactivated')) {
-                        card.style.height = 'auto';
-                        if (content) content.classList.remove('fade-out');
-                    }
-                });
+          while (charsToDeleteThisFrame > 0 && textNodes.length > 0) {
+            let current = textNodes[0];
+            let currentLen = current.nodeValue.length;
+
+            if (currentLen > 0) {
+              let toRemove = Math.min(currentLen, charsToDeleteThisFrame);
+
+              if (!current.redactSpan) {
+                current.redactSpan = document.createElement("span");
+                current.redactSpan.className = "afton-final-redact";
+                current.parentNode.insertBefore(
+                  current.redactSpan,
+                  current.nextSibling,
+                );
+              }
+
+              let keepText = current.nodeValue.slice(0, -toRemove);
+              let redactText = current.nodeValue.slice(-toRemove);
+
+              current.nodeValue = keepText;
+              current.redactSpan.textContent =
+                redactText + current.redactSpan.textContent;
+
+              charsToDeleteThisFrame -= toRemove;
+              charsDeletedSoFar += toRemove;
             }
+
+            if (current.nodeValue.length === 0) {
+              textNodes.shift();
+            }
+          }
+
+          if (progress < 1 && textNodes.length > 0) {
+            requestAnimationFrame(backspaceFrame);
+          }
         }
+        requestAnimationFrame(backspaceFrame);
+
+        setTimeout(() => {
+          const overlay = modal.querySelector(".afton-overlay");
+
+          if (box) box.style.boxShadow = "none";
+
+          const windowFadeDur = outroDur * 0.5;
+          if (box) {
+            box.style.transition = `transform ${windowFadeDur}s cubic-bezier(0.25, 1, 0.5, 1), opacity ${windowFadeDur}s linear`;
+            box.style.transform = "scale(0.95) translateY(15px)";
+            box.style.opacity = "0";
+          }
+
+          if (overlay) overlay.style.pointerEvents = "none";
+
+          triggerAftonOutro(nextBoundary, () => {
+            if (overlay) {
+              overlay.style.transition = "opacity 1.5s ease";
+              overlay.style.opacity = "0";
+              setTimeout(() => {
+                if (aftonLenis) {
+                  isAftonLenisActive = false;
+                  aftonLenis.destroy();
+                }
+                modal.remove();
+              }, 1500);
+            }
+          });
+        }, timeRemainingMs);
+      });
+  }
+
+  function finishAftonSequence(onComplete) {
+    applyFNAFDeafen(false);
+    isAftonSequenceRunning = false;
+
+    document.body.style.overflow = "";
+    const viewWrapper =
+      document.getElementById("view-wrapper") ||
+      document.querySelector(".view-wrapper") ||
+      document.querySelector(".wrapper");
+    if (viewWrapper) {
+      viewWrapper.style.pointerEvents = "";
+      viewWrapper.style.overflow = "";
+    }
+    $$(".card, .tabs, .tab, #content, body").forEach((el) => {
+      el.style.pointerEvents = "";
+    });
+
+    typedBuffer = "";
+    if (onComplete) onComplete();
+  }
+
+  async function triggerAftonOutro(fixedBoundary, onComplete) {
+    if (!window.audioCtx) {
+      finishAftonSequence(onComplete);
+      return;
     }
 
-    function injectAndOpenDebugger() {
-        let dbgUI = $('dev-debugger');
-        
-        if (!dbgUI) {
-            dbgUI = document.createElement('div');
-            dbgUI.id = 'dev-debugger';
-            
-            dbgUI.innerHTML = `
+    const bufOutro = await getDecodedBuffer("outro");
+    const now = window.audioCtx.currentTime;
+    const nextBoundary = fixedBoundary || now;
+
+    if (now >= tLoop2Start && aftonLoop2Src) {
+      try {
+        aftonLoop2Src.stop(nextBoundary);
+      } catch (e) {}
+    } else if (now >= tLoop1Start && now < tLoop1End && aftonLoop1Src) {
+      if (aftonLoop2Src) {
+        try {
+          aftonLoop2Src.stop(0);
+        } catch (e) {}
+      }
+    } else {
+      aftonBeeps.forEach((src) => {
+        try {
+          src.stop(nextBoundary);
+        } catch (e) {}
+      });
+      if (aftonLoop1Src) {
+        try {
+          aftonLoop1Src.stop(nextBoundary);
+        } catch (e) {}
+      }
+      if (aftonLoop2Src) {
+        try {
+          aftonLoop2Src.stop(nextBoundary);
+        } catch (e) {}
+      }
+    }
+
+    if (bufOutro) {
+      let outro = window.audioCtx.createBufferSource();
+      outro.buffer = bufOutro;
+      outro.connect(
+        getFNAFMusicNode() ||
+          getFNAFMasterNode() ||
+          window.audioCtx.destination,
+      );
+      outro.start(nextBoundary);
+
+      outro.onended = () => {
+        finishAftonSequence(onComplete);
+      };
+    } else {
+      setTimeout(
+        () => {
+          finishAftonSequence(onComplete);
+        },
+        Math.max(0, (nextBoundary - now) * 1000) + 2000,
+      );
+    }
+  }
+
+  const safeDelay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  async function applyDebugCardHiding(tabMatch, isDeact) {
+    const activeTab = document.body.getAttribute("data-active-tab") || "home";
+
+    if (activeTab === tabMatch) {
+      const newLayout = profiles[activeTab]?.layout || profiles.home.layout;
+      const targetCards = newLayout.showCards || [];
+
+      const cardsData = ["card-2", "card-3", "card-4"]
+        .map((num) => ({
+          id: `${num}-container`,
+          card: document.getElementById(`${num}-container`),
+          content: document.getElementById(`${num}-content`),
+        }))
+        .filter((obj) => obj.card && targetCards.includes(obj.id));
+
+      if (isDeact) {
+        cardsData.forEach(({ content }) => {
+          if (content) content.classList.add("fade-out");
+        });
+
+        await safeDelay(250);
+
+        cardsData.forEach(({ card }) => {
+          const parent = card.parentElement;
+          const gap = parent
+            ? parseFloat(window.getComputedStyle(parent).gap) || 0
+            : 0;
+
+          card.style.transition = "none";
+          const currentHeight = card.offsetHeight;
+          card.style.height = currentHeight + "px";
+          void card.offsetHeight;
+
+          card.style.transition =
+            "height 0.65s cubic-bezier(0.25, 1, 0.5, 1), margin 0.65s cubic-bezier(0.25, 1, 0.5, 1), padding 0.65s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease";
+          card.classList.add("hide-card");
+          card.style.height = "0px";
+          card.style.padding = "0px";
+          card.style.borderWidth = "0px";
+          card.style.marginTop = "0px";
+          card.style.marginBottom = `-${gap}px`;
+          card.style.opacity = "0";
+        });
+
+        await safeDelay(650);
+
+        cardsData.forEach(({ card }) => {
+          if (
+            document.body.classList.contains(
+              tabMatch === "instagram" ? "ig-deactivated" : "fb-deactivated",
+            )
+          ) {
+            card.style.display = "none";
+          }
+        });
+      } else {
+        cardsData.forEach(({ content }) => {
+          if (content) content.classList.add("fade-out");
+        });
+
+        const targetHeights = [];
+
+        cardsData.forEach(({ card }, i) => {
+          card.style.display = "block";
+          card.style.transition = "none";
+          card.classList.remove("hide-card");
+          card.style.height = "auto";
+          card.style.padding = "";
+          card.style.borderWidth = "";
+          card.style.marginTop = "";
+          card.style.marginBottom = "";
+          card.style.opacity = "0";
+
+          targetHeights[i] = card.offsetHeight;
+        });
+
+        cardsData.forEach(({ card }) => {
+          const parent = card.parentElement;
+          const gap = parent
+            ? parseFloat(window.getComputedStyle(parent).gap) || 0
+            : 0;
+
+          card.classList.add("hide-card");
+          card.style.height = "0px";
+          card.style.padding = "0px";
+          card.style.borderWidth = "0px";
+          card.style.marginTop = "0px";
+          card.style.marginBottom = `-${gap}px`;
+
+          void card.offsetHeight;
+        });
+
+        cardsData.forEach(({ card }, i) => {
+          card.style.transition =
+            "height 0.65s cubic-bezier(0.25, 1, 0.5, 1), margin 0.65s cubic-bezier(0.25, 1, 0.5, 1), padding 0.65s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease";
+          card.classList.remove("hide-card");
+          card.style.height = targetHeights[i] + "px";
+          card.style.padding = "";
+          card.style.borderWidth = "";
+          card.style.marginTop = "";
+          card.style.marginBottom = "";
+          card.style.opacity = "1";
+        });
+
+        await safeDelay(650);
+
+        cardsData.forEach(({ card, content }) => {
+          if (
+            !document.body.classList.contains(
+              tabMatch === "instagram" ? "ig-deactivated" : "fb-deactivated",
+            )
+          ) {
+            card.style.height = "auto";
+            if (content) content.classList.remove("fade-out");
+          }
+        });
+      }
+    }
+  }
+
+  function injectAndOpenDebugger() {
+    let dbgUI = $("dev-debugger");
+
+    if (!dbgUI) {
+      dbgUI = document.createElement("div");
+      dbgUI.id = "dev-debugger";
+
+      dbgUI.innerHTML = `
                 <div class="debugger-wrapper" style="position: fixed; top: 20px; right: 20px; background: var(--panel-bg); border: 5px solid var(--panel-border); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); padding: 25px; border-radius: 25px; z-index: 9999999; color: #fff; font-family: 'Satoshi', sans-serif; box-shadow: 0 0 30px rgba(0,0,0,0.5); width: 280px; transition: opacity 0.3s ease, transform 0.3s ease; opacity: 0; transform: scale(0.95);">
                     <h3 style="color: var(--primary); margin-top: 0; margin-bottom: 20px; font-size: 18px; font-family: 'Onest', sans-serif; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px;">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> 
@@ -1511,46 +1764,60 @@ export function setupUIEvents() {
                     <button id="dbg-close-btn" class="dbg-btn" style="margin-top: 25px;">Close Debugger</button>
                 </div>
             `;
-            document.body.appendChild(dbgUI);
+      document.body.appendChild(dbgUI);
 
-            $('dbg-ig-toggle').addEventListener('change', (e) => {
-                const isDeact = e.target.checked;
-                document.body.classList.toggle('ig-deactivated', isDeact);
-                document.dispatchEvent(new CustomEvent('toggle-ig-deactivation', { detail: { deactivated: isDeact } }));
-                
-                applyDebugCardHiding('instagram', isDeact);
-            });
-            
-            $('dbg-fb-toggle').addEventListener('change', (e) => {
-                const isDeact = e.target.checked;
-                document.body.classList.toggle('fb-deactivated', isDeact);
-                document.dispatchEvent(new CustomEvent('toggle-fb-deactivation', { detail: { deactivated: isDeact } }));
-                
-                applyDebugCardHiding('facebook', isDeact);
-            });
+      $("dbg-ig-toggle").addEventListener("change", (e) => {
+        const isDeact = e.target.checked;
+        document.body.classList.toggle("ig-deactivated", isDeact);
+        document.dispatchEvent(
+          new CustomEvent("toggle-ig-deactivation", {
+            detail: { deactivated: isDeact },
+          }),
+        );
 
-            $('dbg-email-select').addEventListener('change', (e) => {
-                document.dispatchEvent(new CustomEvent('debug-email-warning', { detail: { mode: e.target.value } }));
-            });
+        applyDebugCardHiding("instagram", isDeact);
+      });
 
-            $('dbg-close-btn').addEventListener('click', () => {
-                const wrapper = dbgUI.querySelector('.debugger-wrapper');
-                wrapper.style.opacity = '0';
-                wrapper.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    dbgUI.style.display = 'none';
-                }, 300);
-            });
-        }
+      $("dbg-fb-toggle").addEventListener("change", (e) => {
+        const isDeact = e.target.checked;
+        document.body.classList.toggle("fb-deactivated", isDeact);
+        document.dispatchEvent(
+          new CustomEvent("toggle-fb-deactivation", {
+            detail: { deactivated: isDeact },
+          }),
+        );
 
-        $('dbg-ig-toggle').checked = document.body.classList.contains('ig-deactivated');
-        $('dbg-fb-toggle').checked = document.body.classList.contains('fb-deactivated');
-        
-        dbgUI.style.display = 'block';
-        
-        const wrapper = dbgUI.querySelector('.debugger-wrapper');
-        void wrapper.offsetWidth; 
-        wrapper.style.opacity = '1';
-        wrapper.style.transform = 'scale(1)';
+        applyDebugCardHiding("facebook", isDeact);
+      });
+
+      $("dbg-email-select").addEventListener("change", (e) => {
+        document.dispatchEvent(
+          new CustomEvent("debug-email-warning", {
+            detail: { mode: e.target.value },
+          }),
+        );
+      });
+
+      $("dbg-close-btn").addEventListener("click", () => {
+        const wrapper = dbgUI.querySelector(".debugger-wrapper");
+        wrapper.style.opacity = "0";
+        wrapper.style.transform = "scale(0.95)";
+        setTimeout(() => {
+          dbgUI.style.display = "none";
+        }, 300);
+      });
     }
+
+    $("dbg-ig-toggle").checked =
+      document.body.classList.contains("ig-deactivated");
+    $("dbg-fb-toggle").checked =
+      document.body.classList.contains("fb-deactivated");
+
+    dbgUI.style.display = "block";
+
+    const wrapper = dbgUI.querySelector(".debugger-wrapper");
+    void wrapper.offsetWidth;
+    wrapper.style.opacity = "1";
+    wrapper.style.transform = "scale(1)";
+  }
 }
