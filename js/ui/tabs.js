@@ -37,7 +37,7 @@ export async function swapData(tabName) {
   const profileUsername = document.getElementById("profile-username");
   const profileBio = document.getElementById("profile-bio");
 
-  if (avatarImg) { avatarImg.src = profileData.avatar; avatarImg.decode().catch(() => {}); }
+  if (avatarImg) { avatarImg.src = profileData.avatar; avatarImg.decode().catch(() => { }); }
   if (profileName) profileName.textContent = profileData.name;
   if (profileUsername) profileUsername.textContent = profileData.username;
   if (profileBio) {
@@ -172,7 +172,7 @@ export function setupTabs() {
     if (track) observer.observe(track);
     tabs.forEach((t) => observer.observe(t));
   }
-  
+
   if (document.fonts) {
     document.fonts.ready.then(() => {
       requestAnimationFrame(() => syncBackgrounds(currentIndex, true));
@@ -223,10 +223,8 @@ export function setupTabs() {
         .querySelectorAll(".transition-container")
         .forEach((c) => c.classList.add("fade-out"));
 
-      // PHASE 1 Wait: Fade out contents (CSS takes ~300ms)
       await safeDelay(300);
 
-      // PHASE 2: Shrink tab container
       if (oldTab) {
         oldTab.classList.remove("text-visible");
         oldTab.classList.remove("active");
@@ -236,7 +234,7 @@ export function setupTabs() {
 
       const tabName = link.getAttribute("data-tab");
       window.history.pushState(null, null, `#${tabName}`);
-      
+
       if (tabName === "gaming_rig" && typeof window.resetPrefToSetup === "function") {
         window.resetPrefToSetup(true);
       }
@@ -382,21 +380,16 @@ export function setupTabs() {
         }
       });
 
-      // PHASE 2 Wait: Shrink/expand cards and tab container (Cards take 650ms)
       await safeDelay(650);
 
-      // PHASE 3: Slide tab to new position (CSS takes 350ms)
       currentIndex = idx;
       syncBackgrounds(currentIndex);
       await safeDelay(350);
 
-      // PHASE 4: Expand tab container (CSS takes 350ms)
-      link.classList.add("active"); // Turns icon white during expansion
+      link.classList.add("active");
       link.classList.add("show-text");
       syncBackgrounds(currentIndex);
       await safeDelay(350);
-
-      // PHASE 5: Fade in contents
       link.classList.add("text-visible");
       if (avatarImg) avatarImg.parentElement.style.opacity = "1";
       if (locContainer) locContainer.style.opacity = "1";

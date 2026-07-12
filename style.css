@@ -2091,7 +2091,9 @@ body.is-deafened::before {
 .indent-space-58 {
   width: 58px;
   flex-shrink: 0;
-}.game-grid-row {
+}
+
+.game-grid-row {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
@@ -2117,6 +2119,3 @@ body.is-deafened::before {
   margin-bottom: 20px;
   box-sizing: border-box;
 }
-
-
-

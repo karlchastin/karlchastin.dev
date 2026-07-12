@@ -100,7 +100,7 @@ export const profiles = {
     avatar: "./assets/Home%20Tab%20Avatar.webp",
     name: "Discord",
     username: "@chas",
-    bio: '<i>"—didn\'t want you to <b>only hear</b>."</i>',
+    bio: '<i><b>"If the stars fall apart, I\’ll still find you in the dark."</b></i>',
     layout: {
       ...defaultLayout,
       showLocDiscord: true,

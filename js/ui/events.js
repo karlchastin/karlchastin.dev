@@ -287,8 +287,8 @@ export function setupUIEvents() {
 
       const targetLocalTime = new Date(
         targetPHT.getTime() -
-          phtOffset -
-          new Date().getTimezoneOffset() * 60000,
+        phtOffset -
+        new Date().getTimezoneOffset() * 60000,
       );
 
       let timeText = "It is currently late at night.";
@@ -448,7 +448,6 @@ export function setupUIEvents() {
         if (isAnimating) syncBackgrounds(currentIndex);
       });
     } else {
-      // Background syncing removed
     }
   });
 
@@ -564,8 +563,8 @@ export function setupUIEvents() {
       clearTimeout(hoverAnimTimeout);
       const defaultProfile =
         profiles[
-          document.querySelector(".tab.active")?.getAttribute("data-tab") ||
-            "home"
+        document.querySelector(".tab.active")?.getAttribute("data-tab") ||
+        "home"
         ];
       updateProfileView(
         defaultProfile.avatar,
@@ -820,8 +819,8 @@ export function setupUIEvents() {
       src.buffer = buf;
       src.connect(
         getFNAFMusicNode() ||
-          getFNAFMasterNode() ||
-          window.audioCtx.destination,
+        getFNAFMasterNode() ||
+        window.audioCtx.destination,
       );
       src.start();
       return src;
@@ -885,7 +884,7 @@ export function setupUIEvents() {
         now,
       );
       window.masterGain.gain.setValueAtTime(window.masterGain.gain.value, now);
-    } catch (e) {}
+    } catch (e) { }
 
     if (isActive) {
       window.lowpassFilter.frequency.exponentialRampToValueAtTime(
@@ -918,8 +917,8 @@ export function setupUIEvents() {
       src.buffer = buf;
       src.connect(
         getFNAFMusicNode() ||
-          getFNAFMasterNode() ||
-          window.audioCtx.destination,
+        getFNAFMasterNode() ||
+        window.audioCtx.destination,
       );
       src.start();
       flashFNAF("bg");
@@ -1549,28 +1548,28 @@ export function setupUIEvents() {
     if (now >= tLoop2Start && aftonLoop2Src) {
       try {
         aftonLoop2Src.stop(nextBoundary);
-      } catch (e) {}
+      } catch (e) { }
     } else if (now >= tLoop1Start && now < tLoop1End && aftonLoop1Src) {
       if (aftonLoop2Src) {
         try {
           aftonLoop2Src.stop(0);
-        } catch (e) {}
+        } catch (e) { }
       }
     } else {
       aftonBeeps.forEach((src) => {
         try {
           src.stop(nextBoundary);
-        } catch (e) {}
+        } catch (e) { }
       });
       if (aftonLoop1Src) {
         try {
           aftonLoop1Src.stop(nextBoundary);
-        } catch (e) {}
+        } catch (e) { }
       }
       if (aftonLoop2Src) {
         try {
           aftonLoop2Src.stop(nextBoundary);
-        } catch (e) {}
+        } catch (e) { }
       }
     }
 
@@ -1579,8 +1578,8 @@ export function setupUIEvents() {
       outro.buffer = bufOutro;
       outro.connect(
         getFNAFMusicNode() ||
-          getFNAFMasterNode() ||
-          window.audioCtx.destination,
+        getFNAFMasterNode() ||
+        window.audioCtx.destination,
       );
       outro.start(nextBoundary);
 
