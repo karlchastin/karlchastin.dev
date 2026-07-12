@@ -1,3 +1,4 @@
+import { $, $$ } from './utils/dom.js';
 import { injectIcons } from "./ui/icons.js";
 import { WORKER_URL, profiles } from "./config.js";
 import {
@@ -74,9 +75,26 @@ function preloadAssets() {
     }
   };
 
-  uniqueAssets.forEach((src) => {
+    uniqueAssets.forEach((src) => {
     const img = new Image();
-    img.onload = img.onerror = () => {
+    img.onload = () => {
+      let pc = document.getElementById("hidden-preload-container");
+      if (!pc) {
+        pc = document.createElement("div");
+        pc.id = "hidden-preload-container";
+        pc.style.position = "absolute"; pc.style.top = "0"; pc.style.left = "0"; pc.style.zIndex = "-9999";
+        pc.style.width = "1px";
+        pc.style.height = "1px";
+        pc.style.overflow = "hidden";
+        pc.style.opacity = "0.0001";
+        pc.style.pointerEvents = "none";
+        document.body.appendChild(pc);
+      }
+      pc.appendChild(img);
+      loadedAssets++;
+      updateTarget();
+    };
+    img.onerror = () => {
       loadedAssets++;
       updateTarget();
     };
@@ -408,16 +426,21 @@ function setupPreferencesTabs() {
 
       const targetId = "pref-" + tab.dataset.pref;
       const newContent = document.getElementById(targetId);
-      const oldContent = document.querySelector(".pref-content.active");
-      const oldTab = document.querySelector(".pref-tab.active");
-      const card = document.getElementById("card-2-container");
+      
+      const wrapper = tab.closest(".tab-content");
+      const oldContent = wrapper ? wrapper.querySelector(".pref-content.active") : document.querySelector(".pref-content.active");
+      const oldTab = wrapper ? wrapper.querySelector(".pref-tab.active") : document.querySelector(".pref-tab.active");
+      const card = tab.closest(".card");
 
-      const currentHeight = card.offsetHeight;
-      card.style.transition = "none";
-      card.style.height = currentHeight + "px";
-      card.style.overflow = "clip";
-      card.style.overflowClipMargin = "150px";
-      void card.offsetHeight;
+      let currentHeight = 0;
+      if (card) {
+        currentHeight = card.offsetHeight;
+        card.style.transition = "none";
+        card.style.height = currentHeight + "px";
+        card.style.overflow = "clip";
+        card.style.overflowClipMargin = "150px";
+        void card.offsetHeight;
+      }
 
       if (oldContent) {
         oldContent.style.transition = "opacity 0.15s ease";
@@ -437,19 +460,23 @@ function setupPreferencesTabs() {
       newContent.style.opacity = "0";
       newContent.classList.add("active");
 
-      card.style.height = "auto";
-      card.style.overflow = "visible";
-      const targetHeight = card.offsetHeight;
+      if (card) {
+        card.style.height = "auto";
+        card.style.overflow = "visible";
+        const targetHeight = card.offsetHeight;
 
-      card.style.height = currentHeight + "px";
-      card.style.overflow = "clip";
-      card.style.overflowClipMargin = "150px";
-      void card.offsetHeight;
+        card.style.height = currentHeight + "px";
+        card.style.overflow = "clip";
+        card.style.overflowClipMargin = "150px";
+        void card.offsetHeight;
 
-      tab.classList.add("active");
-      card.style.transition =
-        "height 0.65s cubic-bezier(0.25, 1, 0.5, 1), margin 0.65s cubic-bezier(0.25, 1, 0.5, 1), padding 0.65s cubic-bezier(0.25, 1, 0.5, 1)";
-      card.style.height = targetHeight + "px";
+        tab.classList.add("active");
+        card.style.transition =
+          "height 0.65s cubic-bezier(0.25, 1, 0.5, 1), margin 0.65s cubic-bezier(0.25, 1, 0.5, 1), padding 0.65s cubic-bezier(0.25, 1, 0.5, 1)";
+        card.style.height = targetHeight + "px";
+      } else {
+        tab.classList.add("active");
+      }
 
       await delay(600);
 
@@ -457,10 +484,12 @@ function setupPreferencesTabs() {
       newContent.style.opacity = "1";
       await delay(300);
 
-      card.style.transition = "";
-      card.style.height = "auto";
-      card.style.overflow = "visible";
-      card.style.overflowClipMargin = "";
+      if (card) {
+        await delay(150);
+        card.style.height = "auto";
+        card.style.overflow = "visible";
+        card.style.overflowClipMargin = "";
+      }
       newContent.style.transition = "";
       newContent.style.opacity = "";
 
@@ -822,7 +851,7 @@ if (enterBtn) {
 
       animTargets.forEach((el) => el.classList.add("staged-for-drop"));
 
-      if (typeof syncBackgrounds === "function") syncBackgrounds(0);
+      if (typeof syncBackgrounds === "function") syncBackgrounds(0, true);
     }
 
     setTimeout(() => {
@@ -1075,3 +1104,12 @@ accordionHeaders.forEach((header) => {
     }
   });
 });
+
+
+
+
+
+
+
+
+

@@ -1,14 +1,14 @@
-let syncAnimFrame = null;
 export const cachedEls = {
   track: null,
   tabs: null,
   glassActive: null,
   glassLeft: null,
   glassRight: null,
+  trackWidth: 0,
 };
 let isInitialized = false;
 
-export const initCache = () => {
+export const initCache = (isInstant = false) => {
   if (!cachedEls.tabs || cachedEls.tabs.length === 0) {
     cachedEls.track = document.getElementById("tabs-track");
     cachedEls.tabs = Array.from(document.querySelectorAll(".tab"));
@@ -29,36 +29,16 @@ export const initCache = () => {
       t.style.margin = "0";
     });
   }
+
+  if (!cachedEls.trackWidth || isInstant) {
+    cachedEls.trackWidth = cachedEls.track.getBoundingClientRect().width;
+  }
 };
 
-export function startSyncing(getIndexFn) {
-  initCache();
-  if (!syncAnimFrame) {
-    const loop = () => {
-      if (document.hidden) {
-        syncAnimFrame = null;
-        return;
-      }
-      syncBackgrounds(getIndexFn(), true);
-      syncAnimFrame = requestAnimationFrame(loop);
-    };
-    loop();
-  }
-}
-
-export function stopSyncing() {
-  if (syncAnimFrame) {
-    cancelAnimationFrame(syncAnimFrame);
-    syncAnimFrame = null;
-  }
-}
-
 export function syncBackgrounds(currentIndex = 0, isInstant = false) {
-  initCache();
+  initCache(isInstant);
   const { track, tabs, glassActive, glassLeft, glassRight } = cachedEls;
   if (!tabs.length || !track) return;
-
-  const trackRect = track.getBoundingClientRect();
 
   const P_LEFT = 5;
   const P_RIGHT = 0;
@@ -66,10 +46,14 @@ export function syncBackgrounds(currentIndex = 0, isInstant = false) {
   const GAP = 10;
   const W_ICON = 26;
 
-  const W_TOTAL = trackRect.width - P_LEFT - P_RIGHT;
+  const W_TOTAL = cachedEls.trackWidth - P_LEFT - P_RIGHT;
 
   const activeTab = tabs[currentIndex];
-  const w_a = activeTab.getBoundingClientRect().width;
+  const isExpanding = activeTab.classList.contains("show-text");
+  const textEl = activeTab.querySelector(".tab-text");
+  
+  const targetTextWidth = isExpanding && textEl ? Math.min(textEl.scrollWidth, 150) + 8 : 0;
+  const w_a = W_ICON + targetTextWidth;
 
   const P_A = w_a + 2 * P_PANEL;
   const L = currentIndex;
@@ -78,22 +62,21 @@ export function syncBackgrounds(currentIndex = 0, isInstant = false) {
   const gaps = (L > 0 ? GAP : 0) + (R > 0 ? GAP : 0);
   const avail = W_TOTAL - P_A - gaps;
 
-  let P_L = 0,
-    P_R = 0;
+  const baseL = L > 0 ? (L * W_ICON + 2 * P_PANEL) : 0;
+  const baseR = R > 0 ? (R * W_ICON + 2 * P_PANEL) : 0;
+  const freeSpace = Math.max(0, avail - baseL - baseR);
+  const totalGaps = Math.max(0, L - 1) + Math.max(0, R - 1);
+  const gapSize = totalGaps > 0 ? freeSpace / totalGaps : 0;
+
+  let P_L = 0, P_R = 0;
 
   if (L === 0) {
     P_R = avail;
   } else if (R === 0) {
     P_L = avail;
-  } else if (L === 1) {
-    P_L = W_ICON + 2 * P_PANEL;
-    P_R = avail - P_L;
-  } else if (R === 1) {
-    P_R = W_ICON + 2 * P_PANEL;
-    P_L = avail - P_R;
   } else {
-    P_L = avail * (L / (L + R));
-    P_R = avail * (R / (L + R));
+    P_L = baseL + Math.max(0, L - 1) * gapSize;
+    P_R = baseR + Math.max(0, R - 1) * gapSize;
   }
 
   const panelX_L = 0;
@@ -121,22 +104,12 @@ export function syncBackgrounds(currentIndex = 0, isInstant = false) {
     let targetX = 0;
 
     if (i < currentIndex) {
-      if (L === 1) {
-        targetX = panelX_L + P_PANEL;
-      } else {
-        const spacing = (P_L - 2 * P_PANEL - W_ICON) / (L - 1);
-        targetX = panelX_L + P_PANEL + i * spacing;
-      }
+      targetX = panelX_L + P_PANEL + i * (W_ICON + gapSize);
     } else if (i === currentIndex) {
       targetX = panelX_A + P_PANEL;
     } else {
       const j = i - currentIndex - 1;
-      if (R === 1) {
-        targetX = panelX_R + P_PANEL;
-      } else {
-        const spacing = (P_R - 2 * P_PANEL - W_ICON) / (R - 1);
-        targetX = panelX_R + P_PANEL + j * spacing;
-      }
+      targetX = panelX_R + P_PANEL + j * (W_ICON + gapSize);
     }
 
     const finalX = P_LEFT + targetX;
@@ -148,3 +121,4 @@ export function syncBackgrounds(currentIndex = 0, isInstant = false) {
 
   if (!isInitialized) isInitialized = true;
 }
+

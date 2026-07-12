@@ -1,7 +1,7 @@
 import { $, $$ } from "../utils/dom.js";
 import { formatTime } from "../utils/core.js";
 import { profiles, emailAvatars, emailBios, GREEDY_LYRICS } from "../config.js";
-import { startSyncing, stopSyncing, syncBackgrounds } from "./animations.js";
+import { syncBackgrounds } from "./animations.js";
 import { isAnimating, currentIndex } from "./tabs.js";
 
 export function setupUIEvents() {
@@ -445,10 +445,10 @@ export function setupUIEvents() {
         if (ga) ga.style.transition = "";
         if (gr) gr.style.transition = "";
 
-        if (isAnimating) startSyncing(() => currentIndex);
+        if (isAnimating) syncBackgrounds(currentIndex);
       });
     } else {
-      stopSyncing();
+      // Background syncing removed
     }
   });
 

@@ -31,7 +31,9 @@ export const defaultLayout = {
   showInstaPosts: false,
   showFacebookStats: false,
   showLocFacebook: false,
-  showPreferences: false,
+  showGamingRig: false,
+  showGameStats: false,
+  showTiktok: false,
   showCards: [],
 };
 
@@ -122,7 +124,7 @@ export const profiles = {
     },
   },
   instagram: {
-    avatar: "./assets/Home%20Tab%20Avatar.webp",
+    avatar: "./assets/Deactivated%20Profile%20Avatar.webp",
     name: "Loading...",
     username: "@karlchastin",
     bio: "Loading live Instagram profile...",
@@ -136,7 +138,7 @@ export const profiles = {
     },
   },
   facebook: {
-    avatar: "./assets/Home%20Tab%20Avatar.webp",
+    avatar: "./assets/Deactivated%20Profile%20Avatar.webp",
     name: "Loading...",
     username: "@karlchastin",
     bio: "Loading live Facebook profile...",
@@ -147,14 +149,36 @@ export const profiles = {
       showCards: ["card-3-container"],
     },
   },
-  preferences: {
-    avatar: "./assets/Home%20Tab%20Avatar.webp",
-    name: "Preferences",
+  tiktok: {
+    avatar: "./assets/Deactivated%20Profile%20Avatar.webp",
+    name: "Loading...",
+    username: "@karlchastin",
+    bio: "Loading live TikTok profile...",
+    layout: {
+      ...defaultLayout,
+      showTiktok: true,
+      showCards: ["card-3-container"],
+    },
+  },
+  gaming_rig: {
+    avatar: "./assets/Gaming%20Rig%20Avatar.webp",
+    name: "Gaming Rig",
     username: "System Settings",
     bio: "Game preferences, custom setups, mods, and performance statistics.",
     layout: {
       ...defaultLayout,
-      showPreferences: true,
+      showGamingRig: true,
+      showCards: ["card-2-container"],
+    },
+  },
+  game_statistics: {
+    avatar: "./assets/Game%20Statistics%20Avatar.webp",
+    name: "Game Statistics",
+    username: "Player Stats",
+    bio: "Live stats and leaderboards.",
+    layout: {
+      ...defaultLayout,
+      showGameStats: true,
       showCards: ["card-2-container"],
     },
   },
@@ -267,12 +291,6 @@ export const featuredServers = [
     banner: "linear-gradient(90deg, #1e3c72, #2a5298)",
   },
   {
-    name: "server ni chas :3c",
-    desc: "[Retired] A server for chas and his friends!",
-    btnText: "NO LONGER AVAILABLE",
-    banner: "linear-gradient(90deg, #4b134f, #c94b4b)",
-  },
-  {
     name: "Project Salvation's Community Server",
     desc: 'A Discord Server for the active development of the Roblox game "Project Salvation"',
     btnText: "PRIVATE SERVER",
@@ -357,7 +375,11 @@ export const discordBadges = [
     icon: "https://cdn.discordapp.com/badge-icons/83d8a1eb09a8d64e59233eec5d4d5c2d.png",
   },
   {
-    name: "Gifting Luminary",
-    icon: "https://cdn.discordapp.com/badge-icons/3119f5504b2cd09576a323908c7c3517.png",
+    name: "Gifting Icon",
+    icon: "https://cdn.discordapp.com/badge-icons/64f2413c9b9803661322aaad25826b62.png",
   },
 ];
+
+
+
+

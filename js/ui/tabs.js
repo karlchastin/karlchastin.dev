@@ -1,5 +1,6 @@
+import { $, $$ } from '../utils/dom.js';
 import { profiles, defaultLayout } from "../config.js";
-import { startSyncing, stopSyncing, syncBackgrounds } from "./animations.js";
+import { syncBackgrounds } from "./animations.js";
 
 export let isAnimating = false;
 export let currentIndex = 0;
@@ -36,7 +37,7 @@ export async function swapData(tabName) {
   const profileUsername = document.getElementById("profile-username");
   const profileBio = document.getElementById("profile-bio");
 
-  if (avatarImg) avatarImg.src = profileData.avatar;
+  if (avatarImg) { avatarImg.src = profileData.avatar; avatarImg.decode().catch(() => {}); }
   if (profileName) profileName.textContent = profileData.name;
   if (profileUsername) profileUsername.textContent = profileData.username;
   if (profileBio) {
@@ -112,7 +113,9 @@ export async function swapData(tabName) {
       show: newLayout.showFacebookStats,
       type: "block",
     },
-    "preferences-wrapper": { show: newLayout.showPreferences, type: "block" },
+    "gaming-rig-wrapper": { show: newLayout.showGamingRig, type: "block" },
+    "game-stats-wrapper": { show: newLayout.showGameStats, type: "block" },
+    "tiktok-wrapper": { show: newLayout.showTiktok, type: "flex", flexDirection: "column" },
   };
 
   for (const [id, config] of Object.entries(displayMap)) {
@@ -127,11 +130,6 @@ export async function swapData(tabName) {
 
       el.style.display = shouldShow ? config.type : "none";
     }
-  }
-
-  for (const [id, config] of Object.entries(displayMap)) {
-    const el = document.getElementById(id);
-    if (el) el.style.display = config.show ? config.type : "none";
   }
 
   const elLevelDisplay = document.getElementById("steam-level-display");
@@ -174,6 +172,13 @@ export function setupTabs() {
     if (track) observer.observe(track);
     tabs.forEach((t) => observer.observe(t));
   }
+  
+  if (document.fonts) {
+    document.fonts.ready.then(() => {
+      requestAnimationFrame(() => syncBackgrounds(currentIndex, true));
+    });
+  }
+
   tabs.forEach((link, idx) => {
     link.addEventListener("click", async (e) => {
       e.preventDefault();
@@ -181,8 +186,15 @@ export function setupTabs() {
       isAnimating = true;
       window.isTabsAnimating = true;
 
+      const glassLeft = document.getElementById("glass-left");
+      const glassActive = document.getElementById("glass-active");
+      const glassRight = document.getElementById("glass-right");
+      if (glassLeft) glassLeft.classList.add("sliding");
+      if (glassActive) glassActive.classList.add("sliding");
+      if (glassRight) glassRight.classList.add("sliding");
+
       const oldTab = document.querySelector(".tab.active");
-      if (oldTab) oldTab.classList.remove("show-text");
+      if (oldTab) oldTab.classList.remove("text-visible");
 
       const allCards = document.querySelectorAll(".card");
 
@@ -211,31 +223,27 @@ export function setupTabs() {
         .querySelectorAll(".transition-container")
         .forEach((c) => c.classList.add("fade-out"));
 
-      startSyncing(() => currentIndex);
-      await safeDelay(150);
-      if (oldTab) oldTab.classList.remove("active");
-      await safeDelay(150);
+      // PHASE 1 Wait: Fade out contents (CSS takes ~300ms)
+      await safeDelay(300);
 
-      stopSyncing();
-
-      const glassLeft = document.getElementById("glass-left");
-      const glassActive = document.getElementById("glass-active");
-      const glassRight = document.getElementById("glass-right");
-
-      if (glassLeft) glassLeft.classList.add("sliding");
-      if (glassActive) glassActive.classList.add("sliding");
-      if (glassRight) glassRight.classList.add("sliding");
-
-      currentIndex = idx;
+      // PHASE 2: Shrink tab container
+      if (oldTab) {
+        oldTab.classList.remove("text-visible");
+        oldTab.classList.remove("active");
+        oldTab.classList.remove("show-text");
+      }
       syncBackgrounds(currentIndex);
-      await safeDelay(350);
-
-      if (glassLeft) glassLeft.classList.remove("sliding");
-      if (glassActive) glassActive.classList.remove("sliding");
-      if (glassRight) glassRight.classList.remove("sliding");
 
       const tabName = link.getAttribute("data-tab");
       window.history.pushState(null, null, `#${tabName}`);
+      
+      if (tabName === "gaming_rig" && typeof window.resetPrefToSetup === "function") {
+        window.resetPrefToSetup(true);
+      }
+      if (tabName === "game_statistics" && typeof window.resetGameStats === "function") {
+        window.resetGameStats(true);
+      }
+
       const newLayout = profiles[tabName]?.layout || profiles.home.layout;
       const targetCards = newLayout.showCards || [];
 
@@ -361,7 +369,7 @@ export function setupTabs() {
         } else {
           const parent = card.parentElement;
           const gap = parent
-            ? parseFloat(window.getComputedStyle(parent).gap) || 0
+            ? parseFloat(window.getComputedStyle(parent).rowGap) || parseFloat(window.getComputedStyle(parent).gap) || 15
             : 0;
 
           card.classList.add("hide-card");
@@ -374,11 +382,22 @@ export function setupTabs() {
         }
       });
 
-      link.classList.add("active");
-      startSyncing(() => currentIndex);
-      await safeDelay(600);
+      // PHASE 2 Wait: Shrink/expand cards and tab container (Cards take 650ms)
+      await safeDelay(650);
 
+      // PHASE 3: Slide tab to new position (CSS takes 350ms)
+      currentIndex = idx;
+      syncBackgrounds(currentIndex);
+      await safeDelay(350);
+
+      // PHASE 4: Expand tab container (CSS takes 350ms)
+      link.classList.add("active"); // Turns icon white during expansion
       link.classList.add("show-text");
+      syncBackgrounds(currentIndex);
+      await safeDelay(350);
+
+      // PHASE 5: Fade in contents
+      link.classList.add("text-visible");
       if (avatarImg) avatarImg.parentElement.style.opacity = "1";
       if (locContainer) locContainer.style.opacity = "1";
 
@@ -411,8 +430,10 @@ export function setupTabs() {
         }
       });
 
-      stopSyncing();
       syncBackgrounds(currentIndex);
+      if (glassLeft) glassLeft.classList.remove("sliding");
+      if (glassActive) glassActive.classList.remove("sliding");
+      if (glassRight) glassRight.classList.remove("sliding");
       isAnimating = false;
       window.isTabsAnimating = false;
     });
@@ -436,3 +457,13 @@ export function setupTabs() {
     }
   }, 500);
 }
+
+
+
+
+
+
+
+
+
+

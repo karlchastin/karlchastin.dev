@@ -15,6 +15,11 @@ export async function prefetchGitHubProfile() {
     profiles.github.name = user.name || user.login;
     profiles.github.avatar = user.avatar_url;
     profiles.github.bio = user.bio || "No bio available.";
+
+    const ghchartImg = new Image();
+    ghchartImg.src = "https://ghchart.rshah.org/ff0000/karlchastin";
+    const badgeImg = new Image();
+    badgeImg.src = "https://github.githubassets.com/images/modules/profile/achievements/public-sponsor-default.png";
   } catch (e) {
     console.error("Prefetch Error:", e);
   }
