@@ -1,5 +1,6 @@
 import { profiles, WORKER_URL } from "../config.js";
 import { $, $$ } from "../utils/dom.js";
+import { swapData } from "../ui/tabs.js";
 
 export let cachedIgData = null;
 
@@ -126,8 +127,29 @@ export function updateInstagramUI(profile) {
         ? profile.username.replace(/^@/, "")
         : "Instagram Profile";
 
+  igProfile.layout = igProfile.layout || {};
+  let showCards = ["card-3-container"];
+
+  if (profile.postsCount === 0 || !profile.latestPosts || profile.latestPosts.length === 0) {
+    igProfile.layout.showInstaPosts = false;
+  } else {
+    igProfile.layout.showInstaPosts = true;
+    showCards.push("card-4-container");
+  }
+
+  if (profile.private === true) {
+    igProfile.layout.showInstaHighlights = false;
+  } else {
+    igProfile.layout.showInstaHighlights = true;
+    showCards.push("card-2-container");
+  }
+
+  showCards.sort();
+  igProfile.layout.showCards = showCards;
+
   if (activeTab === "instagram") {
     animateProfileChange(igProfile.avatar, igProfile.name, igProfile.bio);
+    swapData("instagram");
   }
 
   const statsMap = {

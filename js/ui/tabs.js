@@ -459,9 +459,5 @@ export function setupTabs() {
         document.body.setAttribute('data-active-tab', 'home');
       }
 
-
-
-
-
     }, 500);
 }

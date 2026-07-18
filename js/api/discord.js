@@ -3,6 +3,7 @@ import { createScrollText, scrollObserver } from "../ui/scroll.js";
 import { DISCORD_ID, discordBadges, profiles } from "../config.js";
 
 let activeTimers = [];
+let cachedTimestamps = {};
 let lanyardWs;
 let heartbeatInterval;
 let reconnectAttempts = 0;
@@ -37,6 +38,7 @@ export function connectLanyard() {
           lanyardWs.send(JSON.stringify({ op: 3 }));
       }, msg.d.heartbeat_interval);
     } else if (msg.t === "INIT_STATE" || msg.t === "PRESENCE_UPDATE") {
+      window.currentLanyardData = msg.d;
       updateDiscordUI(msg.d);
     }
   };
@@ -182,6 +184,23 @@ function updateDiscordUI(data) {
     data.activities
       .filter((a) => a.type !== 4)
       .forEach((activity, i) => {
+        if (activity.timestamps) {
+          if (cachedTimestamps[activity.id]) {
+            let c = cachedTimestamps[activity.id];
+            if (activity.timestamps.start && Math.abs(activity.timestamps.start - c.start) < 5000) {
+              activity.timestamps.start = c.start;
+            } else if (activity.timestamps.start) {
+              c.start = activity.timestamps.start;
+            }
+            if (activity.timestamps.end && Math.abs(activity.timestamps.end - c.end) < 5000) {
+              activity.timestamps.end = c.end;
+            } else if (activity.timestamps.end) {
+              c.end = activity.timestamps.end;
+            }
+          } else {
+            cachedTimestamps[activity.id] = { start: activity.timestamps.start, end: activity.timestamps.end };
+          }
+        }
         let isAppleMusic = activity.name === "Apple Music";
         let isSpotify = activity.name === "Spotify" || activity.id === "spotify";
         let isListening = activity.type === 2 || isAppleMusic || isSpotify;
@@ -247,9 +266,13 @@ function updateDiscordUI(data) {
           : i;
         const tId = `timer-${safeId}`;
 
+        if (!activity.timestamps && activity.created_at) {
+          activity.timestamps = { start: activity.created_at };
+        }
+
         if (activity.timestamps) {
           const now = Date.now();
-          if (activity.timestamps.end) {
+          if (activity.timestamps.end && activity.timestamps.start) {
             const elapsedMs = Math.max(0, now - activity.timestamps.start);
             const totalMs = activity.timestamps.end - activity.timestamps.start;
             const perc = Math.min(100, (elapsedMs / totalMs) * 100);
@@ -269,7 +292,21 @@ function updateDiscordUI(data) {
             });
             timeHash =
               activity.timestamps.start + "-" + activity.timestamps.end;
-          } else {
+          } else if (activity.timestamps.end) {
+            let iconPath = `<path d="M9.1 8.85A.5.5 0 0 1 9.45 8h5.1a.5.5 0 0 1 .35.85l-.84.85a3.25 3.25 0 0 0 0 4.6l2.06 2.06A3 3 0 0 1 17 18.5v1.01a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5v-1.01a3 3 0 0 1 .88-2.13l2.06-2.06a3.25 3.25 0 0 0 0-4.6l-.84-.85Z"/><path fill-rule="evenodd" d="M7 1a3 3 0 0 0-3 3v1.51a6 6 0 0 0 1.76 4.25l2.06 2.06c.1.1.1.26 0 .36l-2.06 2.06A6 6 0 0 0 4 18.5V20a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1.51a6 6 0 0 0-1.76-4.25l-2.06-2.06a.25.25 0 0 1 0-.36l2.06-2.06A6 6 0 0 0 20 5.5V4a3 3 0 0 0-3-3H7ZM6 4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1.51a4 4 0 0 1-1.17 2.83l-2.07 2.07c-.88.88-.88 2.3 0 3.18l2.07 2.07A4 4 0 0 1 18 18.49V20a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-1.51a4 4 0 0 1 1.17-2.83l2.07-2.07c.88-.88.88-2.3 0-3.18L7.17 8.34A4 4 0 0 1 6 5.51V4Z" clip-rule="evenodd"/>`;
+            timeNode = `
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="color: #23a559; flex-shrink: 0;">${iconPath}</svg>
+                            <span class="${tId}-left" style="font-size:12px; color:#23a559; font-weight:800;">${formatElapsed(Math.max(0, activity.timestamps.end - Date.now()))}</span>
+                        </div>`;
+            activeTimers.push({
+              id: tId,
+              end: activity.timestamps.end,
+              type: "left",
+              els: null,
+            });
+            timeHash = activity.timestamps.end.toString() + "-left";
+          } else if (activity.timestamps.start) {
             let iconPath = `<path fill-rule="evenodd" clip-rule="evenodd" d="M20.97 4.06c0 .18.08.35.24.43.55.28.9.82 1.04 1.42.3 1.24.75 3.7.75 7.09v4.91a3.09 3.09 0 0 1-5.85 1.38l-1.76-3.51a1.09 1.09 0 0 0-1.23-.55c-.57.13-1.36.27-2.16.27s-1.6-.14-2.16-.27c-.49-.11-1 .1-1.23.55l-1.76 3.51A3.09 3.09 0 0 1 1 17.91V13c0-3.38.46-5.85.75-7.1.15-.6.49-1.13 1.04-1.4a.47.47 0 0 0 .24-.44c0-.7.48-1.32 1.2-1.47l2.93-.62c.5-.1 1 .06 1.36.4.35.34.78.71 1.28.68a42.4 42.4 0 0 1 4.4 0c.5.03.93-.34 1.28-.69.35-.33.86-.5 1.36-.39l2.94.62c.7.15 1.19.78 1.19 1.47ZM20 7.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM15.5 12a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM5 7a1 1 0 0 1 2 0v1h1a1 1 0 0 1 0 2H7v1a1 1 0 1 1-2 0v-1H4a1 1 0 1 1 0-2h1V7Z"/>`;
             if (typeCategory === "listening") {
               iconPath = `<path fill="#45a366" d="M8.65 1.51A2 2 0 0 0 6 3.41v9.88A3.98 3.98 0 0 0 4.5 13C2.57 13 1 14.34 1 16s1.57 3 3.5 3S8 17.66 8 16V5.4l11 3.81v7.08a3.98 3.98 0 0 0-1.5-.29c-1.93 0-3.5 1.34-3.5 3s1.57 3 3.5 3 3.5-1.34 3.5-3V7.03c0-.74-.47-1.4-1.18-1.65L8.65 1.51Z" class=""></path>`;
@@ -277,9 +314,8 @@ function updateDiscordUI(data) {
               iconPath = `<path fill="var(--text-feedback-positive)" d="M4 3a3 3 0 0 0-3 3v9a3 3 0 0 0 3 3h16a3 3 0 0 0 3-3V6a3 3 0 0 0-3-3H4ZM6 20a1 1 0 1 0 0 2h12a1 1 0 1 0 0-2H6Z" class=""></path>`;
             }
             timeNode = `
-                        <div style="display:flex; align-items:center; gap:6px; margin-top:4px;">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="color: #23a559; flex-shrink: 0;">${iconPath}</svg>
-                            <span class="${tId}-elapsed" style="font-size:12px; color:#23a559; font-weight:800;">${formatElapsed(Math.max(0, now - activity.timestamps.start))} elapsed</span>
+                        <div style="display:flex; align-items:center; gap:6px;">\n                            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="color: #23a559; flex-shrink: 0;">${iconPath}</svg>
+                            <span class="${tId}-elapsed" style="font-size:12px; color:#23a559; font-weight:800;">${formatElapsed(Math.max(0, now - activity.timestamps.start))}</span>
                         </div>`;
             activeTimers.push({
               id: tId,
@@ -295,16 +331,37 @@ function updateDiscordUI(data) {
           activity.name === "Spotify" && data.spotify
             ? data.spotify.song
             : activity.name;
+        if (activity.party && activity.state) {
+          const partySVG = `<svg width="14" height="14" viewBox="0 0 24 24" style="vertical-align: -2px; margin-right: 5px;"><path fill="currentColor" d="M14.5 8a3 3 0 1 0-2.7-4.3c-.2.4.06.86.44 1.12a5 5 0 0 1 2.14 3.08c.01.06.06.1.12.1ZM18.44 17.27c.15.43.54.73 1 .73h1.06c.83 0 1.5-.67 1.5-1.5a7.5 7.5 0 0 0-6.5-7.43c-.55-.08-.99.38-1.1.92-.06.3-.15.6-.26.87-.23.58-.05 1.3.47 1.63a9.53 9.53 0 0 1 3.83 4.78ZM12.5 9a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM2 20.5a7.5 7.5 0 0 1 15 0c0 .83-.67 1.5-1.5 1.5a.2.2 0 0 1-.2-.16c-.2-.96-.56-1.87-.88-2.54-.1-.23-.42-.15-.42.1v2.1a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2.1c0-.25-.31-.33-.42-.1-.32.67-.67 1.58-.88 2.54a.2.2 0 0 1-.2.16A1.5 1.5 0 0 1 2 20.5Z"></path></svg>`;
+          activity.state = partySVG + activity.state;
+        }
+
         let lines =
           activity.name === "Spotify" && data.spotify
             ? [data.spotify.artist, data.spotify.album]
             : [
                 activity.details,
-                activity.state,
-                activity.assets?.large_text,
+                activity.state
               ].filter(Boolean);
 
-        let textHTML = `${createScrollText(title, 1, titleColor)}${createScrollText(actName, 2, "")}${lines.map((line) => createScrollText(line, 0, "")).join("")}${timeNode}`;
+        let isProgressBar = activeTimers.some((t) => t.id === tId && t.type === "progress");
+          let isParty = !!activity.party;
+          let putTimeInline = !isProgressBar && isParty;
+
+          let linesHTML = lines.map((line, idx) => {
+            if (putTimeInline && timeNode && idx === lines.length - 1) {
+              let lineHTML = createScrollText(line, 0, "", true);
+              return `<div style="display:flex; justify-content:flex-start; align-items:center; width:100%; gap:12px; overflow:hidden;">
+                        <div style="min-width:0; flex-shrink:1;">${lineHTML}</div>
+                        <div style="flex-shrink:0; padding-bottom:1px;">${timeNode}</div>
+                      </div>`;
+            }
+            return createScrollText(line, 0, "");
+          }).join("");
+
+          let finalTimeNode = (!putTimeInline || lines.length === 0) ? timeNode : "";
+
+        let textHTML = `${createScrollText(title, 1, titleColor)}${createScrollText(actName, 2, "")}${linesHTML}${finalTimeNode}`;
         let textHash = title + actName + lines.join("|") + timeHash + tId;
 
         activitiesList.push({
@@ -492,6 +549,7 @@ setInterval(() => {
     if (!t.els) {
       t.els = {
         elapsed: document.querySelectorAll(`.${t.id}-elapsed`),
+        left: document.querySelectorAll(`.${t.id}-left`),
         total:
           t.type === "progress"
             ? document.querySelectorAll(`.${t.id}-total`)
@@ -503,7 +561,7 @@ setInterval(() => {
       };
     }
 
-    if (t.els.elapsed.length === 0) return;
+    if (t.els.elapsed.length === 0 && (!t.els.left || t.els.left.length === 0)) return;
 
     if (t.type === "progress") {
       const elapsedMs = Math.max(0, now - t.start);
@@ -516,8 +574,11 @@ setInterval(() => {
       t.els.elapsed.forEach((el) => (el.textContent = elapsedStr));
       t.els.total.forEach((el) => (el.textContent = totalStr));
       t.els.bar.forEach((el) => (el.style.width = `${perc}%`));
+    } else if (t.type === "left") {
+      const leftStr = `${formatElapsed(Math.max(0, t.end - now))}`;
+      t.els.left.forEach((el) => (el.textContent = leftStr));
     } else {
-      const elapsedStr = `${formatElapsed(Math.max(0, now - t.start))} elapsed`;
+      const elapsedStr = `${formatElapsed(Math.max(0, now - t.start))}`;
       t.els.elapsed.forEach((el) => (el.textContent = elapsedStr));
     }
   });

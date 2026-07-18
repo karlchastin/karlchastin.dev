@@ -823,10 +823,11 @@ if (enterBtn) {
 
     flash.animate(
       [
-        { opacity: 1, offset: 0 },
+        { opacity: 0, offset: 0 },
+        { opacity: 1, offset: 0.15 },
         { opacity: 0, offset: 1 },
       ],
-      { duration: 800, easing: "ease-out" },
+      { duration: 400, easing: "ease-out" },
     ).onfinish = () => flash.remove();
 
     setTimeout(() => {
@@ -1103,12 +1104,4 @@ accordionHeaders.forEach((header) => {
     }
   });
 });
-
-
-
-
-
-
-
-
 

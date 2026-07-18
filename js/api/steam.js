@@ -239,7 +239,7 @@ export const applyReviewCache = (data) => {
         (c) => `
             <div class="comment-item">
                 <div class="comment-avatar-wrapper">
-                    ${c.frame ? `<img src="${c.frame}" loading="lazy" class="comment-avatar-frame" alt="Frame">` : ""}
+                    ${c.frame ? (c.frame.endsWith(".webm") || c.frame.endsWith(".mp4") ? `<video crossorigin="anonymous" src="${c.frame}" autoplay loop muted playsinline class="comment-avatar-frame"></video>` : `<img src="${c.frame}" loading="lazy" class="comment-avatar-frame" alt="Frame">`) : ""}
                     <img src="${c.avatar}" loading="lazy" class="comment-avatar-img" alt="Avatar">
                 </div>
                 <div class="comment-content">

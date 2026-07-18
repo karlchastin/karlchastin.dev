@@ -10,9 +10,8 @@ export const formatTime = (s) =>
 export const formatElapsed = (ms) => {
   const totalSecs = Math.floor(ms / 1000);
   const h = Math.floor(totalSecs / 3600);
-  const m = Math.floor((totalSecs % 3600) / 60)
-    .toString()
-    .padStart(2, "0");
+  const mRaw = Math.floor((totalSecs % 3600) / 60);
+  const m = h > 0 ? mRaw.toString().padStart(2, "0") : mRaw.toString();
   const s = (totalSecs % 60).toString().padStart(2, "0");
   return h > 0 ? `${h}:${m}:${s}` : `${m}:${s}`;
 };

@@ -1760,7 +1760,8 @@ export function setupUIEvents() {
                         <option value="night">Force Night</option>
                     </select>
                     
-                    <button id="dbg-close-btn" class="dbg-btn" style="margin-top: 25px;">Close Debugger</button>
+                    <button id="dbg-lanyard-btn" class="dbg-btn" style="margin-top: 15px;">Dump Lanyard JSON</button>
+                    <button id="dbg-close-btn" class="dbg-btn" style="margin-top: 10px;">Close Debugger</button>
                 </div>
             `;
       document.body.appendChild(dbgUI);
@@ -1792,9 +1793,102 @@ export function setupUIEvents() {
       $("dbg-email-select").addEventListener("change", (e) => {
         document.dispatchEvent(
           new CustomEvent("debug-email-warning", {
-            detail: { mode: e.target.value },
+            detail: { forceValue: e.target.value },
           }),
         );
+      });
+
+      $("dbg-lanyard-btn").addEventListener("click", () => {
+        if (!window.currentLanyardData) {
+          alert("Lanyard data not yet received!");
+          return;
+        }
+        const dumpUI = document.createElement("div");
+        dumpUI.style.cssText = "position: fixed; z-index: 9999999; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5,5,5,0.98); display: flex; justify-content: center; align-items: center; pointer-events: auto; opacity: 0; transition: opacity 0.3s ease;";
+        dumpUI.innerHTML = `
+          <style>
+            .afton-content-wrapper { flex: 1; min-height: 0; overflow: hidden; pointer-events: auto !important; position: relative; }
+            .afton-scroll-content { padding-right: 20px; padding-bottom: 50px; }
+            .afton-content-wrapper::-webkit-scrollbar { width: 6px; }
+            .afton-content-wrapper::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 4px; }
+            .afton-content-wrapper::-webkit-scrollbar-thumb { background: rgba(255,0,0,0.5); border-radius: 4px; transition: background 0.3s ease; }
+            .afton-content-wrapper::-webkit-scrollbar-thumb:hover { background: rgba(255,0,0,0.9); }
+          </style>
+          <div class="afton-box" style="background: rgba(17,17,17,0.85); border: 5px solid var(--panel-border); width: 90%; max-width: 800px; height: 85vh; padding: 35px; border-radius: 25px; box-shadow: 0 0 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; position: relative; will-change: transform, opacity; transform: translateZ(0); pointer-events: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-shrink: 0;">
+                <div>
+                        <h2 style="font-family: 'Onest', sans-serif; font-size: 26px; font-weight: 900; color: #fff !important; margin: 0; text-shadow: 0 2px 10px rgba(255,0,0,0.4);">LANYARD DUMP</h2>
+                        <p style="font-family: 'Satoshi', sans-serif; font-size: 13px; color: var(--primary); font-weight: 800; letter-spacing: 2px; text-transform: uppercase; margin-top: 5px; margin-bottom: 0;">RAW WEBSOCKET JSON</p>
+                    </div>
+            </div>
+            
+            <div class="afton-content-wrapper" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+              <div class="afton-scroll-content">
+                <pre style="margin: 0; margin-left: 20px; font-family: monospace; font-size: 13px; color: #ccc; white-space: pre-wrap; word-wrap: break-word;">${JSON.stringify(window.currentLanyardData, null, 2)}</pre>
+              </div>
+            </div>
+
+            <div style="padding-top: 20px; display: flex; justify-content: flex-end; gap: 15px; border-top: 1px solid rgba(255,255,255,0.1); flex-shrink: 0;">
+                <button id="copy-dump" class="dbg-btn" style="width: auto; padding: 0 32px; display: inline-flex;">COPY JSON</button>
+                <button id="close-dump" class="dbg-btn" style="width: auto; padding: 0 32px; display: inline-flex;">CLOSE</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(dumpUI);
+
+        setTimeout(() => {
+          dumpUI.style.opacity = "1";
+        }, 10);
+
+        const contentWrapper = dumpUI.querySelector(".afton-content-wrapper");
+        const scrollContent = dumpUI.querySelector(".afton-scroll-content");
+        let dumpLenis = null;
+        let isDumpLenisActive = false;
+
+        const trapScroll = (e) => e.stopPropagation();
+        contentWrapper.addEventListener("wheel", trapScroll, { passive: true });
+        contentWrapper.addEventListener("touchmove", trapScroll, { passive: true });
+
+        if (typeof Lenis !== "undefined") {
+          isDumpLenisActive = true;
+          dumpLenis = new Lenis({
+            wrapper: contentWrapper,
+            content: scrollContent,
+            lerp: 0.15,
+            smoothTouch: false,
+          });
+
+          const rafDump = (time) => {
+            if (!isDumpLenisActive) return;
+            dumpLenis.raf(time);
+            requestAnimationFrame(rafDump);
+          };
+          requestAnimationFrame(rafDump);
+        } else {
+          contentWrapper.style.overflowY = "auto";
+        }
+
+        dumpUI.querySelector("#close-dump").addEventListener("click", () => {
+          dumpUI.style.opacity = "0";
+          setTimeout(() => {
+            if (dumpLenis) {
+              isDumpLenisActive = false;
+              dumpLenis.destroy();
+            }
+            dumpUI.remove();
+          }, 300);
+        });
+
+        const copyBtn = dumpUI.querySelector("#copy-dump");
+        copyBtn.addEventListener("click", () => {
+          navigator.clipboard.writeText(JSON.stringify(window.currentLanyardData, null, 2));
+          copyBtn.innerText = "COPIED!";
+          copyBtn.style.color = "#ff5555";
+          setTimeout(() => {
+            copyBtn.innerText = "COPY JSON";
+            copyBtn.style.color = "";
+          }, 2000);
+        });
       });
 
       $("dbg-close-btn").addEventListener("click", () => {
