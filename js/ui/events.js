@@ -1824,7 +1824,7 @@ export function setupUIEvents() {
             
             <div class="afton-content-wrapper" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
               <div class="afton-scroll-content">
-                <pre style="margin: 0; margin-left: 20px; font-family: monospace; font-size: 13px; color: #ccc; white-space: pre-wrap; word-wrap: break-word;">${JSON.stringify(window.currentLanyardData, null, 2)}</pre>
+                <pre style="margin: 0; margin-left: 20px; font-family: monospace; font-size: 13px; color: #ccc; white-space: pre-wrap; word-wrap: break-word;">${JSON.stringify(window.currentLanyardData, null, 2).replace(/</g, "&lt;").replace(/>/g, "&gt;")}</pre>
               </div>
             </div>
 

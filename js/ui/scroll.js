@@ -37,7 +37,7 @@ export const createScrollText = (text, isTitle, titleColor, inline = false) => {
     isTitle === 1
       ? `font-size:11px; font-weight:800; color:${titleColor}; text-transform:uppercase; line-height: 1; margin-bottom: 6px;`
       : isTitle === 2
-        ? `font-weight:800; font-size:15px; color:#fff; line-height: 1.1; margin-bottom: 5px;`
+        ? `font-weight:800; font-size:15px; color:#fff; line-height: 1.1; margin-bottom: 2px;`
         : `font-size:13px; color:#aaa; line-height: 1.15; margin-bottom: 0px;`;
 
   return `<div class="scroll-wrapper" style="${wrapperStyle} ${inline ? "" : "width: 100%;"} min-width: 0; overflow: visible; white-space: nowrap; position: relative;">

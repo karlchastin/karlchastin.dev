@@ -332,8 +332,11 @@ function updateDiscordUI(data) {
             ? data.spotify.song
             : activity.name;
         if (activity.party && activity.state) {
+          let sizeStr = (activity.party.size && activity.party.size.length === 2) 
+                        ? ` (${activity.party.size[0]} of ${activity.party.size[1]})` 
+                        : "";
           const partySVG = `<svg width="14" height="14" viewBox="0 0 24 24" style="vertical-align: -2px; margin-right: 5px;"><path fill="currentColor" d="M14.5 8a3 3 0 1 0-2.7-4.3c-.2.4.06.86.44 1.12a5 5 0 0 1 2.14 3.08c.01.06.06.1.12.1ZM18.44 17.27c.15.43.54.73 1 .73h1.06c.83 0 1.5-.67 1.5-1.5a7.5 7.5 0 0 0-6.5-7.43c-.55-.08-.99.38-1.1.92-.06.3-.15.6-.26.87-.23.58-.05 1.3.47 1.63a9.53 9.53 0 0 1 3.83 4.78ZM12.5 9a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM2 20.5a7.5 7.5 0 0 1 15 0c0 .83-.67 1.5-1.5 1.5a.2.2 0 0 1-.2-.16c-.2-.96-.56-1.87-.88-2.54-.1-.23-.42-.15-.42.1v2.1a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2.1c0-.25-.31-.33-.42-.1-.32.67-.67 1.58-.88 2.54a.2.2 0 0 1-.2.16A1.5 1.5 0 0 1 2 20.5Z"></path></svg>`;
-          activity.state = partySVG + activity.state;
+          activity.state = partySVG + activity.state + sizeStr;
         }
 
         let lines =
@@ -346,20 +349,25 @@ function updateDiscordUI(data) {
 
         let isProgressBar = activeTimers.some((t) => t.id === tId && t.type === "progress");
           let isParty = !!activity.party;
-          let putTimeInline = !isProgressBar && isParty;
+          let putTimeInline = !isProgressBar && isParty && !!activity.state;
 
           let linesHTML = lines.map((line, idx) => {
             if (putTimeInline && timeNode && idx === lines.length - 1) {
               let lineHTML = createScrollText(line, 0, "", true);
               return `<div style="display:flex; justify-content:flex-start; align-items:center; width:100%; gap:12px; overflow:hidden;">
                         <div style="min-width:0; flex-shrink:1;">${lineHTML}</div>
-                        <div style="flex-shrink:0; padding-bottom:1px;">${timeNode}</div>
+                        <div style="flex-shrink:0; padding-top:1px;">${timeNode}</div>
                       </div>`;
             }
             return createScrollText(line, 0, "");
           }).join("");
 
-          let finalTimeNode = (!putTimeInline || lines.length === 0) ? timeNode : "";
+          let finalTimeNode = "";
+          if (!putTimeInline || lines.length === 0) {
+            if (timeNode) {
+              finalTimeNode = isProgressBar ? timeNode : `<div style="margin-top: 6px;">${timeNode}</div>`;
+            }
+          }
 
         let textHTML = `${createScrollText(title, 1, titleColor)}${createScrollText(actName, 2, "")}${linesHTML}${finalTimeNode}`;
         let textHash = title + actName + lines.join("|") + timeHash + tId;
