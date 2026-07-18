@@ -234,7 +234,6 @@ export function setupTabs() {
       syncBackgrounds(currentIndex);
 
       const tabName = link.getAttribute("data-tab");
-      window.history.pushState(null, null, `#${tabName}`);
       document.body.setAttribute('data-active-tab', tabName);
 
       if (tabName === "gaming_rig" && typeof window.resetPrefToSetup === "function") {
@@ -444,37 +443,25 @@ export function setupTabs() {
     });
   });
 
-  window.addEventListener("popstate", () => {
-    const hash = window.location.hash.substring(1) || "home";
-    const targetTab = document.querySelector(`.tab[data-tab="${hash}"]`);
-    if (targetTab && !targetTab.classList.contains("active")) {
-      targetTab.click();
-    }
-  });
-
-  setTimeout(() => {
-    const initialHash = window.location.hash.substring(1);
-    if (initialHash && initialHash !== "home") {
-      const targetTab = document.querySelector(
-        `.tab[data-tab="${initialHash}"]`,
-      );
-      if (targetTab) {
-        targetTab.click();
+    setTimeout(() => {
+      const initialPath = sessionStorage.getItem('redirectPath') || window.location.pathname.substring(1).replace(/\/$/, "");
+      sessionStorage.removeItem('redirectPath');
+      if (initialPath && initialPath !== "home") {
+        const targetTab = document.querySelector(
+          `.tab[data-tab="${initialPath}"]`,
+        );
+        if (targetTab) {
+          targetTab.click();
+        } else {
+          document.body.setAttribute('data-active-tab', 'home');
+        }
       } else {
         document.body.setAttribute('data-active-tab', 'home');
       }
-    } else {
-      document.body.setAttribute('data-active-tab', 'home');
-    }
-  }, 500);
+
+
+
+
+
+    }, 500);
 }
-
-
-
-
-
-
-
-
-
-

@@ -271,7 +271,7 @@ export async function updateSteamData() {
 
     if (cache.name) profiles.steam.name = cache.name;
     if (cache.avatar) profiles.steam.avatar = cache.avatar;
-    if (cache.bio) profiles.steam.bio = cache.bio;
+    profiles.steam.bio = "you can take me as you are.";
     if (cache.level) profiles.steam.level = cache.level;
 
     const activeTabNode =
@@ -284,7 +284,7 @@ export async function updateSteamData() {
     if (activeTab === "steam") {
       $("profile-name").textContent = cache.name || "Loading...";
       if (cache.avatar) $("avatar-img").src = cache.avatar;
-      $("profile-bio").innerHTML = cache.bio || "Welcome to my Steam profile.";
+      $("profile-bio").innerHTML = profiles.steam.bio;
     }
 
     const elLevel = $("steam-live-level");
@@ -390,7 +390,6 @@ export async function updateSteamData() {
 
       let safeOverrides = {
         level: doc.querySelector(".friendPlayerLevelNum")?.textContent || "--",
-        bio: doc.querySelector(".profile_summary")?.textContent?.trim(),
         hours: doc
           .querySelector(".recentgame_recentplaytime h2")
           ?.textContent?.trim(),

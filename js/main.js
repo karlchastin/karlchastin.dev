@@ -863,10 +863,6 @@ if (enterBtn) {
 
       if (enterOverlay) enterOverlay.style.display = "none";
 
-      if (!window.location.hash) {
-        window.history.replaceState(null, null, "#home");
-      }
-
       if (mainContent) {
         const animTargets = [
           ...document.querySelectorAll(".glass-panel"),
@@ -987,13 +983,14 @@ setInterval(() => {
   if (activeLayout.showSteamExtra) updateSteamData();
 }, 60000);
 
-const initialHash = window.location.hash.substring(1);
-if (initialHash) {
-  const targetTab = document.querySelector(`.tab[data-tab="${initialHash}"]`);
+const initialPath = sessionStorage.getItem('redirectPath') || window.location.pathname.substring(1).replace(/\/$/, "");
+if (initialPath) {
+  const targetTab = document.querySelector(`.tab[data-tab="${initialPath}"]`);
   if (targetTab) {
     targetTab.click();
   }
 }
+window.history.replaceState(null, null, "/");
 
 const biosTabs = document.querySelectorAll(".bios-tab");
 biosTabs.forEach((tab) => {

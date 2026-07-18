@@ -163,19 +163,19 @@ export const profiles = {
   gaming_rig: {
     avatar: "./assets/Gaming%20Rig%20Avatar.webp",
     name: "Gaming Rig",
-    username: "System Settings",
-    bio: "Game preferences, custom setups, mods, and performance statistics.",
+    username: "",
+    bio: "All hardware specifications and setup.",
     layout: {
       ...defaultLayout,
       showGamingRig: true,
       showCards: ["card-2-container"],
     },
   },
-  game_statistics: {
+  statistics: {
     avatar: "./assets/Game%20Statistics%20Avatar.webp",
-    name: "Game Statistics",
-    username: "Player Stats",
-    bio: "Live stats and leaderboards.",
+    name: "Statistics",
+    username: "",
+    bio: "Performance trackers and preferred settings..",
     layout: {
       ...defaultLayout,
       showGameStats: true,
@@ -343,11 +343,11 @@ export const emailAvatars = {
 };
 export const emailBios = {
   personal:
-    "Drop me a line for casual chats, networking, or general inquiries.",
+    "Important and immediate concerns, networking, or NDA-protected inquiries.",
   business:
-    "Reach out for professional opportunities, freelancing, and collaborations.",
+    "Professional opportunities, freelancing, and collaborations.",
   school:
-    "Reserved for academic inquiries, professors, and university matters.",
+    "Academic inquiries, professors, and university matters.",
 };
 
 export const discordBadges = [
