@@ -9,6 +9,7 @@ import {
 import { syncBackgrounds } from "./ui/animations.js";
 import { setupUIEvents } from "./ui/events.js";
 import { renderAllComponents } from "./ui/components.js";
+import { initBgEffects } from "./ui/bg-effects.js";
 import { prefetchGitHubProfile, updateGitHubData } from "./api/github.js";
 import { updateSteamData } from "./api/steam.js";
 import { connectLanyard } from "./api/discord.js";
@@ -426,8 +427,8 @@ function setupPreferencesTabs() {
 
       const targetId = "pref-" + tab.dataset.pref;
       const newContent = document.getElementById(targetId);
-      
-      const wrapper = tab.closest(".tab-content");
+
+            const wrapper = tab.closest(".tab-content");
       const oldContent = wrapper ? wrapper.querySelector(".pref-content.active") : document.querySelector(".pref-content.active");
       const oldTab = wrapper ? wrapper.querySelector(".pref-tab.active") : document.querySelector(".pref-tab.active");
       const card = tab.closest(".card");
@@ -708,6 +709,7 @@ try {
   setupPreferencesTabs();
   attachGlobalHeightObservers();
   loadFacebookData();
+  initBgEffects();
 } catch (e) {
   console.error("UI Initialization Error:", e);
 }
@@ -965,7 +967,7 @@ setInterval(() => {
           const statusEl = document.getElementById("steam-live-status");
           if (statusEl) {
             statusEl.innerHTML = data.stateMessage;
-            statusEl.className = `steam-status ${data.onlineState}`;
+            statusEl.className = `steam-status ${data.onlineState} bg-effect-exclude`;
           }
         }
       })

@@ -51,8 +51,8 @@ export function syncBackgrounds(currentIndex = 0, isInstant = false) {
   const activeTab = tabs[currentIndex];
   const isExpanding = activeTab.classList.contains("show-text");
   const textEl = activeTab.querySelector(".tab-text");
-  
-  const targetTextWidth = isExpanding && textEl ? Math.min(textEl.scrollWidth, 150) + 8 : 0;
+
+    const targetTextWidth = isExpanding && textEl ? Math.min(textEl.scrollWidth, 150) + 8 : 0;
   const w_a = W_ICON + targetTextWidth;
 
   const P_A = w_a + 2 * P_PANEL;

@@ -195,6 +195,7 @@ export function setupTabs() {
 
       const oldTab = document.querySelector(".tab.active");
       if (oldTab) oldTab.classList.remove("text-visible");
+      document.body.removeAttribute("data-tab-effect-visible");
 
       const allCards = document.querySelectorAll(".card");
 
@@ -234,6 +235,7 @@ export function setupTabs() {
 
       const tabName = link.getAttribute("data-tab");
       window.history.pushState(null, null, `#${tabName}`);
+      document.body.setAttribute('data-active-tab', tabName);
 
       if (tabName === "gaming_rig" && typeof window.resetPrefToSetup === "function") {
         window.resetPrefToSetup(true);
@@ -384,6 +386,15 @@ export function setupTabs() {
 
       currentIndex = idx;
       syncBackgrounds(currentIndex);
+
+            const allTabEffects = document.querySelectorAll('#glass-active .tab-bg-effect');
+      allTabEffects.forEach(effect => {
+        if (effect.getAttribute('data-bg-tab') === tabName) {
+          effect.classList.add('active');
+        } else {
+          effect.classList.remove('active');
+        }
+      });
       await safeDelay(350);
 
       link.classList.add("active");
@@ -391,6 +402,7 @@ export function setupTabs() {
       syncBackgrounds(currentIndex);
       await safeDelay(350);
       link.classList.add("text-visible");
+      document.body.setAttribute("data-tab-effect-visible", "true");
       if (avatarImg) avatarImg.parentElement.style.opacity = "1";
       if (locContainer) locContainer.style.opacity = "1";
 
@@ -446,7 +458,13 @@ export function setupTabs() {
       const targetTab = document.querySelector(
         `.tab[data-tab="${initialHash}"]`,
       );
-      if (targetTab) targetTab.click();
+      if (targetTab) {
+        targetTab.click();
+      } else {
+        document.body.setAttribute('data-active-tab', 'home');
+      }
+    } else {
+      document.body.setAttribute('data-active-tab', 'home');
     }
   }, 500);
 }

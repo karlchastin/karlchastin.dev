@@ -12,7 +12,7 @@ const renderList = (id, data, mapper) => {
 };
 
 const createGenericCard = (item) => `
-    <div class="repo-card">
+    <div class="repo-card bg-effect-exclude">
         <div class="repo-banner" style="background: ${item.banner}"></div>
         <div class="repo-content">
             <div class="repo-name">${item.name}</div>

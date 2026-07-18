@@ -100,7 +100,7 @@ function updateDiscordUI(data) {
       .map((b) => {
         let tt = b.name;
         if (b.desc) tt += `<span class='tt-desc'>${b.desc}</span>`;
-        return `<div class="achievement-badge" data-tooltip="${tt.replace(/"/g, "&quot;")}"><img src="${b.icon}" alt="${b.name.replace(/"/g, "&quot;")}" onerror="this.style.display='none'"></div>`;
+        return `<div class="achievement-badge bg-effect-exclude" data-tooltip="${tt.replace(/"/g, "&quot;")}"><img src="${b.icon}" alt="${b.name.replace(/"/g, "&quot;")}" onerror="this.style.display='none'"></div>`;
       })
       .join("");
   }
@@ -166,7 +166,7 @@ function updateDiscordUI(data) {
     statusEl.innerHTML = overrideCircle
       ? `${iconHTML}<span>${statusText}</span>`
       : `<span>${statusText}</span>`;
-    statusEl.className = `discord-status ${baseStatus} ${overrideCircle ? "mobile-status" : ""}`;
+    statusEl.className = `discord-status ${baseStatus} ${overrideCircle ? "mobile-status" : ""} bg-effect-exclude`;
 
     const oldQm = rowEl.querySelector(".status-tooltip-icon");
     if (questionMarkHTML) {
