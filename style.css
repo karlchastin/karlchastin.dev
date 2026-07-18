@@ -1144,27 +1144,59 @@ a.stat-box:hover {
   font-weight: 800;
   font-size: 16px;
   border: 2px solid #9b9b9b;
-  color: #9b9b9b;
+  color: #fff;
   background: rgba(0, 0, 0, 0.4);
   box-shadow: 0 0 10px rgba(155, 155, 155, 0.2);
 }
 
 .lvl-0 {
   border-color: #9b9b9b;
-  color: #9b9b9b;
   box-shadow: 0 0 10px rgba(155, 155, 155, 0.3);
 }
 
 .lvl-10 {
   border-color: #c02942;
-  color: #c02942;
   box-shadow: 0 0 10px rgba(192, 41, 66, 0.3);
 }
 
 .lvl-20 {
   border-color: #d95b43;
-  color: #d95b43;
   box-shadow: 0 0 10px rgba(217, 91, 67, 0.3);
+}
+
+.lvl-30 {
+  border-color: #fecc23;
+  box-shadow: 0 0 10px rgba(254, 204, 35, 0.3);
+}
+
+.lvl-40 {
+  border-color: #467a3c;
+  box-shadow: 0 0 10px rgba(70, 122, 60, 0.3);
+}
+
+.lvl-50 {
+  border-color: #4e8ddb;
+  box-shadow: 0 0 10px rgba(78, 141, 219, 0.3);
+}
+
+.lvl-60 {
+  border-color: #7652c9;
+  box-shadow: 0 0 10px rgba(118, 82, 201, 0.3);
+}
+
+.lvl-70 {
+  border-color: #c252c9;
+  box-shadow: 0 0 10px rgba(194, 82, 201, 0.3);
+}
+
+.lvl-80 {
+  border-color: #542437;
+  box-shadow: 0 0 10px rgba(84, 36, 55, 0.3);
+}
+
+.lvl-90 {
+  border-color: #997c52;
+  box-shadow: 0 0 10px rgba(153, 124, 82, 0.3);
 }
 
 /* =========================================
