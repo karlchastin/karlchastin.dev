@@ -175,7 +175,7 @@ export const profiles = {
     avatar: "./assets/Game%20Statistics%20Avatar.webp",
     name: "Statistics",
     username: "",
-    bio: "Performance trackers and preferred settings..",
+    bio: "Performance trackers and preferred settings.",
     layout: {
       ...defaultLayout,
       showGameStats: true,
