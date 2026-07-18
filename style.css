@@ -69,6 +69,18 @@ body::after {
   will-change: transform;
 }
 
+@media (orientation: portrait) {
+  body::after {
+    /* Swap dimensions to match the landscape image's aspect ratio bounds */
+    width: 100vh;
+    height: 100vw;
+    top: 50%;
+    left: 50%;
+    /* Translate from center to avoid corner pivot issues, then rotate */
+    transform: translate(-50%, -50%) rotate(90deg);
+  }
+}
+
 /* =========================================
    3. INTRO OVERLAY & ENTER BUTTON
    ========================================= */
@@ -406,7 +418,7 @@ body::after {
 }
 
 /* =========================================
-   7. TYPOGRAPHY (Name, Bio, Headers)
+   7. TYPOGRAPHY (NAME, BIO, HEADERS)
    ========================================= */
 .name {
   font-size: 37px;
@@ -765,7 +777,7 @@ body::after {
 }
 
 /* =========================================
-   13. GRIDS & STAT BOXES (Github, IG)
+   13. GRIDS & STAT BOXES (GITHUB, IG)
    ========================================= */
 .github-stats {
   display: grid;
@@ -1026,7 +1038,7 @@ a.stat-box:hover {
 }
 
 /* =========================================
-   17. LIVE STATUS INDICATORS (Steam/Discord)
+   17. LIVE STATUS INDICATORS (STEAM/DISCORD)
    ========================================= */
 .steam-status-row,
 .discord-status-row {
@@ -1511,7 +1523,7 @@ a.stat-box:hover {
 }
 
 /* =========================================
-   20. MISC (Contributions, Tooltips, Stories)
+   20. MISC (CONTRIBUTIONS, TOOLTIPS, STORIES)
    ========================================= */
 .contrib-crop {
   width: 100%;
@@ -1649,7 +1661,7 @@ a.stat-box:hover {
 }
 
 /* =========================================
-   21. GAME STATS ROWS (General)
+   21. GAME STATS ROWS (GENERAL)
    ========================================= */
 .game-stat-hero-container {
   display: flex;
@@ -1841,7 +1853,7 @@ body.is-deafened::before {
 }
 
 /* =========================================
-   BIOS SETTINGS STYLES
+   26. BIOS SETTINGS STYLES
    ========================================= */
 .bios-tab {
   background: transparent;
