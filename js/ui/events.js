@@ -1727,9 +1727,12 @@ export function setupUIEvents() {
 
       dbgUI.innerHTML = `
                 <div class="debugger-wrapper" style="position: fixed; top: 20px; right: 20px; background: var(--panel-bg); border: 5px solid var(--panel-border); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); padding: 25px; border-radius: 25px; z-index: 9999999; color: #fff; font-family: 'Satoshi', sans-serif; box-shadow: 0 0 30px rgba(0,0,0,0.5); width: 280px; transition: opacity 0.3s ease, transform 0.3s ease; opacity: 0; transform: scale(0.95);">
-                    <h3 style="color: var(--primary); margin-top: 0; margin-bottom: 20px; font-size: 18px; font-family: 'Onest', sans-serif; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> 
-                        Debugger
+                    <h3 style="color: var(--primary); margin-top: 0; margin-bottom: 20px; font-size: 18px; font-family: 'Onest', sans-serif; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: space-between;">
+                        <span style="display: flex; align-items: center; gap: 8px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> 
+                            Debugger
+                        </span>
+                        <span style="font-size: 10px; font-family: 'JetBrains Mono', monospace; color: #666; background: rgba(0,0,0,0.4); padding: 4px 8px; border-radius: 10px; letter-spacing: 0;">v1.0.0</span>
                     </h3>
                     
                     <div style="display: flex; flex-direction: column; gap: 15px;">
