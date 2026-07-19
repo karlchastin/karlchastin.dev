@@ -31,7 +31,7 @@ export const defaultLayout = {
   showInstaPosts: false,
   showFacebookStats: false,
   showLocFacebook: false,
-  showGamingRig: false,
+  showSetup: false,
   showGameStats: false,
   showTiktok: false,
   showCards: [],
@@ -160,14 +160,14 @@ export const profiles = {
       showCards: ["card-3-container"],
     },
   },
-  gaming_rig: {
+  setup: {
     avatar: "./assets/Gaming%20Rig%20Avatar.webp",
-    name: "Gaming Rig",
+    name: "Setup",
     username: "",
-    bio: "All hardware specifications and setup.",
+    bio: "All hardware specifications and configurations.",
     layout: {
       ...defaultLayout,
-      showGamingRig: true,
+      showSetup: true,
       showCards: ["card-2-container"],
     },
   },
@@ -175,7 +175,7 @@ export const profiles = {
     avatar: "./assets/Game%20Statistics%20Avatar.webp",
     name: "Statistics",
     username: "",
-    bio: "Performance trackers and preferred settings.",
+    bio: "Performance trackers, preferred loadouts, and settings.",
     layout: {
       ...defaultLayout,
       showGameStats: true,

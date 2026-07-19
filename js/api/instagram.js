@@ -33,11 +33,21 @@ document.addEventListener("toggle-ig-deactivation", (e) => {
   }
 });
 
-export function updateInstagramUI(profile) {
+document.addEventListener("toggle-ig-debug", (e) => {
+  if (cachedIgData) {
+    updateInstagramUI(cachedIgData);
+  } else {
+    updateInstagramUI({});
+  }
+});
+
+export function updateInstagramUI(originalProfile) {
   const igProfile = profiles.instagram;
   const activeTab = document
     .querySelector(".tab.active")
     ?.getAttribute("data-tab");
+
+  let profile = originalProfile ? JSON.parse(JSON.stringify(originalProfile)) : {};
 
   const animateProfileChange = (avatarUrl, nameText, bioText) => {
     const avatarImg = $("avatar-img");
@@ -168,7 +178,7 @@ export function updateInstagramUI(profile) {
     postsGrid.innerHTML = profile.latestPosts
       .slice(0, 6)
       .map((post) => {
-        const proxyImageUrl = `${WORKER_URL}?route=image-proxy&url=${encodeURIComponent(post.displayUrl)}`;
+        const proxyImageUrl = post.isMock ? post.displayUrl : `${WORKER_URL}?route=image-proxy&url=${encodeURIComponent(post.displayUrl)}`;
         const dateStr = post.timestamp
           ? new Date(post.timestamp).toLocaleDateString("en-US", {
               month: "short",
@@ -183,14 +193,14 @@ export function updateInstagramUI(profile) {
         if (!snippet) snippet = "Instagram Post";
 
         return `
-                <a href="${post.url}" target="_blank" class="ig-post-item" style="display: block; position: relative; overflow: hidden; border-radius: 8px; aspect-ratio: 1/1; text-decoration: none; background: #111;">
+                <a href="${post.url}" target="_blank" class="ig-post-item bg-effect-exclude" style="display: block; position: relative; overflow: hidden; border-radius: 8px; aspect-ratio: 1/1; text-decoration: none; background: #111;">
                     <img src="${proxyImageUrl}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; display: block; border: none; padding: 0; margin: 0;" alt="Instagram Post">
                     <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 30px 12px 10px; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); color: white; font-size: 11px; display: flex; flex-direction: column; gap: 3px; box-sizing: border-box; pointer-events: none;">
                         ${dateStr ? `<span style="opacity: 0.7; font-weight: 600; font-size: 10px; letter-spacing: 0.5px;">${dateStr.toUpperCase()}</span>` : ""}
                         <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0px 1px 2px rgba(0,0,0,0.8);">${snippet}</span>
                     </div>
                     <div class="ig-post-overlay" style="opacity: 0; transition: opacity 0.2s ease-in-out; background: rgba(0,0,0,0.65); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: flex; align-items: center; justify-content: center; gap: 15px; color: white; font-weight: bold; font-size: 14px;">
-                        <span>🤍 ${post.likesCount || 0}</span>
+                        <span>❤️ ${post.likesCount || 0}</span>
                         <span>💬 ${post.commentsCount || 0}</span>
                     </div>
                 </a>`;

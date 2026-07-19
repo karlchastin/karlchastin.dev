@@ -113,7 +113,7 @@ export async function swapData(tabName) {
       show: newLayout.showFacebookStats,
       type: "block",
     },
-    "gaming-rig-wrapper": { show: newLayout.showGamingRig, type: "block" },
+    "setup-wrapper": { show: newLayout.showSetup, type: "block" },
     "game-stats-wrapper": { show: newLayout.showGameStats, type: "block" },
     "tiktok-wrapper": { show: newLayout.showTiktok, type: "flex", flexDirection: "column" },
   };
@@ -236,7 +236,7 @@ export function setupTabs() {
       const tabName = link.getAttribute("data-tab");
       document.body.setAttribute('data-active-tab', tabName);
 
-      if (tabName === "gaming_rig" && typeof window.resetPrefToSetup === "function") {
+      if (tabName === "setup" && typeof window.resetPrefToSetup === "function") {
         window.resetPrefToSetup(true);
       }
       if (tabName === "game_statistics" && typeof window.resetGameStats === "function") {

@@ -421,7 +421,7 @@ function updateDiscordUI(data) {
       box = document.createElement("div");
       box.className = "activity-box";
       box.style.cssText =
-        "background: rgba(0,0,0,0.2); padding: 16px; border-radius: 16px; display:flex; gap: 16px; align-items:center; width: 100%; height: 100%; box-sizing: border-box;";
+        "background: var(--l2-bg, rgba(7, 7, 7, 0.65)); padding: 16px; border-radius: 16px; display:flex; gap: 16px; align-items:center; width: 100%; height: 100%; box-sizing: border-box;";
       slot.appendChild(box);
     }
 
@@ -490,7 +490,7 @@ function updateDiscordUI(data) {
     window.lastHomeState = currentState;
 
     if (currentState === "none") {
-      homeEl.innerHTML = `<div style="text-align:center; padding: 25px 20px; color: #888; font-weight: 700; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); border-radius: 16px;"><span>No activity on ${discordSvg}.</span></div>`;
+      homeEl.innerHTML = `<div style="text-align:center; padding: 25px 20px; color: #888; font-weight: 700; display: flex; align-items: center; justify-content: center; background: var(--l2-bg, rgba(7, 7, 7, 0.65)); border-radius: 16px;"><span>No activity on ${discordSvg}.</span></div>`;
     } else {
       let flexGrid = homeEl.querySelector(".home-activities-wrapper");
       if (!flexGrid) {
@@ -541,7 +541,7 @@ function updateDiscordUI(data) {
       }
       renderSingleBox(musicEl.querySelector("#apple-music-slot"), appleMusicActs[0]);
     } else {
-      musicEl.innerHTML = `<div style="text-align:center; padding: 25px 20px; color: #888; font-weight: 700; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); border-radius: 16px;"><span>No activity on Apple Music.</span></div>`;
+      musicEl.innerHTML = `<div style="text-align:center; padding: 25px 20px; color: #888; font-weight: 700; display: flex; align-items: center; justify-content: center; background: var(--l2-bg, rgba(7, 7, 7, 0.65)); border-radius: 16px;"><span>No activity on Apple Music.</span></div>`;
     }
   }
 

@@ -8,6 +8,8 @@
   --primary: #ff0000;
   --primary-glow: rgba(255, 0, 0, 0.5);
   --panel-bg: rgba(17, 17, 17, 0.25);
+    --l2-bg: rgba(30, 30, 30, 0.70);
+    --l3-bg: rgba(255, 255, 255, 0.05);
   --panel-border: rgba(30, 30, 30, 0.85);
 }
 
@@ -469,7 +471,7 @@ body::after {
    8. BUTTONS & EXTERNAL LINKS
    ========================================= */
 .btn-visit-external,
-.repo-btn.btn-view,
+.featured-btn.btn-view,
 .email-btn {
   background-image: linear-gradient(to right,
       rgba(255, 0, 0, 0.8) 50%,
@@ -484,7 +486,7 @@ body::after {
 }
 
 .btn-visit-external:hover,
-.repo-btn.btn-view:hover {
+.featured-btn.btn-view:hover {
   background-position: 0 0;
   transform: scale(1.03);
   box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
@@ -528,6 +530,8 @@ body::after {
 .bios-tab-btn {
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  
+  
   color: #aaa;
   padding: 10px 20px;
   border-radius: 12px;
@@ -578,7 +582,7 @@ body::after {
 
 .game-left {
   flex: 1;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--l2-bg);
   border-radius: 16px;
   display: flex;
   align-items: center;
@@ -586,7 +590,7 @@ body::after {
   overflow: hidden;
   position: relative;
   min-height: 500px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  
   padding: 20px;
 }
 
@@ -609,10 +613,10 @@ body::after {
 }
 
 .game-section {
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--l2-bg);
   padding: 20px;
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  
 }
 
 .game-section h3 {
@@ -631,8 +635,9 @@ body::after {
 }
 
 .stat-item {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--l3-bg);
   padding: 10px;
+  
   border-radius: 8px;
   text-align: center;
 }
@@ -702,8 +707,9 @@ body::after {
 }
 
 .setup-item {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--l3-bg);
   padding: 8px 15px;
+  
   border-radius: 8px;
   font-size: 13px;
   font-weight: 700;
@@ -711,7 +717,7 @@ body::after {
   display: flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.02);
+  
 }
 
 .peripheral-list {
@@ -724,10 +730,10 @@ body::after {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--l2-bg);
   padding: 15px 20px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  
 }
 
 .peripheral-item .p-label {
@@ -803,9 +809,9 @@ body::after {
 .ig-post-placeholder {
   width: 100%;
   aspect-ratio: 1 / 1;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--l2-bg);
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  
 }
 
 .stat-box {
@@ -880,7 +886,7 @@ a.stat-box:hover {
 }
 
 .achievement-badge:hover {
-  transform: scale(1.2) translateY(-2px);
+  transform: scale(1.2);
   background: linear-gradient(135deg,
       rgba(255, 0, 0, 0.25),
       rgba(255, 0, 0, 0.05));
@@ -900,11 +906,11 @@ a.stat-box:hover {
 /* =========================================
    15. REPO LAYOUT & CARDS
    ========================================= */
-.repo-layout {
+.featured-layout {
   width: 100%;
 }
 
-.repo-header {
+.featured-header {
   font-size: 20px;
   font-weight: 800;
   color: var(--primary);
@@ -914,35 +920,34 @@ a.stat-box:hover {
   letter-spacing: 1px;
 }
 
-.repo-grid {
+.featured-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 15px;
 }
 
-.repo-card {
-  background: rgba(255, 255, 255, 0.05);
+.featured-card {
+  background: var(--l2-bg);
   border-radius: 15px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-.repo-banner {
+.featured-banner {
   height: 40px;
   width: 100%;
   background: linear-gradient(90deg, #330000, #ff000033);
 }
 
-.repo-content {
+.featured-content {
   padding: 25px;
   flex: 1;
   display: flex;
   flex-direction: column;
 }
 
-.repo-name {
+.featured-name {
   font-size: 20px;
   font-weight: 800;
   color: #fff;
@@ -950,14 +955,14 @@ a.stat-box:hover {
   margin-bottom: 4px;
 }
 
-.repo-id {
+.featured-id {
   font-size: 12px;
   color: #888;
   font-family: monospace;
   margin-bottom: 12px;
 }
 
-.repo-desc {
+.featured-desc {
   font-size: 15px;
   color: #aaa;
   line-height: 1.5;
@@ -965,7 +970,7 @@ a.stat-box:hover {
   flex: 1;
 }
 
-.repo-btn {
+.featured-btn {
   display: block;
   width: 100%;
   padding: 10px;
@@ -984,7 +989,7 @@ a.stat-box:hover {
   cursor: not-allowed;
 }
 
-.repo-btn.btn-view {
+.featured-btn.btn-view {
   color: #fff;
   border: 1px solid var(--primary-glow);
   box-shadow: 0 0 10px rgba(255, 0, 0, 0.1);
@@ -1049,6 +1054,8 @@ a.stat-box:hover {
 .discord-status {
   font-size: 13px;
   font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1056,9 +1063,7 @@ a.stat-box:hover {
   padding: 6px 14px;
   border-radius: 20px;
   background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .steam-status::before,
@@ -1143,10 +1148,10 @@ a.stat-box:hover {
   border-radius: 50%;
   font-weight: 800;
   font-size: 16px;
-  border: 2px solid #9b9b9b;
   color: #fff;
   background: rgba(0, 0, 0, 0.4);
   box-shadow: 0 0 10px rgba(155, 155, 155, 0.2);
+  border: 2px solid #9b9b9b;
 }
 
 .lvl-0 {
@@ -1223,7 +1228,7 @@ a.stat-box:hover {
   display: flex;
   align-items: center;
   gap: 16px;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--l2-bg);
   padding: 16px;
   border-radius: 16px;
   flex: 1;
@@ -1261,7 +1266,7 @@ a.stat-box:hover {
 }
 
 .review-card {
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--l2-bg);
   border-radius: 16px;
   display: flex;
   flex-direction: column;
@@ -1325,7 +1330,7 @@ a.stat-box:hover {
   flex-wrap: wrap;
   padding: 8px 16px;
   border-radius: 16px;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--l2-bg);
 }
 
 .award-item {
@@ -1335,6 +1340,10 @@ a.stat-box:hover {
   font-size: 11px;
   font-weight: 800;
   color: #ccc;
+  background: var(--l3-bg);
+  padding: 6px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .award-icon {
@@ -1353,12 +1362,13 @@ a.stat-box:hover {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 12px 16px;
-  border-radius: 16px;
-  font-size: 13px;
   font-weight: 800;
+  font-size: 13px;
   color: #ddd;
+  background: var(--l3-bg);
+  padding: 6px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .review-stat-pill.funny {
@@ -1390,7 +1400,8 @@ a.stat-box:hover {
 .comment-item {
   display: flex;
   gap: 12px;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--l3-bg);
+  
   padding: 8px 12px;
   border-radius: 12px;
   align-items: center;
@@ -1703,8 +1714,7 @@ a.stat-box:hover {
 
 .game-stat-hero {
   flex: 1;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--l3-bg);
   border-radius: 8px;
   padding: 15px 20px;
   display: flex;
@@ -1739,20 +1749,15 @@ a.stat-box:hover {
 .game-stat-pill {
   flex: 1;
   min-width: 110px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--l3-bg);
   border-radius: 6px;
   padding: 12px 15px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  transition: 0.2s;
 }
 
-.game-stat-pill:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.15);
-}
+
 
 .game-stat-pill .val {
   font-size: 18px;
@@ -1797,6 +1802,8 @@ a.stat-box:hover {
 .deafen-btn {
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  
+  
   border-radius: 12px;
   width: 40px;
   height: 40px;
@@ -1903,7 +1910,7 @@ body.is-deafened::before {
 
 .bios-tab:hover {
   color: #fff;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--l3-bg);
 }
 
 .bios-tab.active {
@@ -1929,7 +1936,7 @@ body.is-deafened::before {
 }
 
 .bios-content-panels::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--l2-bg);
   border-radius: 4px;
 }
 
@@ -1951,7 +1958,7 @@ body.is-deafened::before {
 .bios-tree ul {
   list-style: none;
   padding-left: 20px;
-  border-left: 1px solid rgba(255, 255, 255, 0.05);
+  
   margin-left: 10px;
   margin-top: 4px;
   margin-bottom: 4px;
@@ -2080,7 +2087,7 @@ body.is-deafened::before {
 }
 
 #msi-afterburner-container {
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--l2-bg);
   border-radius: 12px;
   padding: 20px;
   box-sizing: border-box;
@@ -2157,7 +2164,7 @@ body.is-deafened::before {
   align-items: center;
   justify-content: center;
   width: 100%;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--l2-bg);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 20px;
@@ -2216,4 +2223,20 @@ body[data-tab-effect-visible="true"] .tab-bg-effect.active {
 
 .bg-effect-video.playing {
   opacity: 1;
+}
+body.disable-steam-card-bg .card-bg-effect[data-bg-tab='steam'] { display: none !important; }
+body.disable-discord-card-bg .card-bg-effect[data-bg-tab='discord'] { display: none !important; }
+body.disable-steam-tab-bg .tab-bg-effect[data-bg-tab='steam'] { display: none !important; }
+body.disable-discord-tab-bg .tab-bg-effect[data-bg-tab='discord'] { display: none !important; }
+
+
+
+/* Mobile Portrait Scaling for Loading and Confess Screens */
+@media (max-width: 768px) and (orientation: portrait) {
+  #loading-screen > div {
+    zoom: 2.5;
+  }
+  .enter-prompt-wrapper {
+    zoom: 2.3;
+  }
 }

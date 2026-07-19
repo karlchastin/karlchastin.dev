@@ -9,21 +9,22 @@ export function initBgEffects() {
     let isPlaying = false;
     let currentTimeout = null;
     let transitionTimeout = null;
-    let rafId = null;
 
-    const urls = Array.from(allImages).map(img => img.src);
+    const urls = Array.from(allImages).map(img => img.getAttribute('data-src') || img.src);
     const targetTab = container.getAttribute('data-bg-tab');
     const isSingleNative = allImages.length === 1;
+    const cardParent = container.closest('.card');
 
     for (let i = 1; i < allImages.length; i++) {
       allImages[i].remove();
     }
     const mediaEl = allImages[0];
+    
+    mediaEl.style.position = 'absolute';
+    mediaEl.style.objectFit = 'cover';
 
     const getTargetElements = () => {
-      const cardParent = container.closest('.card');
       if (!cardParent) return [];
-
       return Array.from(cardParent.querySelectorAll('.bg-effect-exclude')).filter(el => {
         const style = window.getComputedStyle(el);
         return style.display !== 'none' && style.opacity !== '0' && style.visibility !== 'hidden';
@@ -31,7 +32,8 @@ export function initBgEffects() {
     };
 
     const updateMask = () => {
-      if (!isPlaying) return;
+      if (!isPlaying || !cardParent) return;
+
       const rect = container.getBoundingClientRect();
       const cards = Array.from(document.querySelectorAll('.card')).filter(c => window.getComputedStyle(c).display !== 'none');
       if (cards.length === 0) return;
@@ -41,15 +43,13 @@ export function initBgEffects() {
       
       const columnWidth = firstCardRect.width;
       const columnHeight = lastCardRect.bottom - firstCardRect.top;
-      const columnLeft = firstCardRect.left;
-      const columnTop = firstCardRect.top;
 
       mediaEl.style.width = columnWidth + 'px';
       mediaEl.style.height = columnHeight + 'px';
       mediaEl.style.maxWidth = 'none';
       
-      mediaEl.style.left = -(rect.left - columnLeft) + 'px';
-      mediaEl.style.top = -(rect.top - columnTop) + 'px';
+      mediaEl.style.left = -(rect.left - firstCardRect.left) + 'px';
+      mediaEl.style.top = -(rect.top - firstCardRect.top) + 'px';
       mediaEl.style.transform = 'none';
 
       const targets = getTargetElements();
@@ -79,21 +79,30 @@ export function initBgEffects() {
       container.style.maskImage = encodedSvg;
       container.style.webkitMaskSize = '100% 100%';
       container.style.maskSize = '100% 100%';
-
-      rafId = requestAnimationFrame(updateMask);
     };
+
+    let resizeObserver = null;
+    if (window.ResizeObserver && cardParent) {
+      resizeObserver = new ResizeObserver(() => {
+        if (isPlaying) {
+          
+          setTimeout(updateMask, 10);
+        }
+      });
+      resizeObserver.observe(cardParent);
+    }
 
     const startEffect = () => {
       if (document.body.getAttribute('data-active-tab') !== targetTab) {
         isPlaying = false;
-        if (rafId) cancelAnimationFrame(rafId);
         mediaEl.classList.remove('playing');
         if (!isSingleNative) mediaEl.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='; 
         return;
       }
 
       isPlaying = true;
-      if (!rafId) updateMask();
+      
+      setTimeout(updateMask, 10);
 
       if (!isSingleNative) {
         mediaEl.src = urls[currentIndex];
@@ -130,14 +139,11 @@ export function initBgEffects() {
           } else {
             container.classList.remove('active');
             isPlaying = false;
-            if (rafId) {
-              cancelAnimationFrame(rafId);
-              rafId = null;
-            }
             clearTimeout(currentTimeout);
             clearTimeout(transitionTimeout);
             mediaEl.classList.remove('playing');
             if (mediaEl.tagName === 'VIDEO') mediaEl.pause();
+            if (!isSingleNative) mediaEl.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
           }
         }
       });

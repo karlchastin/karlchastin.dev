@@ -326,7 +326,7 @@ export async function updateSteamData() {
     const statusEl = $("steam-live-status");
     if (statusEl && cache.statusMsg && cache.statusClass) {
       statusEl.innerHTML = cache.statusMsg;
-      statusEl.className = `steam-status ${cache.statusClass}`;
+      statusEl.className = `steam-status ${cache.statusClass} bg-effect-exclude`;
     }
   };
 
