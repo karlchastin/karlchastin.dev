@@ -1,3 +1,7 @@
+*, *::before, *::after {
+  touch-action: manipulation;
+}
+
 /* =========================================
    1. ROOT VARIABLES
    ========================================= */
@@ -33,6 +37,7 @@ html {
 }
 
 body {
+  touch-action: manipulation;
   background-color: #000;
   color: #fff;
   font-family: "Satoshi", sans-serif;
