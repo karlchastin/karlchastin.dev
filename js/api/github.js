@@ -1,21 +1,38 @@
 import { $ } from "../utils/dom.js";
 import { profiles } from "../config.js";
-
 const GITHUB_API_URL = "https://api.github.com/users/karlchastin";
-
 const fetchUser = async () => {
-  const res = await fetch(GITHUB_API_URL);
-  if (!res.ok) throw new Error("Failed to fetch GitHub profile");
-  return await res.json();
+  const CACHE_KEY = "githubApiData";
+  const CACHE_TIME_KEY = "githubApiTime";
+  const CACHE_DURATION = 1000 * 60 * 30; 
+  const cachedData = localStorage.getItem(CACHE_KEY);
+  const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
+  if (cachedData && cachedTime && (Date.now() - parseInt(cachedTime)) < CACHE_DURATION) {
+    return JSON.parse(cachedData);
+  }
+  try {
+    const res = await fetch(GITHUB_API_URL);
+    if (!res.ok) {
+      if (res.status === 403 && cachedData) {
+        return JSON.parse(cachedData);
+      }
+      throw new Error("Failed to fetch GitHub profile");
+    }
+    const data = await res.json();
+    localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+    localStorage.setItem(CACHE_TIME_KEY, Date.now().toString());
+    return data;
+  } catch (e) {
+    if (cachedData) return JSON.parse(cachedData);
+    throw e;
+  }
 };
-
 export async function prefetchGitHubProfile() {
   try {
     const user = await fetchUser();
     profiles.github.name = user.name || user.login;
     profiles.github.avatar = user.avatar_url;
     profiles.github.bio = user.bio || "No bio available.";
-
     const ghchartImg = new Image();
     ghchartImg.src = "https://ghchart.rshah.org/ff0000/karlchastin";
     const badgeImg = new Image();
@@ -24,21 +41,25 @@ export async function prefetchGitHubProfile() {
     console.error("Prefetch Error:", e);
   }
 }
-
 export async function updateGitHubData() {
   const githubStats = $("github-stats-wrapper");
   const cachedHTML = localStorage.getItem("githubData");
-
   if (cachedHTML && !githubStats.innerHTML.includes("github-stats")) {
     githubStats.innerHTML = cachedHTML;
   } else if (!cachedHTML && !githubStats.innerHTML.includes("github-stats")) {
-    githubStats.innerHTML =
-      '<div style="text-align:center; padding: 20px; color: #888; font-weight: 700;">Fetching live stats...</div>';
+    githubStats.innerHTML = `<div class="github-stats">
+        <div class="skeleton-card" style="align-items:center;">
+          <div class="skeleton skeleton-circle" style="width:48px;height:48px;"></div>
+          <div class="skeleton skeleton-text short" style="margin-top:10px;"></div>
+        </div>
+        <div class="skeleton-card" style="align-items:center;">
+          <div class="skeleton skeleton-circle" style="width:48px;height:48px;"></div>
+          <div class="skeleton skeleton-text short" style="margin-top:10px;"></div>
+        </div>
+      </div>`;
   }
-
   try {
     const user = await fetchUser();
-
     const stats = [
       {
         url: "https://github.com/karlchastin?tab=followers",
@@ -65,7 +86,6 @@ export async function updateGitHubData() {
         label: "Private<br>Repositories",
       },
     ];
-
     const htmlString = `
             <div class="github-stats">
                 ${stats
@@ -80,10 +100,12 @@ export async function updateGitHubData() {
                   )
                   .join("")}
             </div>`;
-
     githubStats.innerHTML = htmlString;
     localStorage.setItem("githubData", htmlString);
   } catch (e) {
     console.error("GitHub Sync Error:", e);
   }
 }
+document.addEventListener("trigger-skeleton-update", () => {
+    updateGitHubData();
+});

@@ -1,18 +1,13 @@
 import { profiles, WORKER_URL } from "../config.js";
 import { $, $$ } from "../utils/dom.js";
 import { swapData } from "../ui/tabs.js";
-
 export let cachedIgData = null;
-
 export async function loadInstagramData() {
   const workerUrl = `${WORKER_URL}?route=instagram`;
-
   try {
     const response = await fetch(workerUrl);
     if (!response.ok) throw new Error("Failed to fetch IG data from Worker");
-
     const data = await response.json();
-
     if (data && data.length > 0) {
       cachedIgData = data[0];
       updateInstagramUI(cachedIgData);
@@ -24,7 +19,6 @@ export async function loadInstagramData() {
     updateInstagramUI({ error: "not_found" });
   }
 }
-
 document.addEventListener("toggle-ig-deactivation", (e) => {
   if (e.detail.deactivated) {
     updateInstagramUI({ error: "not_found" });
@@ -32,7 +26,6 @@ document.addEventListener("toggle-ig-deactivation", (e) => {
     updateInstagramUI(cachedIgData);
   }
 });
-
 document.addEventListener("toggle-ig-debug", (e) => {
   if (cachedIgData) {
     updateInstagramUI(cachedIgData);
@@ -40,26 +33,21 @@ document.addEventListener("toggle-ig-debug", (e) => {
     updateInstagramUI({});
   }
 });
-
 export function updateInstagramUI(originalProfile) {
   const igProfile = profiles.instagram;
   const activeTab = document
     .querySelector(".tab.active")
     ?.getAttribute("data-tab");
-
   let profile = originalProfile ? JSON.parse(JSON.stringify(originalProfile)) : {};
-
   const animateProfileChange = (avatarUrl, nameText, bioText) => {
     const avatarImg = $("avatar-img");
     const profileName = $("profile-name");
     const profileBio = $("profile-bio");
-
     const isSameAvatar =
       !avatarImg ||
       !avatarUrl ||
       avatarImg.src === avatarUrl ||
       avatarImg.getAttribute("src") === avatarUrl;
-
     if (avatarImg && !isSameAvatar) avatarImg.style.opacity = "0";
     if (profileName) {
       profileName.style.transition = "opacity 0.15s ease";
@@ -69,7 +57,6 @@ export function updateInstagramUI(originalProfile) {
       profileBio.style.transition = "opacity 0.15s ease";
       profileBio.style.opacity = "0";
     }
-
     setTimeout(() => {
       if (avatarImg && !isSameAvatar) {
         avatarImg.src = avatarUrl;
@@ -85,19 +72,15 @@ export function updateInstagramUI(originalProfile) {
       }
     }, 150);
   };
-
   if (!profile || profile.error === "not_found" || profile.error) {
     igProfile.name = "Account Deactivated";
     igProfile.bio =
       "This Instagram account is currently deactivated or unavailable.";
-
     document.body.classList.add("ig-deactivated");
     document.dispatchEvent(new CustomEvent("deactivation-state-changed"));
-
     if (activeTab === "instagram") {
       animateProfileChange(null, igProfile.name, igProfile.bio);
     }
-
     const statsMap = {
       "ig-posts": "--",
       "ig-followers": "--",
@@ -107,7 +90,6 @@ export function updateInstagramUI(originalProfile) {
       const el = $(id);
       if (el) el.textContent = value;
     }
-
     const postsGrid = document.querySelector(".ig-posts-grid");
     if (postsGrid) {
       postsGrid.innerHTML = `
@@ -117,15 +99,12 @@ export function updateInstagramUI(originalProfile) {
     }
     return;
   }
-
   document.body.classList.remove("ig-deactivated");
   document.dispatchEvent(new CustomEvent("deactivation-state-changed"));
-
   if (profile.profilePicUrlHD) {
     igProfile.avatar = `${WORKER_URL}?route=image-proxy&url=${encodeURIComponent(profile.profilePicUrlHD)}`;
     new Image().src = igProfile.avatar;
   }
-
   igProfile.bio =
     profile.biography && profile.biography.trim() !== ""
       ? profile.biography
@@ -136,45 +115,47 @@ export function updateInstagramUI(originalProfile) {
       : profile.username
         ? profile.username.replace(/^@/, "")
         : "Instagram Profile";
-
   igProfile.layout = igProfile.layout || {};
   let showCards = ["card-3-container"];
-
   if (profile.postsCount === 0 || !profile.latestPosts || profile.latestPosts.length === 0) {
     igProfile.layout.showInstaPosts = false;
   } else {
     igProfile.layout.showInstaPosts = true;
     showCards.push("card-4-container");
   }
-
   if (profile.private === true) {
     igProfile.layout.showInstaHighlights = false;
   } else {
     igProfile.layout.showInstaHighlights = true;
     showCards.push("card-2-container");
   }
-
   showCards.sort();
   igProfile.layout.showCards = showCards;
-
   if (activeTab === "instagram") {
     animateProfileChange(igProfile.avatar, igProfile.name, igProfile.bio);
     swapData("instagram");
   }
-
   const statsMap = {
     "ig-posts": profile.postsCount,
     "ig-followers": profile.followersCount,
     "ig-following": profile.followsCount,
   };
-
   for (const [id, value] of Object.entries(statsMap)) {
     const el = $(id);
     if (el) el.textContent = value ?? "--";
   }
-
   const postsGrid = document.querySelector(".ig-posts-grid");
-  if (postsGrid && profile.latestPosts) {
+    if (document.body.classList.contains("force-skeleton")) {
+        if (postsGrid) {
+            postsGrid.innerHTML = Array(6).fill(0).map(() => 
+                `<div class="skeleton-card" style="aspect-ratio: 1/1; padding: 0;">
+                    <div class="skeleton skeleton-img" style="border-radius: 8px;"></div>
+                </div>`
+            ).join('');
+        }
+        return;
+    }
+    if (postsGrid && profile.latestPosts) {
     postsGrid.innerHTML = profile.latestPosts
       .slice(0, 6)
       .map((post) => {
@@ -186,12 +167,10 @@ export function updateInstagramUI(originalProfile) {
               year: "numeric",
             })
           : "";
-
         let snippet = post.caption ? post.caption.trim() : "";
         if (snippet.length > 40)
           snippet = snippet.substring(0, 40).trim() + "...";
         if (!snippet) snippet = "Instagram Post";
-
         return `
                 <a href="${post.url}" target="_blank" class="ig-post-item bg-effect-exclude" style="display: block; position: relative; overflow: hidden; border-radius: 8px; aspect-ratio: 1/1; text-decoration: none; background: #111;">
                     <img src="${proxyImageUrl}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; display: block; border: none; padding: 0; margin: 0;" alt="Instagram Post">
@@ -206,7 +185,6 @@ export function updateInstagramUI(originalProfile) {
                 </a>`;
       })
       .join("");
-
     $$(".ig-post-item").forEach((item) => {
       item.addEventListener(
         "mouseenter",
@@ -223,3 +201,8 @@ export function updateInstagramUI(originalProfile) {
     });
   }
 }
+document.addEventListener("trigger-skeleton-update", () => {
+    if (cachedIgData) {
+        updateInstagramUI(cachedIgData);
+    }
+});

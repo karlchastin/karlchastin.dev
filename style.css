@@ -1054,22 +1054,29 @@ a.stat-box:hover {
 
 .steam-status,
 .discord-status {
-  font-size: 13px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: #aaa;
-  padding: 6px 14px;
-  border-radius: 20px;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #aaa;
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease, border-color 0.3s ease;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
-.steam-status::before,
-.discord-status::before {
+.status-text {
+    transition: opacity 0.15s ease;
+}
+
+.steam-status::before {
+  flex-shrink: 0;
   content: "";
   display: block;
   width: 10px;
@@ -1109,35 +1116,16 @@ a.stat-box:hover {
   background: rgba(35, 165, 89, 0.1);
 }
 
-.discord-status.online::before {
-  background: #23a559;
-  box-shadow: 0 0 8px #23a559;
-}
-
 .discord-status.idle {
   color: #f0b232;
   border-color: rgba(240, 178, 50, 0.3);
   background: rgba(240, 178, 50, 0.1);
 }
 
-.discord-status.idle::before {
-  background: #f0b232;
-  box-shadow: 0 0 8px #f0b232;
-}
-
 .discord-status.dnd {
   color: #f23f43;
   border-color: rgba(242, 63, 67, 0.3);
   background: rgba(242, 63, 67, 0.1);
-}
-
-.discord-status.dnd::before {
-  background: #f23f43;
-  box-shadow: 0 0 8px #f23f43;
-}
-
-.discord-status.mobile-status::before {
-  display: none !important;
 }
 
 /* Steam Level Circles */
@@ -2255,3 +2243,64 @@ body.disable-discord-tab-bg .tab-bg-effect[data-bg-tab='discord'] {
     zoom: 2.3;
   }
 }
+
+/* Skeleton Loading Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite linear;
+  border-radius: 4px;
+}
+
+.skeleton-text {
+  height: 14px;
+  margin-bottom: 8px;
+  width: 100%;
+}
+.skeleton-text.short {
+  width: 60%;
+}
+.skeleton-text.medium {
+  width: 80%;
+}
+
+.skeleton-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+}
+
+.skeleton-circle {
+  border-radius: 50%;
+}
+
+.skeleton-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skeleton-activity-card {
+  background: #111;
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  margin-top: 10px;
+}
+

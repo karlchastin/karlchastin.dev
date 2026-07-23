@@ -1,5 +1,4 @@
 const MASK_GRADIENT = "linear-gradient(to right, #000 85%, transparent 100%)";
-
 export const scrollObserver = new ResizeObserver((entries) => {
   requestAnimationFrame(() => {
     for (let entry of entries) {
@@ -7,10 +6,8 @@ export const scrollObserver = new ResizeObserver((entries) => {
       const inner = wrapper.querySelector(".scroll-inner");
       const mainText = wrapper.querySelector(".main-text");
       const dupText = wrapper.querySelector(".dup-text");
-
       if (!inner || !mainText || !dupText || wrapper.clientWidth === 0)
         continue;
-
       if (mainText.offsetWidth > wrapper.clientWidth) {
         if (dupText.style.display !== "inline-block") {
           dupText.style.display = "inline-block";
@@ -29,17 +26,14 @@ export const scrollObserver = new ResizeObserver((entries) => {
     }
   });
 });
-
 export const createScrollText = (text, isTitle, titleColor, inline = false) => {
   if (!text) return "";
-
   const wrapperStyle =
     isTitle === 1
       ? `font-size:11px; font-weight:800; color:${titleColor}; text-transform:uppercase; line-height: 1; margin-bottom: 6px;`
       : isTitle === 2
         ? `font-weight:800; font-size:15px; color:#fff; line-height: 1.1; margin-bottom: 2px;`
         : `font-size:13px; color:#aaa; line-height: 1.15; margin-bottom: 0px;`;
-
   return `<div class="scroll-wrapper" style="${wrapperStyle} ${inline ? "" : "width: 100%;"} min-width: 0; overflow: visible; white-space: nowrap; position: relative;">
         <div class="scroll-inner" style="display: inline-block; white-space: nowrap;">
             <span class="main-text" style="display: inline-block; padding-right: 0px;">${text}</span><span class="dup-text" style="display: none; margin-left: 40px; padding-right: 0px;">${text}</span>

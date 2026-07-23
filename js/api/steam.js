@@ -2,7 +2,6 @@ import { $ } from "../utils/dom.js";
 import { getCache, setCache } from "../utils/core.js";
 import { fetchHtmlWithWorker, parseSteamDate } from "../utils/api.js";
 import { WORKER_URL, profiles } from "../config.js";
-
 const extractImageSrcs = (imgEl) => {
   const srcs = [];
   if (!imgEl) return srcs;
@@ -17,13 +16,11 @@ const extractImageSrcs = (imgEl) => {
   }
   return srcs;
 };
-
 export async function fetchSteamReview(url) {
   try {
     const htmlText = await fetchHtmlWithWorker(url);
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlText, "text/html");
-
     let gameName = "Unknown Game";
     const titleTag = doc.querySelector("title");
     if (titleTag && titleTag.textContent) {
@@ -40,13 +37,11 @@ export async function fetchSteamReview(url) {
         doc.querySelector(".apphub_AppName") || doc.querySelector("h1");
       if (appNameEl) gameName = appNameEl.textContent.trim();
     }
-
     let gameBannerUrl = null;
     const appIdMatch = url.match(/\/recommended\/([0-9]+)/);
     if (appIdMatch && appIdMatch[1]) {
       gameBannerUrl = `https://cdn.akamai.steamstatic.com/steam/apps/${appIdMatch[1]}/header.jpg`;
     }
-
     let postedDate = "";
     let rawDateString = "";
     const dateEl =
@@ -66,11 +61,9 @@ export async function fetchSteamReview(url) {
         );
       if (dMatch) rawDateString = dMatch[1];
     }
-
     if (rawDateString) {
       postedDate = parseSteamDate(rawDateString, true);
     }
-
     let helpful = "0",
       funny = "0";
     const flatText = doc.body.textContent.replace(/\s+/g, " ").toLowerCase();
@@ -82,12 +75,10 @@ export async function fetchSteamReview(url) {
       /([0-9,]+)\s*people found this review funny/i,
     );
     if (fMatch) funny = fMatch[1];
-
     const awards = [];
     doc.querySelectorAll(".review_award").forEach((el) => {
       const htmlStr = el.innerHTML.toLowerCase();
       const textStr = el.textContent.toLowerCase();
-
       if (
         el.classList.contains("add_award") ||
         htmlStr.includes("reward_icon") ||
@@ -95,10 +86,8 @@ export async function fetchSteamReview(url) {
         textStr.includes("give an award")
       )
         return;
-
       const img = el.querySelector("img");
       if (!img || !img.getAttribute("src")) return;
-
       let count = "1";
       const countEl = el.querySelector(".review_award_count");
       if (countEl) {
@@ -107,19 +96,16 @@ export async function fetchSteamReview(url) {
         const m = el.textContent.match(/\(([0-9,]+)\)/);
         if (m) count = m[1];
       }
-
       let src = img.getAttribute("src");
       if (src && src.startsWith("//")) src = "https:" + src;
       awards.push({ src: src || img.src, count });
     });
-
     const reviewContentEl =
       doc.querySelector(".rightbox_content_base .content") ||
       doc.querySelector('[id^="ReviewText"]');
     let reviewText = reviewContentEl
       ? reviewContentEl.innerHTML.trim()
       : "No review text found.";
-
     const comments = [];
     doc.querySelectorAll(".commentthread_comment").forEach((comment) => {
       let author = "Unknown User";
@@ -132,7 +118,6 @@ export async function fetchSteamReview(url) {
           comment.querySelector(".commentthread_comment_author a");
         if (link) author = link.textContent.trim();
       }
-
       let avatar = null,
         frame = null;
       const avatarEl = comment.querySelector(".commentthread_comment_avatar");
@@ -149,7 +134,6 @@ export async function fetchSteamReview(url) {
             bestFrame = "https://steamcommunity.com" + bestFrame;
           frame = bestFrame;
         }
-
         const avatarImgTags = Array.from(
           avatarEl.querySelectorAll("img"),
         ).filter((img) => !img.closest(".profile_avatar_frame"));
@@ -165,20 +149,15 @@ export async function fetchSteamReview(url) {
           avatar = bestAvatar;
         }
       }
-
       const textEl = comment.querySelector(".commentthread_comment_text");
       const text = textEl ? textEl.innerHTML.trim() : "";
-
       const dateEl = comment.querySelector(".commentthread_comment_timestamp");
       let date = dateEl ? dateEl.textContent.trim() : "";
-
       if (date) {
         date = parseSteamDate(date, false);
       }
-
       if (text) comments.push({ author, avatar, frame, text, date });
     });
-
     return {
       gameName,
       gameBannerUrl,
@@ -194,18 +173,15 @@ export async function fetchSteamReview(url) {
     return null;
   }
 }
-
 export const applyReviewCache = (data) => {
   if (!data) return;
   $("steam-review-loading").style.display = "none";
   $("steam-review-card").style.display = "flex";
-
   const bannerBgEl = $("steam-review-banner-bg");
   bannerBgEl.style.backgroundImage = data.gameBannerUrl
     ? `url(${data.gameBannerUrl})`
     : "none";
   bannerBgEl.style.display = data.gameBannerUrl ? "block" : "none";
-
   $("steam-review-game").textContent = data.gameName;
   $("steam-review-helpful").textContent =
     `${data.helpful} people found this review helpful`;
@@ -217,9 +193,9 @@ export const applyReviewCache = (data) => {
   $("steam-review-date").textContent = data.postedDate
     ? `Posted: ${data.postedDate}`
     : "";
-
   const awardsContainer = $("steam-review-awards");
-  if (data.awards?.length) {
+  if (document.body.classList.contains("force-skeleton")) return;
+    if (data.awards?.length) {
     awardsContainer.innerHTML = data.awards
       .map(
         (a) => `
@@ -231,7 +207,6 @@ export const applyReviewCache = (data) => {
   } else {
     awardsContainer.style.display = "none";
   }
-
   const commentsContainer = $("steam-review-comments");
   if (data.comments?.length) {
     commentsContainer.innerHTML = data.comments
@@ -254,39 +229,32 @@ export const applyReviewCache = (data) => {
     commentsContainer.innerHTML = `<div style="font-size:12px; color:#888; font-style:italic; padding-left: 5px;">No comments visible.</div>`;
   }
 };
-
 export async function updateSteamData() {
   let cache = getCache("steamCache");
   const reviewCache = getCache("steamReviewCache");
-
   const applyCache = (newData, isHtmlScrape = false) => {
     if (isHtmlScrape) newData.fromHtml = true;
     if (cache.fromHtml && !isHtmlScrape)
       ["gamesCount", "dlcCount", "reviewsCount"].forEach(
         (k) => delete newData[k],
       );
-
     cache = { ...cache, ...newData };
     setCache("steamCache", cache);
-
     if (cache.name) profiles.steam.name = cache.name;
     if (cache.avatar) profiles.steam.avatar = cache.avatar;
     profiles.steam.bio = "you can take me as you are.";
     if (cache.level) profiles.steam.level = cache.level;
-
     const activeTabNode =
       document.querySelector(".tab.active") ||
       document.querySelector(".tab.show-text");
     const activeTab = activeTabNode
       ? activeTabNode.getAttribute("data-tab")
       : "home";
-
     if (activeTab === "steam") {
       $("profile-name").textContent = cache.name || "Loading...";
       if (cache.avatar) $("avatar-img").src = cache.avatar;
       $("profile-bio").innerHTML = profiles.steam.bio;
     }
-
     const elLevel = $("steam-live-level");
     const elLevelDisplay = $("steam-level-display");
     if (elLevel && cache.level && cache.level !== "--") {
@@ -298,7 +266,6 @@ export async function updateSteamData() {
     } else if (elLevelDisplay) {
       elLevelDisplay.style.display = "none";
     }
-
     if (cache.hours) {
       const elHours = $("steam-live-hours");
       if (elHours) elHours.textContent = cache.hours;
@@ -308,13 +275,11 @@ export async function updateSteamData() {
           ? "none"
           : "flex";
     }
-
     ["games", "dlc", "badges", "friends", "reviews"].forEach((stat) => {
       const el = $(`steam-live-${stat}`);
       if (el && cache[`${stat}Count`] !== undefined)
         el.textContent = cache[`${stat}Count`];
     });
-
     const badgeContainer = $("steam-badge-container");
     if (badgeContainer && cache.badgeSrc) {
       $("steam-live-badge").src = cache.badgeSrc;
@@ -322,17 +287,14 @@ export async function updateSteamData() {
       $("steam-badge-xp").textContent = cache.badgeXp || "";
       badgeContainer.style.display = "flex";
     } else if (badgeContainer) badgeContainer.style.display = "none";
-
     const statusEl = $("steam-live-status");
     if (statusEl && cache.statusMsg && cache.statusClass) {
       statusEl.innerHTML = cache.statusMsg;
       statusEl.className = `steam-status ${cache.statusClass} bg-effect-exclude`;
     }
   };
-
   applyCache({});
   if (Object.keys(reviewCache).length > 0) applyReviewCache(reviewCache);
-
   Promise.all([
     fetch(`${WORKER_URL}?route=core`).then((res) => res.json()),
     fetch(`${WORKER_URL}?route=stats`).then((res) => res.json()),
@@ -361,19 +323,26 @@ export async function updateSteamData() {
           statusClass: "offline",
         });
     });
-
   const hideReviewLoading = (errorMsg = false) => {
-    const loadingEl = $("steam-review-loading");
-    if (loadingEl)
-      loadingEl.innerHTML = errorMsg
-        ? '<div style="color: #ff4444; font-size: 13px; font-weight: 700;">Failed to fetch Featured Review.</div>'
-        : "";
-  };
-
-  fetchHtmlWithWorker(`https://steamcommunity.com/profiles/76561198810914938/`)
+      const loadingEl = document.getElementById("steam-review-loading");
+      if (document.body.classList.contains("force-skeleton")) {
+          if (loadingEl) loadingEl.style.display = "block";
+          const cardEl = document.getElementById("steam-review-card");
+          if (cardEl) cardEl.style.display = "none";
+          return;
+      }
+      if (loadingEl) {
+        if (errorMsg) {
+            loadingEl.innerHTML = '<div style="color: #ff4444; font-size: 13px; font-weight: 700;">Failed to fetch Featured Review.</div>';
+        } else {
+            loadingEl.style.display = "none";
+            const cardEl = document.getElementById("steam-review-card");
+            if (cardEl) cardEl.style.display = "block";
+        }
+      }
+    };fetchHtmlWithWorker(`https://steamcommunity.com/profiles/76561198810914938/`)
     .then((htmlText) => {
       const doc = new DOMParser().parseFromString(htmlText, "text/html");
-
       const getShowcaseStat = (labelText) => {
         const el = Array.from(doc.querySelectorAll(".showcase_stat")).find(
           (node) =>
@@ -387,23 +356,19 @@ export async function updateSteamData() {
           ? el.querySelector(".value")?.textContent.trim().replace(/,/g, "")
           : undefined;
       };
-
       let safeOverrides = {
         level: doc.querySelector(".friendPlayerLevelNum")?.textContent || "--",
         hours: doc
           .querySelector(".recentgame_recentplaytime h2")
           ?.textContent?.trim(),
-
         gamesCount: getShowcaseStat("games owned"),
         dlcCount: getShowcaseStat("dlc owned") || "0",
-
         reviewsCount:
           doc
             .querySelector('a[href*="/recommended/"] .profile_count_link_total')
             ?.textContent?.trim()
             .replace(/,/g, "") || "0",
       };
-
       const badgeEl = doc.querySelector(".favorite_badge");
       if (badgeEl) {
         safeOverrides.badgeSrc = badgeEl
@@ -420,9 +385,7 @@ export async function updateSteamData() {
             .querySelector(".favorite_badge_description .xp")
             ?.textContent?.trim() || "";
       }
-
       applyCache(safeOverrides, true);
-
       const reviewLink = Array.from(
         doc.querySelectorAll('a[href*="/recommended/"]'),
       ).find((link) => link.href.match(/\/recommended\/[0-9]+/));
@@ -439,3 +402,6 @@ export async function updateSteamData() {
     })
     .catch(() => hideReviewLoading(true));
 }
+document.addEventListener("trigger-skeleton-update", () => {
+    updateSteamData();
+});

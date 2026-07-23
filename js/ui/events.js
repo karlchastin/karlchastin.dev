@@ -1726,88 +1726,88 @@ export function setupUIEvents() {
       dbgUI.id = "dev-debugger";
 
       dbgUI.innerHTML = `
-                <div class="debug-wrapper" style="position: fixed; top: 20px; right: 20px; background: var(--panel-bg); border: 5px solid var(--panel-border); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); padding: 25px; border-radius: 25px; z-index: 9999999; color: #fff; font-family: 'Satoshi', sans-serif; box-shadow: 0 0 30px rgba(0,0,0,0.5); width: 280px; transition: opacity 0.3s ease, transform 0.3s ease; opacity: 0; transform: scale(0.95);">
-                    <h3 style="color: var(--primary); margin-top: 0; margin-bottom: 20px; font-size: 18px; font-family: 'Onest', sans-serif; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: space-between;">
-                        <span style="display: flex; align-items: center; gap: 8px;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Debug</span>
-                        <span style="font-size: 10px; font-family: 'JetBrains Mono', monospace; color: #666; background: rgba(0,0,0,0.4); padding: 4px 8px; border-radius: 10px; letter-spacing: 0;">v1.1.1</span>
-                    </h3>
-                    
-                    <div style="display: flex; flex-direction: column; gap: 15px;">
-                        <label style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 700; font-size: 14px; color: #eee;">
-                            <span>Instagram Deactivated</span>
-                            <div class="dbg-toggle">
-                                <input type="checkbox" id="dbg-ig-toggle">
-                                <span class="dbg-slider"></span>
-                            </div>
-                        </label>
-                        
-                        <label style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 700; font-size: 14px; color: #eee;">
-                            <span>Facebook Deactivated</span>
-                            <div class="dbg-toggle">
-                                <input type="checkbox" id="dbg-fb-toggle">
-                                <span class="dbg-slider"></span>
-                            </div>
-                        </label>
-                          
-
-<label style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 700; font-size: 14px; color: #eee;">
-    <span>Disable Steam Tab BG</span>
-    <div class="dbg-toggle">
-        <input type="checkbox" id="dbg-steam-tab-bg">
-        <span class="dbg-slider"></span>
-    </div>
-</label>
-<label style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 700; font-size: 14px; color: #eee;">
-    <span>Disable Steam Card BG</span>
-    <div class="dbg-toggle">
-        <input type="checkbox" id="dbg-steam-card-bg">
-        <span class="dbg-slider"></span>
-    </div>
-</label>
-<label style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 700; font-size: 14px; color: #eee;">
-    <span>Disable Discord Tab BG</span>
-    <div class="dbg-toggle">
-        <input type="checkbox" id="dbg-discord-tab-bg">
-        <span class="dbg-slider"></span>
-    </div>
-</label>
-<label style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 700; font-size: 14px; color: #eee;">
-    <span>Disable Discord Card BG</span>
-    <div class="dbg-toggle">
-        <input type="checkbox" id="dbg-discord-card-bg">
-        <span class="dbg-slider"></span>
-    </div>
-</label>
-
-                    </div>
-                    <div style="height: 1px; background: rgba(255,255,255,0.1); margin: 20px 0;"></div>
-                    
-                    <p style="margin: 0 0 10px 0; font-size: 11px; color: #aaa; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Email Warning Override</p>
-                    <select id="dbg-email-select" class="dbg-select">
-                        <option value="auto">Auto (Live Time)</option>
-                        <option value="off">Force Off</option>
-                        <option value="morning">Force Morning</option>
-                        <option value="night">Force Night</option>
-                    </select>
-                    
-                    <button id="dbg-lanyard-btn" class="dbg-btn" style="margin-top: 15px;">Dump Lanyard JSON</button>
-                    <button id="dbg-close-btn" class="dbg-btn" style="margin-top: 10px;">Close Debug</button>
-                </div>
-            `;
+                  <div class="debug-wrapper" style="position: fixed; top: 20px; right: 20px; background: var(--panel-bg); border: 5px solid var(--panel-border); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); padding: 20px; border-radius: 20px; z-index: 9999999; color: #fff; font-family: 'Satoshi', sans-serif; box-shadow: 0 0 30px rgba(0,0,0,0.5); width: 300px; transition: opacity 0.3s ease, transform 0.3s ease; opacity: 0; transform: scale(0.95); max-height: 80vh; overflow-y: auto;">
+                      <h3 style="color: var(--primary); margin-top: 0; margin-bottom: 15px; font-size: 16px; font-family: 'Onest', sans-serif; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: space-between;">
+                          <span style="display: flex; align-items: center; gap: 8px;">
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Debug
+                          </span>
+                          <span style="font-size: 10px; font-family: 'JetBrains Mono', monospace; color: #666; background: rgba(0,0,0,0.4); padding: 4px 8px; border-radius: 8px; letter-spacing: 0;">v1.2.0</span>
+                      </h3>
+                      
+                      <div style="font-size: 10px; color: #aaa; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Visual Overrides</div>
+                      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+                          <label style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 700; font-size: 13px; color: #eee;">
+                              <span>Instagram Deactivated</span>
+                              <div class="dbg-toggle"><input type="checkbox" id="dbg-ig-toggle"><span class="dbg-slider"></span></div>
+                          </label>
+                          <label style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 700; font-size: 13px; color: #eee;">
+                              <span>Facebook Deactivated</span>
+                              <div class="dbg-toggle"><input type="checkbox" id="dbg-fb-toggle"><span class="dbg-slider"></span></div>
+                          </label>
+                          <label style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 700; font-size: 13px; color: #eee;">
+                              <span>Disable Steam Tab BG</span>
+                              <div class="dbg-toggle"><input type="checkbox" id="dbg-steam-tab-bg"><span class="dbg-slider"></span></div>
+                          </label>
+                          <label style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 700; font-size: 13px; color: #eee;">
+                              <span>Disable Steam Card BG</span>
+                              <div class="dbg-toggle"><input type="checkbox" id="dbg-steam-card-bg"><span class="dbg-slider"></span></div>
+                          </label>
+                          <label style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 700; font-size: 13px; color: #eee;">
+                              <span>Disable Discord Tab BG</span>
+                              <div class="dbg-toggle"><input type="checkbox" id="dbg-discord-tab-bg"><span class="dbg-slider"></span></div>
+                          </label>
+                          <label style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 700; font-size: 13px; color: #eee;">
+                              <span>Disable Discord Card BG</span>
+                              <div class="dbg-toggle"><input type="checkbox" id="dbg-discord-card-bg"><span class="dbg-slider"></span></div>
+                          </label>
+                      </div>
+  
+                      <div style="font-size: 10px; color: #aaa; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Skeleton Loading</div>
+                        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+                            <label style="display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 700; font-size: 13px; color: #eee;">
+                                <span>Force Skeletons</span>
+                                <div class="dbg-toggle"><input type="checkbox" id="dbg-force-skeleton"><span class="dbg-slider"></span></div>
+                            </label>
+                        </div>
+                      
+                      <div style="font-size: 10px; color: #aaa; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Email Warning</div>
+                      <select id="dbg-email-select" class="dbg-select" style="margin-bottom: 20px;">
+                          <option value="auto">Auto (Live Time)</option>
+                          <option value="off">Force Off</option>
+                          <option value="morning">Force Morning</option>
+                          <option value="night">Force Night</option>
+                      </select>
+                      
+                      <div style="font-size: 10px; color: #aaa; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Tools</div>
+                      <button id="dbg-lanyard-btn" class="dbg-btn">Dump Lanyard JSON</button>
+                      <button id="dbg-close-btn" class="dbg-btn" style="margin-top: 10px; border-color: #ff4444; color: #ff4444;">Close Debug</button>
+                  </div>
+`;
       document.body.appendChild(dbgUI);
+
+
+
+      const dbgForceSkeleton = document.getElementById("dbg-force-skeleton");
+      if (dbgForceSkeleton) {
+        dbgForceSkeleton.addEventListener("change", (e) => {
+          document.body.classList.toggle("force-skeleton", e.target.checked);
+          document.dispatchEvent(new CustomEvent("trigger-skeleton-update"));
+        });
+        dbgForceSkeleton.checked = document.body.classList.contains("force-skeleton");
+      }
+
 
       const bindToggle = (id, cls) => {
         $(id).addEventListener("change", (e) => document.body.classList.toggle(cls, e.target.checked));
         $(id).checked = document.body.classList.contains(cls);
       };
 
-        bindToggle("dbg-steam-tab-bg", "disable-steam-tab-bg");
-        bindToggle("dbg-steam-card-bg", "disable-steam-card-bg");
-        bindToggle("dbg-discord-tab-bg", "disable-discord-tab-bg");
-        bindToggle("dbg-discord-card-bg", "disable-discord-card-bg");
+      bindToggle("dbg-steam-tab-bg", "disable-steam-tab-bg");
+      bindToggle("dbg-steam-card-bg", "disable-steam-card-bg");
+      bindToggle("dbg-discord-tab-bg", "disable-discord-tab-bg");
+      bindToggle("dbg-discord-card-bg", "disable-discord-card-bg");
 
-        $("dbg-ig-toggle").addEventListener("change", (e) => {
+      $("dbg-ig-toggle").addEventListener("change", (e) => {
         const isDeact = e.target.checked;
         document.body.classList.toggle("ig-deactivated", isDeact);
         document.dispatchEvent(
@@ -1946,7 +1946,7 @@ export function setupUIEvents() {
       document.body.classList.contains("ig-deactivated");
     $("dbg-fb-toggle").checked =
       document.body.classList.contains("fb-deactivated");
-      
+
 
     dbgUI.style.display = "block";
 

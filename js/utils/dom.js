@@ -4,4 +4,3 @@ export const $ = (id) => {
   return elCache.get(id);
 };
 export const $$ = (sel) => document.querySelectorAll(sel);
-
