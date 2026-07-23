@@ -454,13 +454,13 @@ function updateDiscordUI(data) {
           lineHashes.push(actName);
         }
         lines.forEach((line, idx) => {
-          if (putTimeInline && timeNode && idx === lines.length - 1) {
-            let lineHTML = createScrollText(line, 0, "", true);
-            textLinesHTML.push(
-              `<div style="display:flex; justify-content:flex-start; align-items:center; width:100%; gap:12px; overflow:hidden;">                        <div style="min-width:0; flex-shrink:1;">${lineHTML}</div>                        <div style="flex-shrink:0; padding-top:1px;">${timeNode}</div>                      </div>`,
-            );
-            lineHashes.push(line + "|time");
-          } else {
+            if (putTimeInline && timeNode && idx === lines.length - 1) {
+              let lineHTML = createScrollText(line, 0, "", true);
+              textLinesHTML.push(
+                `<div style="display:flex; justify-content:flex-start; align-items:center; width:100%; gap:12px; overflow:hidden;">                        <div style="min-width:0; flex-shrink:1;">${lineHTML}</div>                        <div style="flex-shrink:0; padding-top:1px;">${timeNode}</div>                      </div>`,
+              );
+              lineHashes.push(line + "|time|" + timeHash);
+            } else {
             textLinesHTML.push(createScrollText(line, 0, ""));
             lineHashes.push(line);
           }
@@ -472,7 +472,7 @@ function updateDiscordUI(data) {
                 ? timeNode
                 : `<div style="margin-top: 6px;">${timeNode}</div>`,
             );
-            lineHashes.push("time");
+            lineHashes.push("time|" + timeHash);
           }
         }
         let textHTML = textLinesHTML.join("");
