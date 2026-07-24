@@ -1,3 +1,45 @@
+body, html {
+  cursor: url("./assets/cursors/arrow.cur"), auto;
+}
+
+a, button, select, .interactive, .tab, .btn-visit-external, [role="button"], #volume-button {
+  cursor: url("./assets/cursors/hand.cur"), pointer !important;
+}
+
+/* Force children of interactive elements to inherit the hand cursor */
+a *, button *, select *, .interactive *, .tab *, .btn-visit-external *, [role="button"] *, #volume-button * {
+  cursor: inherit;
+}
+
+input, textarea, [contenteditable="true"], .glitch-text, .profile-name, .profile-username {
+  cursor: url("./assets/cursors/ibeam.cur"), text !important;
+}
+
+/* Force text inside interactive elements to inherit pointer instead of ibeam */
+a .glitch-text, button .glitch-text, [role="button"] .glitch-text, .interactive .glitch-text, .btn-visit-external .glitch-text, .tab .glitch-text {
+  cursor: inherit !important;
+}
+
+/* Fix inline tooltips and help cursors */
+[style*="cursor: help"], [style*="cursor:help"], .status-tooltip-icon, img[data-tooltip] {
+  cursor: url("./assets/cursors/help.cur"), help !important;
+}
+
+/* Fix tooltips on loadout, perks, and items overriding native pointer */
+.dbd-item-box, div[data-tooltip][style*="cursor: pointer"], div[data-tooltip][style*="cursor:pointer"] {
+  cursor: url("./assets/cursors/help.cur"), help !important;
+}
+
+/* Overwrite inline default cursors */
+[style*="cursor: default"], [style*="cursor:default"] {
+  cursor: url("./assets/cursors/arrow.cur"), auto !important;
+}
+
+/* Fix disabled and not-allowed elements */
+:disabled, .disabled, [disabled], .btn-private, [style*="cursor: not-allowed"], [style*="cursor:not-allowed"] {
+  cursor: url("./assets/cursors/no.cur"), not-allowed !important;
+}
+
 *, *::before, *::after {
   touch-action: manipulation;
 }
@@ -1320,7 +1362,7 @@ a.stat-box:hover {
   flex-wrap: wrap;
   padding: 8px 16px;
   border-radius: 16px;
-  background: var(--l2-bg);
+  background: var(--l3-bg);
 }
 
 .award-item {
@@ -1330,10 +1372,6 @@ a.stat-box:hover {
   font-size: 11px;
   font-weight: 800;
   color: #ccc;
-  background: var(--l3-bg);
-  padding: 6px 10px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .award-icon {
@@ -1358,7 +1396,6 @@ a.stat-box:hover {
   background: var(--l3-bg);
   padding: 6px 12px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .review-stat-pill.funny {
