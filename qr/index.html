@@ -1,54 +1,51 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>karlchastin.dev - QR Code</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://unpkg.com/easyqrcodejs/dist/easy.qrcode.min.js"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap");
 
-<head>
-  <meta charset="UTF-8">
-  <title>karlchastin.dev - QR Code</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://unpkg.com/easyqrcodejs/dist/easy.qrcode.min.js"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap');
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #0d0d0d;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-family: "Inter", sans-serif;
+        color: #fff;
+        overflow: hidden;
+      }
 
-    body {
-      margin: 0;
-      padding: 0;
-      background-color: #0d0d0d;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Inter', sans-serif;
-      color: #fff;
-      overflow: hidden;
-    }
+      #qrcode-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    </style>
+  </head>
 
-    #qrcode-container {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-  </style>
-</head>
+  <body>
+    <div id="qrcode-container"></div>
 
-<body>
-
-  <div id="qrcode-container"></div>
-
-  <script>
-    // Create the QR Code
-    new QRCode(document.getElementById("qrcode-container"), {
-      text: "https://karlchastin.dev",
-      width: 320,
-      height: 320,
-      colorDark: "#cc0000",     // Red QR code
-      colorLight: "#0d0d0d",    // Matches body background
-      correctLevel: QRCode.CorrectLevel.H, // High error correction to safely allow the logo overlay
-      dotScale: 1, // Full size blocks to prevent uneven gaps
-      quietZone: 0,
-    });
-  </script>
-</body>
-
+    <script>
+      // Create the QR Code
+      new QRCode(document.getElementById("qrcode-container"), {
+        text: "https://karlchastin.dev",
+        width: 320,
+        height: 320,
+        colorDark: "#cc0000", // Red QR code
+        colorLight: "#0d0d0d", // Matches body background
+        correctLevel: QRCode.CorrectLevel.H, // High error correction to safely allow the logo overlay
+        dotScale: 1, // Full size blocks to prevent uneven gaps
+        quietZone: 0,
+      });
+    </script>
+  </body>
 </html>

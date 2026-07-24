@@ -1,25 +1,23 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
+  <head>
+    <meta charset="utf-8" />
+    <title>karlchastin</title>
+    <style>
+      body {
+        background-color: #000;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+    <script>
+      const path = window.location.pathname.substring(1).replace(/\/$/, "");
+      if (path) {
+        sessionStorage.setItem("redirectPath", path);
+      }
+      window.location.replace("/");
+    </script>
+  </head>
 
-<head>
-  <meta charset="utf-8">
-  <title>karlchastin</title>
-  <style>
-    body {
-      background-color: #000;
-      margin: 0;
-      padding: 0;
-    }
-  </style>
-  <script>
-    const path = window.location.pathname.substring(1).replace(/\/$/, "");
-    if (path) {
-      sessionStorage.setItem('redirectPath', path);
-    }
-    window.location.replace('/');
-  </script>
-</head>
-
-<body></body>
-
+  <body></body>
 </html>

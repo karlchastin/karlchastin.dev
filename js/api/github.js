@@ -4,10 +4,14 @@ const GITHUB_API_URL = "https://api.github.com/users/karlchastin";
 const fetchUser = async () => {
   const CACHE_KEY = "githubApiData";
   const CACHE_TIME_KEY = "githubApiTime";
-  const CACHE_DURATION = 1000 * 60 * 30; 
+  const CACHE_DURATION = 1000 * 60 * 30;
   const cachedData = localStorage.getItem(CACHE_KEY);
   const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
-  if (cachedData && cachedTime && (Date.now() - parseInt(cachedTime)) < CACHE_DURATION) {
+  if (
+    cachedData &&
+    cachedTime &&
+    Date.now() - parseInt(cachedTime) < CACHE_DURATION
+  ) {
     return JSON.parse(cachedData);
   }
   try {
@@ -36,7 +40,8 @@ export async function prefetchGitHubProfile() {
     const ghchartImg = new Image();
     ghchartImg.src = "https://ghchart.rshah.org/ff0000/karlchastin";
     const badgeImg = new Image();
-    badgeImg.src = "https://github.githubassets.com/images/modules/profile/achievements/public-sponsor-default.png";
+    badgeImg.src =
+      "https://github.githubassets.com/images/modules/profile/achievements/public-sponsor-default.png";
   } catch (e) {
     console.error("Prefetch Error:", e);
   }
@@ -107,5 +112,5 @@ export async function updateGitHubData() {
   }
 }
 document.addEventListener("trigger-skeleton-update", () => {
-    updateGitHubData();
+  updateGitHubData();
 });

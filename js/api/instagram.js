@@ -38,7 +38,9 @@ export function updateInstagramUI(originalProfile) {
   const activeTab = document
     .querySelector(".tab.active")
     ?.getAttribute("data-tab");
-  let profile = originalProfile ? JSON.parse(JSON.stringify(originalProfile)) : {};
+  let profile = originalProfile
+    ? JSON.parse(JSON.stringify(originalProfile))
+    : {};
   const animateProfileChange = (avatarUrl, nameText, bioText) => {
     const avatarImg = $("avatar-img");
     const profileName = $("profile-name");
@@ -117,7 +119,11 @@ export function updateInstagramUI(originalProfile) {
         : "Instagram Profile";
   igProfile.layout = igProfile.layout || {};
   let showCards = ["card-3-container"];
-  if (profile.postsCount === 0 || !profile.latestPosts || profile.latestPosts.length === 0) {
+  if (
+    profile.postsCount === 0 ||
+    !profile.latestPosts ||
+    profile.latestPosts.length === 0
+  ) {
     igProfile.layout.showInstaPosts = false;
   } else {
     igProfile.layout.showInstaPosts = true;
@@ -145,21 +151,27 @@ export function updateInstagramUI(originalProfile) {
     if (el) el.textContent = value ?? "--";
   }
   const postsGrid = document.querySelector(".ig-posts-grid");
-    if (document.body.classList.contains("force-skeleton")) {
-        if (postsGrid) {
-            postsGrid.innerHTML = Array(6).fill(0).map(() => 
-                `<div class="skeleton-card" style="aspect-ratio: 1/1; padding: 0;">
+  if (document.body.classList.contains("force-skeleton")) {
+    if (postsGrid) {
+      postsGrid.innerHTML = Array(6)
+        .fill(0)
+        .map(
+          () =>
+            `<div class="skeleton-card" style="aspect-ratio: 1/1; padding: 0;">
                     <div class="skeleton skeleton-img" style="border-radius: 8px;"></div>
-                </div>`
-            ).join('');
-        }
-        return;
+                </div>`,
+        )
+        .join("");
     }
-    if (postsGrid && profile.latestPosts) {
+    return;
+  }
+  if (postsGrid && profile.latestPosts) {
     postsGrid.innerHTML = profile.latestPosts
       .slice(0, 6)
       .map((post) => {
-        const proxyImageUrl = post.isMock ? post.displayUrl : `${WORKER_URL}?route=image-proxy&url=${encodeURIComponent(post.displayUrl)}`;
+        const proxyImageUrl = post.isMock
+          ? post.displayUrl
+          : `${WORKER_URL}?route=image-proxy&url=${encodeURIComponent(post.displayUrl)}`;
         const dateStr = post.timestamp
           ? new Date(post.timestamp).toLocaleDateString("en-US", {
               month: "short",
@@ -202,7 +214,7 @@ export function updateInstagramUI(originalProfile) {
   }
 }
 document.addEventListener("trigger-skeleton-update", () => {
-    if (cachedIgData) {
-        updateInstagramUI(cachedIgData);
-    }
+  if (cachedIgData) {
+    updateInstagramUI(cachedIgData);
+  }
 });

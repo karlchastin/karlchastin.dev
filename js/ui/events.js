@@ -1731,7 +1731,7 @@ export function setupUIEvents() {
                           <span style="display: flex; align-items: center; gap: 8px;">
                               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Debug
                           </span>
-                          <span style="font-size: 10px; font-family: 'JetBrains Mono', monospace; color: #666; background: rgba(0,0,0,0.4); padding: 4px 8px; border-radius: 8px; letter-spacing: 0;">v1.2.6</span>
+                          <span style="font-size: 10px; font-family: 'JetBrains Mono', monospace; color: #666; background: rgba(0,0,0,0.4); padding: 4px 8px; border-radius: 8px; letter-spacing: 0;">v1.2.7</span>
                       </h3>
                       
                       <div style="font-size: 10px; color: #aaa; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Visual Overrides</div>
@@ -1785,20 +1785,20 @@ export function setupUIEvents() {
 `;
       document.body.appendChild(dbgUI);
 
-
-
       const dbgForceSkeleton = document.getElementById("dbg-force-skeleton");
       if (dbgForceSkeleton) {
         dbgForceSkeleton.addEventListener("change", (e) => {
           document.body.classList.toggle("force-skeleton", e.target.checked);
           document.dispatchEvent(new CustomEvent("trigger-skeleton-update"));
         });
-        dbgForceSkeleton.checked = document.body.classList.contains("force-skeleton");
+        dbgForceSkeleton.checked =
+          document.body.classList.contains("force-skeleton");
       }
 
-
       const bindToggle = (id, cls) => {
-        $(id).addEventListener("change", (e) => document.body.classList.toggle(cls, e.target.checked));
+        $(id).addEventListener("change", (e) =>
+          document.body.classList.toggle(cls, e.target.checked),
+        );
         $(id).checked = document.body.classList.contains(cls);
       };
 
@@ -1845,7 +1845,8 @@ export function setupUIEvents() {
           return;
         }
         const dumpUI = document.createElement("div");
-        dumpUI.style.cssText = "position: fixed; z-index: 9999999; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5,5,5,0.98); display: flex; justify-content: center; align-items: center; pointer-events: auto; opacity: 0; transition: opacity 0.3s ease;";
+        dumpUI.style.cssText =
+          "position: fixed; z-index: 9999999; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5,5,5,0.98); display: flex; justify-content: center; align-items: center; pointer-events: auto; opacity: 0; transition: opacity 0.3s ease;";
         dumpUI.innerHTML = `
           <style>
             .afton-content-wrapper { flex: 1; min-height: 0; overflow: hidden; pointer-events: auto !important; position: relative; }
@@ -1888,7 +1889,9 @@ export function setupUIEvents() {
 
         const trapScroll = (e) => e.stopPropagation();
         contentWrapper.addEventListener("wheel", trapScroll, { passive: true });
-        contentWrapper.addEventListener("touchmove", trapScroll, { passive: true });
+        contentWrapper.addEventListener("touchmove", trapScroll, {
+          passive: true,
+        });
 
         if (typeof Lenis !== "undefined") {
           isDumpLenisActive = true;
@@ -1922,7 +1925,9 @@ export function setupUIEvents() {
 
         const copyBtn = dumpUI.querySelector("#copy-dump");
         copyBtn.addEventListener("click", () => {
-          navigator.clipboard.writeText(JSON.stringify(window.currentLanyardData, null, 2));
+          navigator.clipboard.writeText(
+            JSON.stringify(window.currentLanyardData, null, 2),
+          );
           copyBtn.innerText = "COPIED!";
           copyBtn.style.color = "#ff5555";
           setTimeout(() => {
@@ -1946,7 +1951,6 @@ export function setupUIEvents() {
       document.body.classList.contains("ig-deactivated");
     $("dbg-fb-toggle").checked =
       document.body.classList.contains("fb-deactivated");
-
 
     dbgUI.style.display = "block";
 

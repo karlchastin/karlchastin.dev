@@ -195,7 +195,7 @@ export const applyReviewCache = (data) => {
     : "";
   const awardsContainer = $("steam-review-awards");
   if (document.body.classList.contains("force-skeleton")) return;
-    if (data.awards?.length) {
+  if (data.awards?.length) {
     awardsContainer.innerHTML = data.awards
       .map(
         (a) => `
@@ -324,23 +324,25 @@ export async function updateSteamData() {
         });
     });
   const hideReviewLoading = (errorMsg = false) => {
-      const loadingEl = document.getElementById("steam-review-loading");
-      if (document.body.classList.contains("force-skeleton")) {
-          if (loadingEl) loadingEl.style.display = "block";
-          const cardEl = document.getElementById("steam-review-card");
-          if (cardEl) cardEl.style.display = "none";
-          return;
+    const loadingEl = document.getElementById("steam-review-loading");
+    if (document.body.classList.contains("force-skeleton")) {
+      if (loadingEl) loadingEl.style.display = "block";
+      const cardEl = document.getElementById("steam-review-card");
+      if (cardEl) cardEl.style.display = "none";
+      return;
+    }
+    if (loadingEl) {
+      if (errorMsg) {
+        loadingEl.innerHTML =
+          '<div style="color: #ff4444; font-size: 13px; font-weight: 700;">Failed to fetch Featured Review.</div>';
+      } else {
+        loadingEl.style.display = "none";
+        const cardEl = document.getElementById("steam-review-card");
+        if (cardEl) cardEl.style.display = "block";
       }
-      if (loadingEl) {
-        if (errorMsg) {
-            loadingEl.innerHTML = '<div style="color: #ff4444; font-size: 13px; font-weight: 700;">Failed to fetch Featured Review.</div>';
-        } else {
-            loadingEl.style.display = "none";
-            const cardEl = document.getElementById("steam-review-card");
-            if (cardEl) cardEl.style.display = "block";
-        }
-      }
-    };fetchHtmlWithWorker(`https://steamcommunity.com/profiles/76561198810914938/`)
+    }
+  };
+  fetchHtmlWithWorker(`https://steamcommunity.com/profiles/76561198810914938/`)
     .then((htmlText) => {
       const doc = new DOMParser().parseFromString(htmlText, "text/html");
       const getShowcaseStat = (labelText) => {
@@ -403,5 +405,5 @@ export async function updateSteamData() {
     .catch(() => hideReviewLoading(true));
 }
 document.addEventListener("trigger-skeleton-update", () => {
-    updateSteamData();
+  updateSteamData();
 });
