@@ -697,7 +697,7 @@ if (enterBtn) {
       window.masterGain.gain.cancelScheduledValues(now);
       window.masterGain.gain.setValueAtTime(0.55, now);
       window.masterGain.gain.setValueAtTime(0.55, dropTime);
-      window.masterGain.gain.linearRampToValueAtTime(0.20, dropTime + 0.15);
+      window.masterGain.gain.linearRampToValueAtTime(0.2, dropTime + 0.15);
     }
     if (bgAudio) {
       bgAudio.volume = 0.55;
@@ -741,6 +741,11 @@ if (enterBtn) {
     if (mainContent) {
       mainContent.classList.remove("hidden");
       void mainContent.offsetWidth;
+      setTimeout(() => {
+        if (typeof window.forceCheckScrolls === "function") {
+          window.forceCheckScrolls();
+        }
+      }, 200);
       const activeTabNode = document.querySelector(".tab.active");
       if (activeTabNode) activeTabNode.classList.add("show-text");
       const animTargets = [
@@ -775,6 +780,8 @@ if (enterBtn) {
         setTimeout(() => {
           animTargets.forEach((el) => el.classList.remove("is-dropping"));
           if (typeof isGlobalEntrance !== "undefined") isGlobalEntrance = false;
+          if (typeof window.forceCheckScrolls === "function")
+            window.forceCheckScrolls(true);
         }, 800);
       } else {
         if (typeof isGlobalEntrance !== "undefined") isGlobalEntrance = false;

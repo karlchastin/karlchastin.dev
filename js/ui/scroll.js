@@ -2,7 +2,11 @@ const MASK_GRADIENT = "linear-gradient(to right, #000 85%, transparent 100%)";
 export const scrollObserver = new ResizeObserver((entries) => {
   requestAnimationFrame(() => {
     for (let entry of entries) {
-      const wrapper = entry.target;
+      let wrapper = entry.target;
+      if (wrapper.classList.contains("main-text")) {
+        wrapper = wrapper.closest(".scroll-wrapper");
+      }
+      if (!wrapper) continue;
       const inner = wrapper.querySelector(".scroll-inner");
       const mainText = wrapper.querySelector(".main-text");
       const dupText = wrapper.querySelector(".dup-text");
@@ -26,6 +30,34 @@ export const scrollObserver = new ResizeObserver((entries) => {
     }
   });
 });
+
+window.forceCheckScrolls = (forceRestart = false) => {
+  document.querySelectorAll(".scroll-wrapper").forEach((wrapper) => {
+    const inner = wrapper.querySelector(".scroll-inner");
+    const mainText = wrapper.querySelector(".main-text");
+    const dupText = wrapper.querySelector(".dup-text");
+    if (!inner || !mainText || !dupText || wrapper.clientWidth === 0) return;
+
+    if (mainText.offsetWidth > wrapper.clientWidth) {
+      if (dupText.style.display !== "inline-block" || forceRestart) {
+        dupText.style.display = "inline-block";
+        wrapper.style.maskImage = MASK_GRADIENT;
+        wrapper.style.webkitMaskImage = MASK_GRADIENT;
+        inner.style.animation = "none";
+        void inner.offsetWidth;
+        inner.style.animation = "scrollText 14s linear infinite";
+      }
+    } else {
+      if (dupText.style.display !== "none") {
+        dupText.style.display = "none";
+        wrapper.style.maskImage = "none";
+        wrapper.style.webkitMaskImage = "none";
+        inner.style.animation = "none";
+      }
+    }
+  });
+};
+
 export const createScrollText = (text, isTitle, titleColor, inline = false) => {
   if (!text) return "";
   const wrapperStyle =
@@ -36,6 +68,6 @@ export const createScrollText = (text, isTitle, titleColor, inline = false) => {
         : `font-size:13px; color:#aaa; line-height: 1.15; margin-bottom: 0px;`;
   return `<div class="scroll-wrapper" style="${wrapperStyle} ${inline ? "" : "width: 100%;"} min-width: 0; overflow: visible; white-space: nowrap; position: relative;">
         <div class="scroll-inner" style="display: inline-block; white-space: nowrap;">
-            <span class="main-text" style="display: inline-block; padding-right: 0px;">${text}</span><span class="dup-text" style="display: none; margin-left: 40px; padding-right: 0px;">${text}</span>
+            <span class="main-text" style="display: inline-block; padding-right: 40px;">${text}</span><span class="dup-text" style="display: none; padding-right: 40px;">${text}</span>
         </div></div>`;
 };

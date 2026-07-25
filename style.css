@@ -117,6 +117,7 @@ html {
 }
 
 body {
+  text-rendering: optimizeLegibility;
   touch-action: manipulation;
   background-color: #000;
   color: #fff;
@@ -136,6 +137,23 @@ body {
 * {
   -webkit-tap-highlight-color: transparent;
   outline: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Fix text blurriness during and after CSS transforms */
+.card,
+.tab,
+button,
+a,
+.glass-panel,
+.debug-shake,
+.afton-shake,
+.tab-btn,
+.profile-btn,
+.hover-target {
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 body::after {
@@ -1687,15 +1705,20 @@ a.stat-box:hover {
   animation-play-state: paused !important;
 }
 
+.scroll-inner {
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
 @keyframes scrollText {
   0%,
   15% {
-    transform: translateX(0);
+    transform: translateX(0) translateZ(0);
   }
 
   85%,
   100% {
-    transform: translateX(-50%);
+    transform: translateX(-50%) translateZ(0);
   }
 }
 

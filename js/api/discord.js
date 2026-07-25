@@ -495,6 +495,22 @@ function updateDiscordUI(data) {
       });
   }
   activitiesList.sort((a, b) => (a.typeCategory === "playing" ? -1 : 1));
+  const attachScrollObserversToWrap = (wrap) => {
+    wrap.querySelectorAll(".scroll-wrapper").forEach((el) => {
+      scrollObserver.observe(el);
+      const mainText = el.querySelector(".main-text");
+      if (mainText) scrollObserver.observe(mainText);
+    });
+    // Force checks at intervals to guarantee layout has settled after CSS transitions (grid expansion, flex reflows, opacity fades)
+    [100, 600, 1200].forEach((delay) => {
+      setTimeout(() => {
+        if (typeof window.forceCheckScrolls === "function") {
+          window.forceCheckScrolls();
+        }
+      }, delay);
+    });
+  };
+
   const preloadAndSwap = (wrap, html, fallbackHtml = "") => {
     if (wrap.getAttribute("data-hash") === html) return;
     const imgMatch = html.match(/src="([^"]+)"/);
@@ -504,6 +520,7 @@ function updateDiscordUI(data) {
         if (wrap.getAttribute("data-next-hash") === html) {
           wrap.setAttribute("data-hash", html);
           wrap.innerHTML = html;
+          attachScrollObserversToWrap(wrap);
           wrap.querySelectorAll("img").forEach((i) => {
             const mainContent = document.getElementById("content");
             if (!(mainContent && mainContent.classList.contains("hidden"))) {
@@ -518,6 +535,7 @@ function updateDiscordUI(data) {
         if (wrap.getAttribute("data-next-hash") === html) {
           wrap.setAttribute("data-hash", html);
           wrap.innerHTML = fallbackHtml;
+          attachScrollObserversToWrap(wrap);
         }
       };
       wrap.setAttribute("data-next-hash", html);
@@ -525,6 +543,7 @@ function updateDiscordUI(data) {
     } else {
       wrap.setAttribute("data-hash", html);
       wrap.innerHTML = html;
+      attachScrollObserversToWrap(wrap);
     }
   };
   const renderSingleBox = (slot, act, forceSkeleton = false) => {
@@ -809,9 +828,11 @@ function updateDiscordUI(data) {
     }
   }
   scrollObserver.disconnect();
-  document
-    .querySelectorAll(".scroll-wrapper")
-    .forEach((el) => scrollObserver.observe(el));
+  document.querySelectorAll(".scroll-wrapper").forEach((el) => {
+    scrollObserver.observe(el);
+    const mainText = el.querySelector(".main-text");
+    if (mainText) scrollObserver.observe(mainText);
+  });
 }
 setInterval(() => {
   const now = Date.now();
