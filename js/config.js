@@ -181,6 +181,7 @@ export const profiles = {
   },
 };
 export const SHES_MY_COLLAR_LYRICS = [
+  { time: 0, text: "(Instrumental)" },
   { time: 29.3, text: "If I could take her down and run, then I'd call her" },
   { time: 32.88, text: "'Cause she's standing drama, she knows I'll call her" },
   { time: 36.5, text: "She's getting on the sun and then she order" },

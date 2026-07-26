@@ -287,8 +287,8 @@ export function setupUIEvents() {
 
       const targetLocalTime = new Date(
         targetPHT.getTime() -
-          phtOffset -
-          new Date().getTimezoneOffset() * 60000,
+        phtOffset -
+        new Date().getTimezoneOffset() * 60000,
       );
 
       let timeText = "It is currently late at night.";
@@ -563,8 +563,8 @@ export function setupUIEvents() {
       clearTimeout(hoverAnimTimeout);
       const defaultProfile =
         profiles[
-          document.querySelector(".tab.active")?.getAttribute("data-tab") ||
-            "home"
+        document.querySelector(".tab.active")?.getAttribute("data-tab") ||
+        "home"
         ];
       updateProfileView(
         defaultProfile.avatar,
@@ -819,8 +819,8 @@ export function setupUIEvents() {
       src.buffer = buf;
       src.connect(
         getFNAFMusicNode() ||
-          getFNAFMasterNode() ||
-          window.audioCtx.destination,
+        getFNAFMasterNode() ||
+        window.audioCtx.destination,
       );
       src.start();
       return src;
@@ -884,7 +884,7 @@ export function setupUIEvents() {
         now,
       );
       window.masterGain.gain.setValueAtTime(window.masterGain.gain.value, now);
-    } catch (e) {}
+    } catch (e) { }
 
     if (isActive) {
       window.lowpassFilter.frequency.exponentialRampToValueAtTime(
@@ -917,8 +917,8 @@ export function setupUIEvents() {
       src.buffer = buf;
       src.connect(
         getFNAFMusicNode() ||
-          getFNAFMasterNode() ||
-          window.audioCtx.destination,
+        getFNAFMasterNode() ||
+        window.audioCtx.destination,
       );
       src.start();
       flashFNAF("bg");
@@ -1548,28 +1548,28 @@ export function setupUIEvents() {
     if (now >= tLoop2Start && aftonLoop2Src) {
       try {
         aftonLoop2Src.stop(nextBoundary);
-      } catch (e) {}
+      } catch (e) { }
     } else if (now >= tLoop1Start && now < tLoop1End && aftonLoop1Src) {
       if (aftonLoop2Src) {
         try {
           aftonLoop2Src.stop(0);
-        } catch (e) {}
+        } catch (e) { }
       }
     } else {
       aftonBeeps.forEach((src) => {
         try {
           src.stop(nextBoundary);
-        } catch (e) {}
+        } catch (e) { }
       });
       if (aftonLoop1Src) {
         try {
           aftonLoop1Src.stop(nextBoundary);
-        } catch (e) {}
+        } catch (e) { }
       }
       if (aftonLoop2Src) {
         try {
           aftonLoop2Src.stop(nextBoundary);
-        } catch (e) {}
+        } catch (e) { }
       }
     }
 
@@ -1578,8 +1578,8 @@ export function setupUIEvents() {
       outro.buffer = bufOutro;
       outro.connect(
         getFNAFMusicNode() ||
-          getFNAFMasterNode() ||
-          window.audioCtx.destination,
+        getFNAFMasterNode() ||
+        window.audioCtx.destination,
       );
       outro.start(nextBoundary);
 
@@ -1731,7 +1731,7 @@ export function setupUIEvents() {
                           <span style="display: flex; align-items: center; gap: 8px;">
                               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Debug
                           </span>
-                          <span style="font-size: 10px; font-family: 'JetBrains Mono', monospace; color: #666; background: rgba(0,0,0,0.4); padding: 4px 8px; border-radius: 8px; letter-spacing: 0;">v1.2.8</span>
+                          <span style="font-size: 10px; font-family: 'JetBrains Mono', monospace; color: #666; background: rgba(0,0,0,0.4); padding: 4px 8px; border-radius: 8px; letter-spacing: 0;">v1.2.9</span>
                       </h3>
                       
                       <div style="font-size: 10px; color: #aaa; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Visual Overrides</div>
