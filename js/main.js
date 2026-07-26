@@ -350,7 +350,7 @@ function attachGlobalHeightObservers() {
             card.style.transition = originalTransition.includes("height")
               ? originalTransition
               : originalTransition +
-                ", height 0.4s cubic-bezier(0.25, 1, 0.5, 1)";
+              ", height 0.4s cubic-bezier(0.25, 1, 0.5, 1)";
           } else {
             card.style.transition = "";
           }
@@ -666,7 +666,7 @@ if (enterBtn) {
         window.trebleFilter.frequency.value = 4000;
         window.trebleFilter.gain.value = 0;
         window.masterGain = window.audioCtx.createGain();
-        window.masterGain.gain.value = 0.55;
+        window.masterGain.gain.value = 0.29;
         window.audioSource.connect(window.bassFilter);
         window.bassFilter.connect(window.trebleFilter);
         window.trebleFilter.connect(window.lowpassFilter);
@@ -681,35 +681,26 @@ if (enterBtn) {
       const dropTime = now + 4.4;
       if (window.lowpassFilter) {
         window.lowpassFilter.frequency.cancelScheduledValues(now);
-        window.lowpassFilter.frequency.setValueAtTime(200, now);
-        window.lowpassFilter.frequency.setTargetAtTime(22050, dropTime, 0.05);
+        window.lowpassFilter.frequency.setValueAtTime(22050, now);
       }
       if (window.bassFilter) {
         window.bassFilter.gain.cancelScheduledValues(now);
-        window.bassFilter.gain.setValueAtTime(0, now);
-        window.bassFilter.gain.setTargetAtTime(8, dropTime, 0.05);
+        window.bassFilter.gain.setValueAtTime(16, now);
       }
       if (window.trebleFilter) {
         window.trebleFilter.gain.cancelScheduledValues(now);
-        window.trebleFilter.gain.setValueAtTime(0, now);
-        window.trebleFilter.gain.setTargetAtTime(8, dropTime, 0.05);
+        window.trebleFilter.gain.setValueAtTime(16, now);
       }
-      window.masterGain.gain.cancelScheduledValues(now);
-      window.masterGain.gain.setValueAtTime(0.55, now);
-      window.masterGain.gain.setValueAtTime(0.55, dropTime);
-      window.masterGain.gain.linearRampToValueAtTime(0.2, dropTime + 0.15);
+      if (window.masterGain) {
+        window.masterGain.gain.cancelScheduledValues(now);
+        window.masterGain.gain.setValueAtTime(0.29, now);
+      }
     }
     if (bgAudio) {
-      bgAudio.volume = 0.55;
-      bgAudio.currentTime = 0;
+      bgAudio.volume = 0.29;
+      bgAudio.currentTime = 27.4;
       const bgPromise = bgAudio.play();
-      if (bgPromise !== undefined) bgPromise.catch(() => {});
-    }
-    if (sfxAudio) {
-      sfxAudio.volume = 0.6;
-      sfxAudio.currentTime = 0;
-      const sfxPromise = sfxAudio.play();
-      if (sfxPromise !== undefined) sfxPromise.catch(() => {});
+      if (bgPromise !== undefined) bgPromise.catch(() => { });
     }
     const flash = document.createElement("div");
     flash.style.position = "fixed";
@@ -728,12 +719,12 @@ if (enterBtn) {
         { opacity: 1, offset: 0.15 },
         { opacity: 0, offset: 1 },
       ],
-      { duration: 400, easing: "ease-out" },
+      { duration: 450, easing: "ease-out" },
     ).onfinish = () => flash.remove();
     setTimeout(() => {
       if (enterOverlay) {
         enterOverlay.style.pointerEvents = "none";
-        enterOverlay.style.transition = "opacity 3s ease-out";
+        enterOverlay.style.transition = "opacity 1s ease-out";
         void enterOverlay.offsetWidth;
         enterOverlay.style.opacity = "0";
       }
@@ -758,7 +749,7 @@ if (enterBtn) {
     }
     setTimeout(() => {
       if (bgAudio) {
-        bgAudio.volume = 0.55;
+        bgAudio.volume = 0.29;
       }
       if (enterOverlay) enterOverlay.style.display = "none";
       if (mainContent) {
@@ -787,7 +778,7 @@ if (enterBtn) {
         if (typeof isGlobalEntrance !== "undefined") isGlobalEntrance = false;
         document.body.classList.remove("tabs-hidden");
       }
-    }, 4400);
+    }, 1700);
   });
 } else {
   if (typeof isGlobalEntrance !== "undefined") isGlobalEntrance = false;
@@ -831,8 +822,8 @@ setInterval(() => {
   ) {
     const gmt8 = new Date(
       new Date().getTime() +
-        new Date().getTimezoneOffset() * 60000 +
-        3600000 * 8,
+      new Date().getTimezoneOffset() * 60000 +
+      3600000 * 8,
     );
     timeEl.textContent = `${gmt8.toLocaleTimeString("en-US", { hour12: true })} (GMT+8:00)`;
   }
@@ -855,7 +846,7 @@ setInterval(() => {
           }
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }
 }, 5000);
 setInterval(() => {

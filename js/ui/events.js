@@ -1,6 +1,6 @@
 import { $, $$ } from "../utils/dom.js";
 import { formatTime } from "../utils/core.js";
-import { profiles, emailAvatars, emailBios, GREEDY_LYRICS } from "../config.js";
+import { profiles, emailAvatars, emailBios, SHES_MY_COLLAR_LYRICS } from "../config.js";
 import { syncBackgrounds } from "./animations.js";
 import { isAnimating, currentIndex } from "./tabs.js";
 
@@ -389,7 +389,7 @@ export function setupUIEvents() {
             window.tabFocusGain.gain.value,
             now,
           );
-          window.tabFocusGain.gain.linearRampToValueAtTime(0.1, now + 0.8);
+          window.tabFocusGain.gain.linearRampToValueAtTime(0.12, now + 0.8);
 
           if (vignetteEl) vignetteEl.style.opacity = "1";
         } else {
@@ -603,20 +603,20 @@ export function setupUIEvents() {
           ?.getAttribute("data-tab");
         if (activeTab === "home") {
           while (
-            currentLyricIndex < GREEDY_LYRICS.length - 1 &&
-            bgAudio.currentTime >= GREEDY_LYRICS[currentLyricIndex + 1].time
+            currentLyricIndex < SHES_MY_COLLAR_LYRICS.length - 1 &&
+            bgAudio.currentTime >= SHES_MY_COLLAR_LYRICS[currentLyricIndex + 1].time
           ) {
             currentLyricIndex++;
           }
 
           while (
             currentLyricIndex > 0 &&
-            bgAudio.currentTime < GREEDY_LYRICS[currentLyricIndex].time
+            bgAudio.currentTime < SHES_MY_COLLAR_LYRICS[currentLyricIndex].time
           ) {
             currentLyricIndex--;
           }
 
-          const currentLyric = GREEDY_LYRICS[currentLyricIndex];
+          const currentLyric = SHES_MY_COLLAR_LYRICS[currentLyricIndex];
 
           if (currentLyric) {
             const bioEl = $("profile-bio");
@@ -671,7 +671,7 @@ export function setupUIEvents() {
       );
 
       if (window.bassFilter) {
-        const targetBass = isDeafened ? 0 : 8;
+        const targetBass = isDeafened ? 8 : 16;
         window.bassFilter.gain.cancelScheduledValues(
           window.audioCtx.currentTime,
         );
@@ -686,7 +686,7 @@ export function setupUIEvents() {
       }
 
       if (window.trebleFilter) {
-        const targetTreble = isDeafened ? 0 : 8;
+        const targetTreble = isDeafened ? 8 : 16;
         window.trebleFilter.gain.cancelScheduledValues(
           window.audioCtx.currentTime,
         );
@@ -701,7 +701,7 @@ export function setupUIEvents() {
       }
 
       if (window.masterGain) {
-        const targetVol = isDeafened ? 0.55 : 0.2;
+        const targetVol = isDeafened ? 0.79 : 0.29;
 
         window.masterGain.gain.cancelScheduledValues(
           window.audioCtx.currentTime,
@@ -781,14 +781,14 @@ export function setupUIEvents() {
     bass.frequency.value = window.bassFilter
       ? window.bassFilter.frequency.value
       : 250;
-    bass.gain.value = 8;
+    bass.gain.value = 16;
 
     const treble = window.audioCtx.createBiquadFilter();
     treble.type = "highshelf";
     treble.frequency.value = window.trebleFilter
       ? window.trebleFilter.frequency.value
       : 4000;
-    treble.gain.value = 8;
+    treble.gain.value = 16;
 
     bass.connect(treble);
     treble.connect(getFNAFMasterNode() || window.audioCtx.destination);
@@ -892,12 +892,12 @@ export function setupUIEvents() {
         now + 0.5,
       );
       window.masterGain.gain.linearRampToValueAtTime(
-        fullyMute ? 0.0 : 0.05,
+        fullyMute ? 0.0 : 0.06,
         now + 0.5,
       );
     } else {
       const targetFreq = isGloballyDeafened ? 200 : 22050;
-      const targetVol = isGloballyDeafened ? 0.55 : 0.2;
+      const targetVol = isGloballyDeafened ? 0.79 : 0.29;
 
       const currentFreq = Math.max(window.lowpassFilter.frequency.value, 1);
       window.lowpassFilter.frequency.setValueAtTime(currentFreq, now);
