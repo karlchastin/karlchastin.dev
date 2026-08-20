@@ -99,7 +99,8 @@ function preloadAssets() {
     finishLoading();
   } else {
     window.addEventListener("load", finishLoading);
-    setTimeout(finishLoading, 8000);
+    // Increased timeout from 8 seconds to 20 seconds to give the massive 32MB GIF time to download
+    setTimeout(finishLoading, 20000);
   }
   const animateLoading = () => {
     const diff = targetVal - currentVal;

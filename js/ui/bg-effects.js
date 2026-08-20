@@ -67,7 +67,20 @@ export function initBgEffects() {
     const urls = Array.from(allImages).map(img => img.getAttribute("data-src") || img.src);
     const isSingleNative = allImages.length === 1;
     
+    Array.from(allImages).forEach(media => {
+      if (media.tagName === "IMG") {
+        const url = media.getAttribute("data-src") || media.src;
+        if (url) {
+          const img = new Image();
+          img.src = url;
+        }
+      }
+    });
+    
     const mediaEl = allImages[0].cloneNode(true);
+    if (mediaEl.tagName === "VIDEO") {
+      mediaEl.preload = "auto";
+    }
     mediaEl.style.position = "absolute";
     mediaEl.style.objectFit = "cover";
     mediaEl.style.objectPosition = "top center";
