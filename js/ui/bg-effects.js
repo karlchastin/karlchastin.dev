@@ -1,60 +1,169 @@
 export function initBgEffects() {
-  const overlayContainers = document.querySelectorAll(".card-bg-effect");
-  overlayContainers.forEach((container) => {
-    const allImages = container.querySelectorAll(".bg-effect-video");
+  const originalContainers = document.querySelectorAll(".card-bg-effect");
+  const uniqueTabs = new Set();
+  
+  
+  originalContainers.forEach(c => uniqueTabs.add(c.getAttribute("data-bg-tab")));
+  
+  if (uniqueTabs.size === 0) return;
+
+  const mainContent = document.querySelector(".main-content") || document.body;
+  
+  
+  const masterContainers = {};
+
+  uniqueTabs.forEach(targetTab => {
+    
+    const firstContainer = document.querySelector(`.card-bg-effect[data-bg-tab="${targetTab}"]`);
+    if (!firstContainer) return;
+    
+    const allImages = firstContainer.querySelectorAll(".bg-effect-video");
     if (allImages.length === 0) return;
+    
+    
+    const masterContainer = document.createElement("div");
+    masterContainer.className = "master-card-bg-effect";
+    masterContainer.setAttribute("data-bg-tab", targetTab);
+    masterContainer.style.position = "absolute";
+    masterContainer.style.top = "0";
+    masterContainer.style.left = "0";
+    masterContainer.style.width = "100%";
+    masterContainer.style.height = "100%";
+    masterContainer.style.pointerEvents = "none";
+    masterContainer.style.zIndex = "-1";
+    masterContainer.style.opacity = "0";
+
+    const bgLayer = document.createElement("div");
+    bgLayer.className = "master-bg-layer";
+    bgLayer.style.position = "absolute";
+    bgLayer.style.top = "0";
+    bgLayer.style.left = "0";
+    bgLayer.style.width = "100%";
+    bgLayer.style.height = "100%";
+
+    const mediaWrapper = document.createElement("div");
+    mediaWrapper.style.position = "absolute";
+    mediaWrapper.style.top = "0";
+    mediaWrapper.style.left = "0";
+    mediaWrapper.style.width = "100%";
+    mediaWrapper.style.height = "100%";
+    mediaWrapper.style.opacity = "0";
+    mediaWrapper.style.transition = "opacity 0.5s ease";
+    
+    
+    if (mainContent !== document.body) {
+      if (window.getComputedStyle(mainContent).position === "static") {
+        mainContent.style.position = "relative";
+      }
+    }
+    mainContent.insertBefore(masterContainer, mainContent.firstChild);
+    
     let currentIndex = 0;
     let isPlaying = false;
     let currentTimeout = null;
     let transitionTimeout = null;
-    const urls = Array.from(allImages).map(
-      (img) => img.getAttribute("data-src") || img.src,
-    );
-    const targetTab = container.getAttribute("data-bg-tab");
+    let stopTimeout = null;
+    
+    const urls = Array.from(allImages).map(img => img.getAttribute("data-src") || img.src);
     const isSingleNative = allImages.length === 1;
-    const cardParent = container.closest(".card");
-    for (let i = 1; i < allImages.length; i++) {
-      allImages[i].remove();
-    }
-    const mediaEl = allImages[0];
+    
+    const mediaEl = allImages[0].cloneNode(true);
     mediaEl.style.position = "absolute";
     mediaEl.style.objectFit = "cover";
+    mediaEl.style.objectPosition = "top center";
+    mediaEl.style.width = "100%";
+    mediaEl.style.height = "100%";
+    mediaEl.style.top = "0";
+    mediaEl.style.left = "0";
+    
+    mediaWrapper.appendChild(mediaEl);
+    masterContainer.appendChild(bgLayer);
+    masterContainer.appendChild(mediaWrapper);
+    masterContainers[targetTab] = masterContainer;
+
     const getTargetElements = () => {
-      if (!cardParent) return [];
-      return Array.from(
-        cardParent.querySelectorAll(".bg-effect-exclude"),
-      ).filter((el) => {
-        const style = window.getComputedStyle(el);
-        return (
-          style.display !== "none" &&
-          style.opacity !== "0" &&
-          style.visibility !== "hidden"
-        );
-      });
-    };
-    const updateMask = () => {
-      if (!isPlaying || !cardParent) return;
-      const rect = container.getBoundingClientRect();
       const cards = Array.from(document.querySelectorAll(".card")).filter(
-        (c) => window.getComputedStyle(c).display !== "none",
+        (c) => window.getComputedStyle(c).display !== "none"
+      );
+      
+      let targets = [];
+      cards.forEach(card => {
+        targets.push(...Array.from(card.querySelectorAll(".bg-effect-exclude")).filter((el) => {
+          const style = window.getComputedStyle(el);
+          return style.display !== "none" && style.opacity !== "0" && style.visibility !== "hidden";
+        }));
+      });
+      return targets;
+    };
+
+    const updateMask = () => {
+      if (!isPlaying) return;
+      const rect = masterContainer.getBoundingClientRect();
+      const cards = Array.from(document.querySelectorAll(".card")).filter(
+        (c) => window.getComputedStyle(c).display !== "none"
       );
       if (cards.length === 0) return;
+      
       const firstCardRect = cards[0].getBoundingClientRect();
       const lastCardRect = cards[cards.length - 1].getBoundingClientRect();
       const columnWidth = firstCardRect.width;
       const columnHeight = lastCardRect.bottom - firstCardRect.top;
-      mediaEl.style.width = columnWidth + "px";
-      mediaEl.style.height = columnHeight + "px";
-      mediaEl.style.maxWidth = "none";
-      mediaEl.style.left = -(rect.left - firstCardRect.left) + "px";
-      mediaEl.style.top = -(rect.top - firstCardRect.top) + "px";
-      mediaEl.style.transform = "none";
+      
+      
+      masterContainer.style.width = columnWidth + "px";
+      masterContainer.style.height = columnHeight + "px";
+      
+      
+      
+      
+      const mainContentRect = mainContent.getBoundingClientRect();
+      masterContainer.style.top = (firstCardRect.top - mainContentRect.top) + "px";
+      masterContainer.style.left = (firstCardRect.left - mainContentRect.left) + "px";
+
+      
+      const updatedRect = masterContainer.getBoundingClientRect();
+
+      function getRoundedRectPath(x, y, w, h, r) {
+        r = Math.min(r, w / 2, h / 2);
+        if (r <= 0) return `M ${x} ${y} H ${x + w} V ${y + h} H ${x} Z`;
+        return `M ${x + r} ${y} H ${x + w - r} A ${r} ${r} 0 0 1 ${x + w} ${y + r} V ${y + h - r} A ${r} ${r} 0 0 1 ${x + w - r} ${y + h} H ${x + r} A ${r} ${r} 0 0 1 ${x} ${y + h - r} V ${y + r} A ${r} ${r} 0 0 1 ${x + r} ${y} Z`;
+      }
+
+      let pathString = "";
+      
+      
+      bgLayer.innerHTML = "";
+      
+      
+      cards.forEach(card => {
+        const cardRect = card.getBoundingClientRect();
+        const x = cardRect.left - updatedRect.left;
+        const y = cardRect.top - updatedRect.top;
+        const width = cardRect.width;
+        const height = cardRect.height;
+        const style = window.getComputedStyle(card);
+        let br = parseInt(style.borderRadius) || 20; 
+        
+        pathString += getRoundedRectPath(x, y, width, height, br) + " ";
+        
+        
+        const frostyDiv = document.createElement("div");
+        frostyDiv.className = "master-frosty-div";
+        frostyDiv.style.position = "absolute";
+        frostyDiv.style.left = x + "px";
+        frostyDiv.style.top = y + "px";
+        frostyDiv.style.width = width + "px";
+        frostyDiv.style.height = height + "px";
+        frostyDiv.style.borderRadius = br + "px";
+        bgLayer.appendChild(frostyDiv);
+      });
+
+      
       const targets = getTargetElements();
-      let maskContent = `<rect width="100%" height="100%" fill="white"/>`;
       targets.forEach((target) => {
         const targetRect = target.getBoundingClientRect();
-        const x = targetRect.left - rect.left;
-        const y = targetRect.top - rect.top;
+        const x = targetRect.left - updatedRect.left;
+        const y = targetRect.top - updatedRect.top;
         const width = targetRect.width;
         const height = targetRect.height;
         const style = window.getComputedStyle(target);
@@ -62,89 +171,123 @@ export function initBgEffects() {
         if (style.borderRadius && style.borderRadius.includes("%")) {
           br = width / 2;
         }
-        maskContent += `<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="${br}" ry="${br}" fill="black"/>`;
+        
+        pathString += getRoundedRectPath(x, y, width, height, br) + " ";
       });
-      const svgString = `<svg xmlns="http://www.w3.org/2000/svg" width="${rect.width}" height="${rect.height}"><mask id="m">${maskContent}</mask><rect width="100%" height="100%" fill="black" mask="url(#m)"/></svg>`;
-      const encodedSvg = `url("data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}")`;
-      container.style.webkitMaskImage = encodedSvg;
-      container.style.maskImage = encodedSvg;
-      container.style.webkitMaskSize = "100% 100%";
-      container.style.maskSize = "100% 100%";
+
+      mediaWrapper.style.clipPath = `path(evenodd, "${pathString.trim()}")`;
+      mediaWrapper.style.webkitClipPath = `path(evenodd, "${pathString.trim()}")`;
+      
+      
+      mediaWrapper.style.maskImage = "";
+      mediaWrapper.style.webkitMaskImage = "";
     };
+
     let resizeObserver = null;
-    if (window.ResizeObserver && cardParent) {
+    if (window.ResizeObserver) {
       resizeObserver = new ResizeObserver(() => {
         if (isPlaying) {
           setTimeout(updateMask, 10);
         }
       });
-      resizeObserver.observe(cardParent);
+      resizeObserver.observe(mainContent);
     }
-    const startEffect = () => {
-      if (document.body.getAttribute("data-active-tab") !== targetTab) {
-        isPlaying = false;
+
+    const stopEffect = () => {
+      mediaWrapper.style.opacity = "0";
+      isPlaying = false;
+      clearTimeout(currentTimeout);
+      clearTimeout(transitionTimeout);
+      
+      stopTimeout = setTimeout(() => {
+        if (isPlaying) return;
+        masterContainer.style.opacity = "0";
+        document.body.classList.remove(`master-effect-active-${targetTab}`);
         mediaEl.classList.remove("playing");
+        if (mediaEl.tagName === "VIDEO") mediaEl.pause();
         if (!isSingleNative)
-          mediaEl.src =
-            "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
-        return;
-      }
+          mediaEl.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
+      }, 500);
+    };
+
+    const startEffect = () => {
       isPlaying = true;
-      setTimeout(updateMask, 10);
-      if (!isSingleNative) {
-        mediaEl.src = urls[currentIndex];
-      } else if (mediaEl.tagName === "VIDEO") {
-        mediaEl.play().catch(() => {});
-      }
-      mediaEl.classList.add("playing");
-      if (!isSingleNative) {
-        currentTimeout = setTimeout(() => {
-          mediaEl.classList.remove("playing");
-          mediaEl.src =
-            "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
-          transitionTimeout = setTimeout(() => {
-            currentIndex = (currentIndex + 1) % urls.length;
-            startEffect();
-          }, 3000);
-        }, 5100);
+      clearTimeout(stopTimeout);
+      
+      setTimeout(() => {
+        if (!isPlaying) return;
+        
+        updateMask();
+        
+        masterContainer.style.opacity = "1";
+        mediaWrapper.style.opacity = "1";
+        document.body.classList.add(`master-effect-active-${targetTab}`);
+        
+        if (!isSingleNative) {
+          mediaEl.src = urls[currentIndex];
+        } else if (mediaEl.tagName === "VIDEO") {
+          mediaEl.play().catch(() => {});
+        }
+        mediaEl.classList.add("playing");
+        
+        if (!isSingleNative) {
+          currentTimeout = setTimeout(() => {
+            mediaEl.classList.remove("playing");
+            mediaEl.src = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
+            transitionTimeout = setTimeout(() => {
+              currentIndex = (currentIndex + 1) % urls.length;
+              if (isPlaying) startEffect();
+            }, 3000);
+          }, 5100);
+        }
+      }, 50);
+    };
+
+    const checkStateAndPlay = () => {
+      const isVisible = document.body.getAttribute("data-tab-effect-visible") === "true";
+      const activeTab = document.body.getAttribute("data-active-tab");
+
+      if (isVisible && activeTab === targetTab) {
+        if (!isPlaying) {
+          currentIndex = 0;
+          startEffect();
+        } else {
+          updateMask();
+        }
+      } else {
+        if (isPlaying) stopEffect();
       }
     };
+
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
-        if (mutation.attributeName === "data-tab-effect-visible") {
-          const isVisible =
-            document.body.getAttribute("data-tab-effect-visible") === "true";
-          const activeTab = document.body.getAttribute("data-active-tab");
-          if (isVisible && activeTab === targetTab) {
-            container.classList.add("active");
-            if (!isPlaying) {
-              currentIndex = 0;
-              startEffect();
-            }
-          } else {
-            container.classList.remove("active");
-            isPlaying = false;
-            clearTimeout(currentTimeout);
-            clearTimeout(transitionTimeout);
-            mediaEl.classList.remove("playing");
-            if (mediaEl.tagName === "VIDEO") mediaEl.pause();
-            if (!isSingleNative)
-              mediaEl.src =
-                "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
-          }
+        if (
+          mutation.attributeName === "data-tab-effect-visible" ||
+          mutation.attributeName === "data-active-tab"
+        ) {
+          checkStateAndPlay();
         }
       });
     });
     observer.observe(document.body, {
       attributes: true,
-      attributeFilter: ["data-tab-effect-visible"],
+      attributeFilter: ["data-tab-effect-visible", "data-active-tab"],
     });
-    if (
-      document.body.getAttribute("data-tab-effect-visible") === "true" &&
-      document.body.getAttribute("data-active-tab") === targetTab
-    ) {
-      container.classList.add("active");
-      startEffect();
-    }
+
+    
+    const cards = document.querySelectorAll(".card");
+    const cardObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === "style" || mutation.attributeName === "class") {
+          checkStateAndPlay();
+        }
+      });
+    });
+    cards.forEach(card => cardObserver.observe(card, { attributes: true, attributeFilter: ["style", "class"] }));
+
+    checkStateAndPlay();
   });
+
+  
+  originalContainers.forEach(c => c.remove());
 }

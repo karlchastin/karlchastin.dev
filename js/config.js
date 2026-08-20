@@ -98,7 +98,7 @@ export const profiles = {
     avatar: "./assets/Home%20Tab%20Avatar.webp",
     name: "Discord",
     username: "@chas",
-    bio: "<span class=\"bg-effect-exclude\" style=\"font-family: 'Consolas', monospace; background-color: rgba(0, 0, 0, 0.3); padding: 4px 6px; border-radius: 4px;\">I'll make a home in your gut, cause it's somewhere warm to sleep.</span>",
+    bio: "<span class=\"bg-effect-exclude\" style=\"font-family: 'Consolas', monospace; background-color: rgba(0, 0, 0, 0.3); padding: 4px 6px; border-radius: 4px;\">i've got two tickets to iron maiden, baby.</span>",
     layout: {
       ...defaultLayout,
       showLocDiscord: true,

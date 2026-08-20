@@ -385,7 +385,7 @@ function updateDiscordUI(data) {
             if (typeCategory === "listening") {
               musicIcon = `<svg class="icon_c9d15c" aria-hidden="true" role="img" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" style="width:12px; height:12px; flex-shrink:0;"><path fill="#45a366" d="M8.65 1.51A2 2 0 0 0 6 3.41v9.88A3.98 3.98 0 0 0 4.5 13C2.57 13 1 14.34 1 16s1.57 3 3.5 3S8 17.66 8 16V5.4l11 3.81v7.08a3.98 3.98 0 0 0-1.5-.29c-1.93 0-3.5 1.34-3.5 3s1.57 3 3.5 3 3.5-1.34 3.5-3V7.03c0-.74-.47-1.4-1.18-1.65L8.65 1.51Z" class=""></path></svg>`;
             }
-            timeNode = `                        <div style="display:flex; align-items:center; gap:6px; margin-top:6px;">                            <div style="display:flex; align-items:center; gap:6px;">                                ${musicIcon}                                <span class="${tId}-elapsed" style="font-size:12px; color:#fff; font-weight:800; display:flex; align-items:center;">${formatElapsed(elapsedMs)}</span>                            </div>                            <div style="flex:1; height:4px; background:rgba(255,255,255,0.2); border-radius:2px; overflow:hidden;"><div class="${tId}-bar" style="width:${perc}%; height:100%; background:${titleColor};"></div></div>                            <span class="${tId}-total" style="font-size:12px; color:#fff; font-weight:800; display:flex; align-items:center;">${formatElapsed(totalMs)}</span>                        </div>`;
+            timeNode = `                        <div style="display:flex; align-items:center; gap:6px; margin-top:6px;">                            <div style="display:flex; align-items:center; gap:6px;">                                ${musicIcon}                                <span class="${tId}-elapsed" style="font-size:12px; color:#fff; font-weight:800; display:flex; align-items:center;">${formatElapsed(elapsedMs)}</span>                            </div>                            <div style="flex:1; height:4px; background:rgba(255,255,255,0.2); border-radius:2px; overflow:hidden;"><div class="${tId}-bar" style="width:100%; height:100%; transform:scaleX(${perc / 100}); transform-origin:left; background:${titleColor};"></div></div>                            <span class="${tId}-total" style="font-size:12px; color:#fff; font-weight:800; display:flex; align-items:center;">${formatElapsed(totalMs)}</span>                        </div>`;
             activeTimers.push({
               id: tId,
               start: activity.timestamps.start,
@@ -861,7 +861,7 @@ setInterval(() => {
       const totalStr = formatElapsed(totalMs);
       t.els.elapsed.forEach((el) => (el.textContent = elapsedStr));
       t.els.total.forEach((el) => (el.textContent = totalStr));
-      t.els.bar.forEach((el) => (el.style.width = `${perc}%`));
+      t.els.bar.forEach((el) => (el.style.transform = `scaleX(${perc / 100})`));
     } else if (t.type === "left") {
       const leftStr = `${formatElapsed(Math.max(0, t.end - now))}`;
       t.els.left.forEach((el) => (el.textContent = leftStr));

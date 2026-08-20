@@ -8,6 +8,35 @@ export function setupUIEvents() {
   let isAftonSequenceRunning = false;
   let preFocusAudioState = null;
 
+
+  try {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    let noHW = false;
+
+    if (!gl) {
+      noHW = true;
+    } else {
+      const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+      if (debugInfo) {
+        const renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL).toLowerCase();
+        if (renderer.includes('swiftshader') ||
+          renderer.includes('llvmpipe') ||
+          renderer.includes('microsoft basic render driver') ||
+          renderer.includes('software rasterizer')) {
+          noHW = true;
+        }
+      }
+    }
+
+    if (noHW) {
+      const warning = $("hw-accel-warning");
+      if (warning) warning.style.display = "block";
+    }
+  } catch (e) {
+
+  }
+
   Object.values(emailAvatars).forEach((src) => {
     const img = new Image();
     img.src = src;
@@ -595,8 +624,9 @@ export function setupUIEvents() {
       audioFrame = requestAnimationFrame(() => {
         if (currentTimeEl)
           currentTimeEl.textContent = formatTime(bgAudio.currentTime);
-        if (progressFill && bgAudio.duration > 0)
-          progressFill.style.width = `${(bgAudio.currentTime / bgAudio.duration) * 100}%`;
+        if (progressFill && bgAudio.duration > 0) {
+          progressFill.style.transform = `scaleX(${bgAudio.currentTime / bgAudio.duration})`;
+        }
 
         const activeTab = document
           .querySelector(".tab.active")
@@ -1731,7 +1761,7 @@ export function setupUIEvents() {
                           <span style="display: flex; align-items: center; gap: 8px;">
                               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Debug
                           </span>
-                          <span style="font-size: 10px; font-family: 'JetBrains Mono', monospace; color: #666; background: rgba(0,0,0,0.4); padding: 4px 8px; border-radius: 8px; letter-spacing: 0;">v1.2.10</span>
+                          <span style="font-size: 10px; font-family: 'JetBrains Mono', monospace; color: #666; background: rgba(0,0,0,0.4); padding: 4px 8px; border-radius: 8px; letter-spacing: 0;">v1.2.11</span>
                       </h3>
                       
                       <div style="font-size: 10px; color: #aaa; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">Visual Overrides</div>

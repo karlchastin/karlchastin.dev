@@ -12,16 +12,24 @@ export const scrollObserver = new ResizeObserver((entries) => {
       const dupText = wrapper.querySelector(".dup-text");
       if (!inner || !mainText || !dupText || wrapper.clientWidth === 0)
         continue;
-      if (mainText.offsetWidth > wrapper.clientWidth) {
-        if (dupText.style.display !== "inline-block") {
+      
+      const isScrolling = dupText.style.display === "inline-block";
+      const actualTextWidth = mainText.offsetWidth - (isScrolling ? 40 : 0);
+
+      if (actualTextWidth > wrapper.clientWidth) {
+        if (!isScrolling) {
           dupText.style.display = "inline-block";
+          mainText.style.paddingRight = "40px";
+          dupText.style.paddingRight = "40px";
           wrapper.style.maskImage = MASK_GRADIENT;
           wrapper.style.webkitMaskImage = MASK_GRADIENT;
           inner.style.animation = "scrollText 14s linear infinite";
         }
       } else {
-        if (dupText.style.display !== "none") {
+        if (isScrolling) {
           dupText.style.display = "none";
+          mainText.style.paddingRight = "0px";
+          dupText.style.paddingRight = "0px";
           wrapper.style.maskImage = "none";
           wrapper.style.webkitMaskImage = "none";
           inner.style.animation = "none";
@@ -38,9 +46,14 @@ window.forceCheckScrolls = (forceRestart = false) => {
     const dupText = wrapper.querySelector(".dup-text");
     if (!inner || !mainText || !dupText || wrapper.clientWidth === 0) return;
 
-    if (mainText.offsetWidth > wrapper.clientWidth) {
-      if (dupText.style.display !== "inline-block" || forceRestart) {
+    const isScrolling = dupText.style.display === "inline-block";
+    const actualTextWidth = mainText.offsetWidth - (isScrolling ? 40 : 0);
+
+    if (actualTextWidth > wrapper.clientWidth) {
+      if (!isScrolling || forceRestart) {
         dupText.style.display = "inline-block";
+        mainText.style.paddingRight = "40px";
+        dupText.style.paddingRight = "40px";
         wrapper.style.maskImage = MASK_GRADIENT;
         wrapper.style.webkitMaskImage = MASK_GRADIENT;
         inner.style.animation = "none";
@@ -48,8 +61,10 @@ window.forceCheckScrolls = (forceRestart = false) => {
         inner.style.animation = "scrollText 14s linear infinite";
       }
     } else {
-      if (dupText.style.display !== "none") {
+      if (isScrolling) {
         dupText.style.display = "none";
+        mainText.style.paddingRight = "0px";
+        dupText.style.paddingRight = "0px";
         wrapper.style.maskImage = "none";
         wrapper.style.webkitMaskImage = "none";
         inner.style.animation = "none";
@@ -68,6 +83,6 @@ export const createScrollText = (text, isTitle, titleColor, inline = false) => {
         : `font-size:13px; color:#aaa; line-height: 1.15; margin-bottom: 0px;`;
   return `<div class="scroll-wrapper" style="${wrapperStyle} ${inline ? "" : "width: 100%;"} min-width: 0; overflow: visible; white-space: nowrap; position: relative;">
         <div class="scroll-inner" style="display: inline-block; white-space: nowrap;">
-            <span class="main-text" style="display: inline-block; padding-right: 40px;">${text}</span><span class="dup-text" style="display: none; padding-right: 40px;">${text}</span>
+            <span class="main-text" style="display: inline-block; padding-right: 0px;">${text}</span><span class="dup-text" style="display: none; padding-right: 0px;">${text}</span>
         </div></div>`;
 };
