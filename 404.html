@@ -1,27 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Redirecting...</title>
-    <!-- Redirect to root path (index.html) immediately -->
-    <meta http-equiv="refresh" content="0; url=/">
-    <script>
-        window.location.href = "/";
-    </script>
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>karlchastin</title>
     <style>
-        body {
-            background-color: #0f172a;
-            color: #f8fafc;
-            font-family: sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-        }
+      body {
+        background-color: #000;
+        margin: 0;
+        padding: 0;
+      }
     </style>
-</head>
-<body>
-    <p>Redirecting you to the main page...</p>
-</body>
+    <script>
+      const path = window.location.pathname.substring(1).replace(/\/$/, "");
+      if (path) {
+        sessionStorage.setItem("redirectPath", path);
+      }
+      window.location.replace("/");
+    </script>
+  </head>
+
+  <body></body>
 </html>
